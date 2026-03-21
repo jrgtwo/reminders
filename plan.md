@@ -446,11 +446,11 @@ BrowserWindow settings: `sandbox: true`, `contextIsolation: true`, `nodeIntegrat
 11. ✅ Dark mode toggle wired to `ui.store.ts`
 12. ✅ Native OS title bar kept (no custom chrome — looks correct on Windows/macOS when packaged)
 
-### Phase 3 — Calendar
-11. `MonthView` CSS Grid + `CalendarDay` with event dots
-12. `WeekView`
-13. `CalendarHeader` nav (prev/next, today, view switcher)
-14. Click day → DayView navigation
+### Phase 3 — Calendar ✅
+11. ✅ `MonthView` CSS Grid + `CalendarDay` with event dots
+12. ✅ `WeekView`
+13. ✅ `CalendarHeader` nav (prev/next, today, view switcher)
+14. ✅ Click day → DayView navigation
 
 ### Phase 4 — Day View
 15. `DayView` page layout

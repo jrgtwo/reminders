@@ -1,11 +1,66 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { RouterProvider, createMemoryRouter, createBrowserRouter } from 'react-router-dom'
+import { Temporal } from '@js-temporal/polyfill'
 import { initStorage } from './platform'
 import { useUIStore } from './store/ui.store'
+import { useRemindersStore } from './store/reminders.store'
 import AppShell from './components/layout/AppShell'
+import CalendarHeader from './components/calendar/CalendarHeader'
+import MonthView from './components/calendar/MonthView'
+import WeekView from './components/calendar/WeekView'
+import {
+  addMonths,
+  subMonths,
+  addWeeks,
+  subWeeks,
+  getWeekDays,
+  today,
+  parseDateStr,
+} from './utils/dates'
 
 function CalendarPage() {
-  return <div className="p-6 text-gray-500 dark:text-gray-400">Calendar — Phase 3</div>
+  const selectedDateStr = useUIStore((s) => s.selectedDate)
+  const currentView = useUIStore((s) => s.currentView)
+  const setView = useUIStore((s) => s.setView)
+  const load = useRemindersStore((s) => s.load)
+
+  const [displayDate, setDisplayDate] = useState<Temporal.PlainDate>(() =>
+    parseDateStr(selectedDateStr),
+  )
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  const view: 'month' | 'week' = currentView === 'week' ? 'week' : 'month'
+  const weekDays = useMemo(() => getWeekDays(displayDate), [displayDate])
+
+  function handlePrev() {
+    setDisplayDate((d: Temporal.PlainDate) => (view === 'week' ? subWeeks(d, 1) : subMonths(d, 1)))
+  }
+
+  function handleNext() {
+    setDisplayDate((d: Temporal.PlainDate) => (view === 'week' ? addWeeks(d, 1) : addMonths(d, 1)))
+  }
+
+  return (
+    <div className="flex flex-col h-full">
+      <CalendarHeader
+        displayDate={displayDate}
+        view={view}
+        weekDays={weekDays}
+        onPrev={handlePrev}
+        onNext={handleNext}
+        onToday={() => setDisplayDate(today())}
+        onViewChange={(v) => setView(v)}
+      />
+      {view === 'month' ? (
+        <MonthView displayDate={displayDate} />
+      ) : (
+        <WeekView displayDate={displayDate} />
+      )}
+    </div>
+  )
 }
 function DayPage() {
   return <div className="p-6 text-gray-500 dark:text-gray-400">Day View — Phase 4</div>
