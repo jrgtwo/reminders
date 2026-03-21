@@ -50,15 +50,17 @@ import Database from 'better-sqlite3'
    return db
  }
 
- function runMigrations(database: Database.Database) {
-   const row = database.prepare('SELECT version FROM schema_version').get() as
-     | { version: number }
-     | undefined
-   const current = row?.version ?? 0
+function runMigrations(database: Database.Database) {
+  const tableExists = database
+    .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='schema_version'")
+    .get()
+  const current = tableExists
+    ? ((database.prepare('SELECT version FROM schema_version').get() as { version: number } | undefined)?.version ?? 0)
+    : 0
 
-   for (let i = current; i < MIGRATIONS.length; i++) {
-     database.transaction(() => {
-       database.exec(MIGRATIONS[i])
-     })()
-   }
- }
+  for (let i = current; i < MIGRATIONS.length; i++) {
+    database.transaction(() => {
+      database.exec(MIGRATIONS[i])
+    })()
+  }
+}

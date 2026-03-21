@@ -1,5 +1,5 @@
-appId: com.electron.app
-productName: reminders
+appId: com.reminders.app
+productName: Reminders
 directories:
   buildResources: build
 files:

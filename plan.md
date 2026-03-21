@@ -430,21 +430,21 @@ BrowserWindow settings: `sandbox: true`, `contextIsolation: true`, `nodeIntegrat
 
 ## Implementation Order
 
-### Phase 1 — Foundation
-1. Scaffold project with `electron-vite` React+TypeScript template
-2. Configure Tailwind v4, TypeScript triple-config, ESLint, Prettier
-3. Define all data models (`src/renderer/types/models.ts`)
-4. Implement `IStorageAdapter` interface + all three adapters: web (IndexedDB), electron (IPC), capacitor (**stub**)
-5. Add `capacitor.config.ts` pointing `webDir` at `dist/renderer`; install `@capacitor/core` + `@capacitor/cli`
-6. Set up preload contextBridge + main IPC handlers + SQLite schema/migrations
-7. Wire Zustand stores (data layer only, no UI)
+### Phase 1 — Foundation ✅
+1. ✅ Scaffold project with `electron-vite` React+TypeScript template
+2. ✅ Configure Tailwind v4, TypeScript triple-config, ESLint, Prettier
+3. ✅ Define all data models (`src/renderer/types/models.ts`)
+4. ✅ Implement `IStorageAdapter` interface + all three adapters: web (IndexedDB), electron (IPC), capacitor (**stub**)
+5. ✅ Add `capacitor.config.ts` pointing `webDir` at `dist/renderer`; install `@capacitor/core` + `@capacitor/cli`
+6. ✅ Set up preload contextBridge + main IPC handlers + SQLite schema/migrations
+7. ✅ Wire Zustand stores (data layer only, no UI)
 
-### Phase 2 — Layout Shell
-8. `AppShell` responsive layout: `md:flex-row` 3-col on desktop, `flex-col` + `BottomNav` on mobile
-9. `LeftSidebar` + `RightSidebar` collapse logic (hidden via `hidden md:flex` on mobile)
-10. `BottomNav` tab bar component (Calendar / Reminders / Todos)
-11. Dark mode toggle wired to `ui.store.ts`
-12. Electron custom title bar (draggable region)
+### Phase 2 — Layout Shell ✅
+8. ✅ `AppShell` responsive layout: `md:flex-row` 3-col on desktop, `flex-col` + `BottomNav` on mobile
+9. ✅ `LeftSidebar` + `RightSidebar` collapse logic (both collapse to `w-12` icon strip)
+10. ✅ `BottomNav` tab bar component (Calendar / Reminders / Todos)
+11. ✅ Dark mode toggle wired to `ui.store.ts`
+12. ✅ Native OS title bar kept (no custom chrome — looks correct on Windows/macOS when packaged)
 
 ### Phase 3 — Calendar
 11. `MonthView` CSS Grid + `CalendarDay` with event dots
