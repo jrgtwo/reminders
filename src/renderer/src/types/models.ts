@@ -1,0 +1,46 @@
+export type RecurrenceFrequency = 'daily' | 'weekly' | 'monthly' | 'yearly'
+
+  export interface RecurrenceRule {
+    frequency: RecurrenceFrequency
+    interval: number       // every N units (e.g. every 2 weeks)
+    endDate?: string       // 'YYYY-MM-DD', undefined = forever
+    count?: number         // end after N occurrences
+    byDay?: number[]       // 0–6 (Sun–Sat), used for weekly recurrence
+  }
+
+  export interface Reminder {
+    id: string             // crypto.randomUUID()
+    title: string
+    description?: string
+    date: string           // 'YYYY-MM-DD' base date
+    time?: string          // 'HH:MM', triggers system notification
+    recurrence?: RecurrenceRule
+    completedDates: string[] // ISO dates of completed occurrences
+    createdAt: string
+    updatedAt: string
+  }
+
+  export interface Note {
+    date: string           // 'YYYY-MM-DD' — one note per day, used as primary key
+    content: object        // Tiptap JSON document
+    updatedAt: string
+  }
+
+  export interface Todo {
+    id: string
+    title: string
+    description?: string
+    order: number          // float gap (1000, 2000…) for drag-to-reorder
+    completed: boolean
+    completedAt?: string
+    createdAt: string
+    updatedAt: string
+  }
+
+  export interface SearchResult {
+    type: 'reminder' | 'note' | 'todo'
+    id: string
+    date?: string
+    title: string
+    excerpt: string
+  }

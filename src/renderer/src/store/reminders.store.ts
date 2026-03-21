@@ -1,0 +1,55 @@
+import { create } from 'zustand'
+ import { immer } from 'zustand/middleware/immer'
+ import type { Reminder } from '../types/models'
+
+ interface RemindersState {
+   reminders: Reminder[]
+   loading: boolean
+   load: () => Promise<void>
+   save: (r: Reminder) => Promise<void>
+   remove: (id: string) => Promise<void>
+   toggleComplete: (id: string, date: string) => Promise<void>
+ }
+
+ export const useRemindersStore = create<RemindersState>()(
+   immer((set) => ({
+     reminders: [],
+     loading: false,
+
+     load: async () => {
+       const { getStorage } = await import('../platform')
+       set((s) => { s.loading = true })
+       const reminders = await getStorage().getReminders()
+       set((s) => { s.reminders = reminders; s.loading = false })
+     },
+
+     save: async (r) => {
+       const { getStorage } = await import('../platform')
+       const saved = await getStorage().saveReminder(r)
+       set((s) => {
+         const idx = s.reminders.findIndex((x) => x.id === saved.id)
+         if (idx >= 0) s.reminders[idx] = saved
+         else s.reminders.push(saved)
+       })
+     },
+
+     remove: async (id) => {
+       const { getStorage } = await import('../platform')
+       await getStorage().deleteReminder(id)
+       set((s) => { s.reminders = s.reminders.filter((r) => r.id !== id) })
+     },
+
+     toggleComplete: async (id, date) => {
+       const { getStorage } = await import('../platform')
+       set((s) => {
+         const r = s.reminders.find((x) => x.id === id)
+         if (!r) return
+         const idx = r.completedDates.indexOf(date)
+         if (idx >= 0) r.completedDates.splice(idx, 1)
+         else r.completedDates.push(date)
+         r.updatedAt = new Date().toISOString()
+         getStorage().saveReminder(r)
+       })
+     },
+   }))
+ )
