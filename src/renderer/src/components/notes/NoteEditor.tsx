@@ -331,7 +331,7 @@ export default function NoteEditor({ date }: Props) {
   if (!loaded) return <div className="mb-8 min-h-[200px]" />
 
   return (
-    <div className="mb-8 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40">
+    <div className="mb-8 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40 resize-y overflow-auto min-h-[200px]">
       <MilkdownProvider key={date}>
         <EditorWithToolbar initialContent={initialContent} onChange={handleChange} />
       </MilkdownProvider>

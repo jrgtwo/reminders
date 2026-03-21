@@ -473,11 +473,14 @@ BrowserWindow settings: `sandbox: true`, `contextIsolation: true`, `nodeIntegrat
 - Fixed `electron.vite.config.ts`: explicitly externalized `better-sqlite3` (was in `optionalDependencies`, missed by electron-vite's auto-externalization)
 - `Note.content` type changed from `object` (Tiptap JSON) to `string` (Markdown)
 
-### Phase 5 — Todos
-20. `TodoList` with `@dnd-kit/sortable`
-21. `TodoItem` with drag grip + checkbox
-22. `TodoForm` dialog
-23. Float-order persistence on drag end
+### Phase 5 — Todos ✅
+20. ✅ `TodoList` with `@dnd-kit/sortable` — `DndContext` + `SortableContext`, `PointerSensor` with 5px activation constraint, `arrayMove` on drag end
+21. ✅ `TodoItem` with drag grip + checkbox — hover-reveal grip/actions, expandable description panel with chevron toggle
+22. ✅ `TodoForm` dialog — monospace `<textarea>` for description with markdown hint in label
+23. ✅ Float-order persistence on drag end — `reorderTodos` called with new ID sequence; store recomputes `order` as `(i+1)*1000`
+
+**Additions beyond original scope:**
+- `ui/MarkdownView.tsx` — reusable read-only Milkdown component (`editorViewOptionsCtx` `editable: () => false`); used to render todo descriptions as GFM markdown in the expanded panel
 
 ### Phase 6 — Left Sidebar Reminders
 24. Upcoming reminders query (next 30 days, rrule expansion)

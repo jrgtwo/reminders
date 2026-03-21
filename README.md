@@ -1,6 +1,6 @@
 # Reminders
 
-> **Status: In Development** — Core layout complete. Calendar, day view, todos, and reminders UI in progress.
+> **Status: In Development** — Phases 1–5 complete. Calendar, day view, notes editor, reminders, and todos are all functional.
 
 A local-first reminders, notes, and calendar app. No accounts, no cloud sync, no subscription — your data stays on your device.
 
@@ -12,7 +12,7 @@ Runs as a native desktop app on Windows and macOS (Electron), a deployable web a
 
 - **Calendar** — Month and week views with reminder indicators. Click any day to open the day view.
 - **Reminders** — Create one-off or recurring reminders (daily, weekly, monthly, yearly). Recurring reminders use RFC 5545 rrule — one record per series, never pre-expanded rows.
-- **Notes** — A rich text note per day (bold, italic, lists, headings, links) powered by Tiptap/ProseMirror.
+- **Notes** — A rich Markdown note per day powered by Milkdown/ProseMirror. Supports headings, bold, italic, strikethrough, lists, blockquotes, tables, code blocks, and links. Full toolbar with responsive overflow menu. Autosaves as you type.
 - **Todos** — A persistent todo list with drag-to-reorder. Float-gap ordering for O(1) updates.
 - **Native notifications** — Desktop notifications fire at the reminder's scheduled time (Electron only).
 - **Dark mode** — Toggle persisted across sessions.
@@ -32,7 +32,7 @@ Runs as a native desktop app on Windows and macOS (Electron), a deployable web a
 | Styling | Tailwind CSS v4 |
 | State | [Zustand](https://zustand-demo.pmnd.rs/) 5 + immer |
 | Routing | React Router v7 — `MemoryRouter` for Electron/Capacitor, `BrowserRouter` for web |
-| Rich text | [Tiptap](https://tiptap.dev/) (ProseMirror-based) |
+| Rich text | [Milkdown](https://milkdown.dev/) v7 (ProseMirror-based, Markdown output) |
 | Drag and drop | [@dnd-kit](https://dndkit.com/) |
 | Recurrence | [rrule](https://github.com/jakubroztocil/rrule) — RFC 5545 compliant |
 | Date utilities | [date-fns](https://date-fns.org/) v4 |
@@ -114,11 +114,12 @@ npm run build:web     # outputs to dist/renderer/ — deploy to Vercel/Netlify
 - [x] Project scaffold, TypeScript config, Tailwind, ESLint
 - [x] Data models and storage adapter interface
 - [x] All three storage adapters (Electron, Web, Capacitor stub)
-- [x] Zustand stores
-- [x] App shell — responsive 3-column layout, collapsible sidebars, bottom nav
-- [ ] Calendar — month view, week view, day navigation
-- [ ] Day view — note editor, reminder list, reminder form with recurrence
-- [ ] Todos — drag-to-reorder list
+- [x] Electron main process — SQLite schema, migrations, IPC handlers, contextBridge preload
+- [x] Zustand stores (reminders, notes, todos, UI)
+- [x] App shell — responsive 3-column layout, collapsible sidebars, bottom nav, dark mode
+- [x] Calendar — month view, week view, day navigation, reminder indicator dots
+- [x] Day view — Milkdown note editor with full toolbar, reminder list, reminder form with recurrence editor
+- [x] Todos — drag-to-reorder list with float-gap ordering, checkbox toggle, add/edit/delete, expandable markdown descriptions
 - [ ] Left sidebar — upcoming reminders (next 30 days)
 - [ ] Electron polish — tray, notifications, window state, auto-updater
 - [ ] Search, keyboard shortcuts, export/import, settings
