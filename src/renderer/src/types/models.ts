@@ -22,7 +22,7 @@ export type RecurrenceFrequency = 'daily' | 'weekly' | 'monthly' | 'yearly'
 
   export interface Note {
     date: string           // 'YYYY-MM-DD' — one note per day, used as primary key
-    content: object        // Tiptap JSON document
+    content: string        // Markdown text
     updatedAt: string
   }
 

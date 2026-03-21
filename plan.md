@@ -25,8 +25,8 @@ Capacitor scaffolding for iOS/Android is included from the start so the mobile p
 | State | Zustand 5 + immer | No provider boilerplate; `persist` middleware; simple per-domain stores |
 | Drag-and-drop | `@dnd-kit/core` + `@dnd-kit/sortable` | Actively maintained; works in Electron renderer; accessible |
 | Calendar | Custom (CSS Grid) | ~200 lines; no bundle weight; perfect Tailwind integration |
-| Notes editor | Tiptap (rich text) | ProseMirror-based; JSON output; React integration |
-| Date utils | `date-fns` v4 | Tree-shakeable; no global mutation |
+| Notes editor | Milkdown v7 | ProseMirror-based; Markdown string output; React integration via `@milkdown/react` |
+| Date utils | Temporal API (`@js-temporal/polyfill`) | Standard API; no mutation; precise calendar arithmetic |
 | Recurrence | `rrule` | RFC 5545 compliant; handles all edge cases |
 | Routing | React Router v7 | `createBrowserRouter` for web; `createMemoryRouter` for Electron/Capacitor |
 | Web storage | `idb` 8 (IndexedDB) | Promise-based; typed; indexed queries |
@@ -165,7 +165,7 @@ export interface Reminder {
 
 export interface Note {
   date: string              // 'YYYY-MM-DD' primary key (one note per day)
-  content: object           // Tiptap JSON document
+  content: string           // Markdown string (Milkdown)
   updatedAt: string
 }
 
@@ -257,7 +257,7 @@ CREATE INDEX idx_reminders_date ON reminders(date);
 
 CREATE TABLE notes (
   date TEXT PRIMARY KEY,
-  content TEXT NOT NULL,       -- Tiptap JSON stringified
+  content TEXT NOT NULL,       -- Markdown string
   updated_at TEXT NOT NULL
 );
 
@@ -452,12 +452,26 @@ BrowserWindow settings: `sandbox: true`, `contextIsolation: true`, `nodeIntegrat
 13. ✅ `CalendarHeader` nav (prev/next, today, view switcher)
 14. ✅ Click day → DayView navigation
 
-### Phase 4 — Day View
-15. `DayView` page layout
-16. Tiptap `NoteEditor` integration (Bold, Italic, BulletList, Heading, Link extensions)
-17. `ReminderList` + `ReminderItem` for selected day
-18. `ReminderForm` dialog (CRUD)
-19. `RecurrenceEditor` component
+### Phase 4 — Day View ✅
+15. ✅ `DayView` page layout
+16. ✅ Milkdown `NoteEditor` integration
+    - GFM preset (`@milkdown/preset-gfm`) — CommonMark + strikethrough, tables, task lists
+    - Full toolbar: Undo, Redo, H1–H3, Bold, Italic, Strikethrough, Bullet list, Ordered list, Blockquote, Inline code, Code block, HR, Link
+    - Responsive overflow: `ResizeObserver` moves items that don't fit into a `...` dropdown
+    - Link button opens an inline URL input row below the toolbar
+    - Debounced autosave (800ms); `Note.content` stored as Markdown string
+    - Toolbar commands dispatched via `get()?.action(callCommand(command.key, payload))` — the correct Milkdown v7 API
+    - Slash/notion-style command menu considered and deferred (not planned)
+17. ✅ `ReminderList` + `ReminderItem` for selected day
+18. ✅ `ReminderForm` dialog (CRUD)
+19. ✅ `RecurrenceEditor` component
+
+**Shared UI primitives built:** `Button`, `Dialog`, `Input`, `Badge`
+
+**Infrastructure changes:**
+- Added `dev:web` script (`vite --config vite.web.config.ts`) — primary dev target during development
+- Fixed `electron.vite.config.ts`: explicitly externalized `better-sqlite3` (was in `optionalDependencies`, missed by electron-vite's auto-externalization)
+- `Note.content` type changed from `object` (Tiptap JSON) to `string` (Markdown)
 
 ### Phase 5 — Todos
 20. `TodoList` with `@dnd-kit/sortable`

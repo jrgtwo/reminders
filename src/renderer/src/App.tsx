@@ -8,6 +8,7 @@ import AppShell from './components/layout/AppShell'
 import CalendarHeader from './components/calendar/CalendarHeader'
 import MonthView from './components/calendar/MonthView'
 import WeekView from './components/calendar/WeekView'
+import DayView from './components/DayView'
 import {
   addMonths,
   subMonths,
@@ -63,7 +64,7 @@ function CalendarPage() {
   )
 }
 function DayPage() {
-  return <div className="p-6 text-gray-500 dark:text-gray-400">Day View — Phase 4</div>
+  return <DayView />
 }
 function SettingsPage() {
   return <div className="p-6 text-gray-500 dark:text-gray-400">Settings — Phase 8</div>
