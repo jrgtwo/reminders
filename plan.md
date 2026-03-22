@@ -517,7 +517,7 @@ Post-phase bug fixes identified during manual testing:
 
 **Decisions confirmed:**
 - Platforms: Electron + Web (Capacitor deferred)
-- Auth: OAuth providers (Google, GitHub); email/password deferred
+- Auth: Magic link (email OTP) to start; OAuth providers (Google, GitHub) deferred
 - Offline-first: app works fully without internet; sync on app focus
 - Conflict resolution: auto-merge (field-level last-write-wins; `completedDates` union; notes last-write-wins)
 - First login: prompt user when local data and/or cloud data already exists
@@ -527,32 +527,38 @@ Post-phase bug fixes identified during manual testing:
 
 ```
 Renderer (React)
-  └── auth.store.ts          — session, user state
-  └── sync.store.ts          — sync status, last synced at
+  └── lib/supabase.ts        — Supabase client singleton (VITE_ env vars)
+  └── store/auth.store.ts    — session, user state, sendMagicLink, signOut
+  └── store/sync.store.ts    — sync status, last synced at (Phase 9c)
 
 Main process (Electron)
-  └── auth.ts                — OAuth deep-link flow, token management
-  └── sync.ts                — SyncEngine class (push/pull/merge)
-  └── storage/db.ts          — migration: add deleted_at + last_synced_at columns
+  └── auth.ts                — deep-link protocol registration, pending callback queue
+  └── ipc/auth.ts            — auth:openExternal IPC handler
+  └── sync.ts                — SyncEngine class (push/pull/merge) (Phase 9c)
+  └── storage/db.ts          — migration: add deleted_at + last_synced_at columns (Phase 9b)
 
 Supabase
-  └── Auth                   — OAuth (Google, GitHub)
-  └── Database               — reminders, notes, todos tables + user_id + deleted_at
-  └── Row Level Security     — users can only read/write their own rows
+  └── Auth                   — magic link (email OTP); OAuth deferred
+  └── Database               — reminders, notes, todos tables + user_id + deleted_at (Phase 9b)
+  └── Row Level Security     — users can only read/write their own rows (Phase 9b)
 ```
 
-**Phase 9a —Supabase Auth**
+**Phase 9a — Supabase Auth ✅**
 
-44. Install `@supabase/supabase-js`; add `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` env vars
-45. **Electron OAuth flow** (`src/main/auth.ts`):
-    - Register custom deep-link protocol `reminders://`
-    - `signIn(provider)`: open Supabase OAuth URL via `shell.openExternal()`
-    - Main process catches `reminders://auth/callback#access_token=…` redirect
-    - Extracts + stores session in `electron-store`; sends session to renderer via IPC
-    - Expose `auth.signIn`, `auth.signOut`, `auth.getSession` over IPC + preload bridge
-46. **Web OAuth flow**: standard `supabase.auth.signInWithOAuth()` redirect; Supabase SDK handles session in `localStorage`
-47. New `src/renderer/src/store/auth.store.ts` — holds `user`, `session`, `isLoggedIn`
-48. **Settings page — Account section**: "Sign in with Google / GitHub" buttons; user avatar + email when signed in; Sign out button
+44. ✅ Install `@supabase/supabase-js`; configure `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` env vars; add `envDir` to both Vite configs so vars are found from project root
+45. ✅ **Electron deep-link flow** (`src/main/auth.ts`):
+    - Register custom protocol `reminders://` via `app.setAsDefaultProtocolClient`
+    - `app.requestSingleInstanceLock()` for Windows deep-link support
+    - macOS: `app.on('open-url')` catches `reminders://auth/callback` and sends to renderer via IPC
+    - Windows: `app.on('second-instance')` extracts URL from argv
+    - Pending callback queue for when the URL arrives before the window is ready
+    - `auth:openExternal` IPC handler (`src/main/ipc/auth.ts`) — renderer asks main to open OAuth URLs
+46. ✅ **Magic link auth** (`src/renderer/src/store/auth.store.ts`):
+    - `sendMagicLink(email)`: calls `supabase.auth.signInWithOtp()` with `emailRedirectTo: 'reminders://auth/callback'` (Electron) or `window.location.origin` (web)
+    - `init()`: restores session from `localStorage`, subscribes to `onAuthStateChange`, registers deep-link callback handler
+    - `signOut()`: clears session
+47. ✅ **Settings page — Account section**: email input + "Send link" button; sent confirmation state; signed-in user display with email initial avatar + sign out
+48. ✅ CSP updated in `index.html` to allow `connect-src` and `img-src` for `*.supabase.co`
 
 **Phase 9b —Supabase Schema + Local Soft Deletes**
 

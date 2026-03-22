@@ -13,6 +13,7 @@ export default defineConfig({
   },
   preload: {},
   renderer: {
+    envDir: resolve('.'),
     resolve: {
       alias: {
         '@renderer': resolve('src/renderer/src')

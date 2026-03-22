@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { ArrowLeft, Moon, Sun, Download, Upload, Check, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Moon, Sun, Download, Upload, Check, AlertCircle, LogOut, Mail } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useUIStore } from '../../store/ui.store'
+import { useAuthStore } from '../../store/auth.store'
 import Button from '../ui/Button'
 import { exportToFile, importFromFile } from '../../utils/exportImport'
 
@@ -9,9 +10,24 @@ export default function SettingsPage() {
   const navigate = useNavigate()
   const darkMode = useUIStore((s) => s.darkMode)
   const toggleDarkMode = useUIStore((s) => s.toggleDarkMode)
+  const { user, isLoggedIn, sendMagicLink, signOut } = useAuthStore()
   const [importStatus, setImportStatus] = useState<{ ok: boolean; msg: string } | null>(null)
   const [exporting, setExporting] = useState(false)
   const [importing, setImporting] = useState(false)
+  const [email, setEmail] = useState('')
+  const [magicLinkStatus, setMagicLinkStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+
+  async function handleSendMagicLink(e: React.FormEvent) {
+    e.preventDefault()
+    if (!email.trim()) return
+    setMagicLinkStatus('sending')
+    try {
+      await sendMagicLink(email.trim())
+      setMagicLinkStatus('sent')
+    } catch {
+      setMagicLinkStatus('error')
+    }
+  }
 
   async function handleExport() {
     setExporting(true)
@@ -42,6 +58,64 @@ export default function SettingsPage() {
         </Button>
       </div>
       <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Settings</h1>
+
+      {/* Account */}
+      <section className="space-y-3">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+          Account
+        </h2>
+        {isLoggedIn && user ? (
+          <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-medium">
+                {(user.email ?? '?')[0].toUpperCase()}
+              </div>
+              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.email}</p>
+            </div>
+            <Button variant="ghost" size="sm" onClick={signOut}>
+              <LogOut size={14} />
+              Sign out
+            </Button>
+          </div>
+        ) : magicLinkStatus === 'sent' ? (
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400">
+            <Check size={16} />
+            <div>
+              <p className="text-sm font-medium">Check your email</p>
+              <p className="text-xs mt-0.5 opacity-80">We sent a sign-in link to {email}</p>
+            </div>
+            <button
+              className="ml-auto text-xs underline opacity-70 hover:opacity-100"
+              onClick={() => setMagicLinkStatus('idle')}
+            >
+              Change
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleSendMagicLink} className="space-y-2">
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                required
+                className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <Button type="submit" size="sm" disabled={magicLinkStatus === 'sending'}>
+                <Mail size={14} />
+                {magicLinkStatus === 'sending' ? 'Sending…' : 'Send link'}
+              </Button>
+            </div>
+            {magicLinkStatus === 'error' && (
+              <p className="flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400">
+                <AlertCircle size={12} />
+                Failed to send — check your email and try again.
+              </p>
+            )}
+          </form>
+        )}
+      </section>
 
       {/* Appearance */}
       <section className="space-y-3">

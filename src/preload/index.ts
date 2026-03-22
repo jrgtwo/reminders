@@ -1,4 +1,4 @@
- import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 
 const api = {
   reminders: {
@@ -17,6 +17,12 @@ const api = {
     save:     (t: unknown)    => ipcRenderer.invoke('todos:save', t),
     delete:   (id: string)    => ipcRenderer.invoke('todos:delete', id),
     reorder:  (ids: string[]) => ipcRenderer.invoke('todos:reorder', ids),
+  },
+  auth: {
+    openExternal: (url: string) => ipcRenderer.invoke('auth:openExternal', url),
+    onCallback: (cb: (url: string) => void) => {
+      ipcRenderer.on('auth:callback', (_, url: string) => cb(url))
+    },
   },
   onNavigate: (cb: (path: string) => void) => {
     ipcRenderer.on('navigate', (_, path: string) => cb(path))

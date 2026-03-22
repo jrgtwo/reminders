@@ -1,6 +1,6 @@
 # Reminders
 
-A local-first reminders, notes, and calendar app. No accounts, no cloud sync, no subscription — your data stays on your device.
+A local-first reminders, notes, and calendar app. Works fully offline — sign in optionally to sync your data across devices via Supabase.
 
 Runs as a native desktop app on Windows and macOS (Electron), a deployable web app (IndexedDB), and is scaffolded for future iOS/Android support (Capacitor).
 
@@ -14,6 +14,7 @@ Runs as a native desktop app on Windows and macOS (Electron), a deployable web a
 - **Todos** — Persistent list with drag-to-reorder (float-gap ordering). Expandable descriptions rendered as Markdown.
 - **Search** — Live in-memory filter across all reminders and todos, accessible from the header or via `/`.
 - **Export / Import** — Full JSON backup and restore (all reminders, notes, and todos).
+- **Account + sync** — Optional sign-in via magic link (email). Once signed in, data syncs across devices via Supabase (sync engine in progress).
 - **Dark mode** — Toggle persisted across sessions.
 - **Keyboard shortcuts** — Full keyboard navigation (see below).
 - **Electron extras** — System tray, native OS notifications at scheduled times, window state persistence, background auto-updater.
@@ -36,6 +37,7 @@ Runs as a native desktop app on Windows and macOS (Electron), a deployable web a
 | Date math | Temporal API (`@js-temporal/polyfill`) |
 | Desktop storage | [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) — WAL mode |
 | Web storage | [idb](https://github.com/jakearchibald/idb) — typed IndexedDB wrapper |
+| Auth + sync | [Supabase](https://supabase.com/) — magic link auth, cloud sync backend |
 | Mobile (future) | [Capacitor](https://capacitorjs.com/) — scaffold in place, full integration deferred |
 | Icons | [Lucide React](https://lucide.dev/) |
 | Packaging | [electron-builder](https://www.electron.build/) — Windows NSIS, macOS DMG, Linux AppImage |
@@ -59,12 +61,13 @@ Platform is detected at runtime (Electron → Capacitor → Web) and the correct
 ```
 src/
 ├── main/                   # Electron main process
-│   ├── index.ts            # app lifecycle, window, tray, updater
+│   ├── index.ts            # app lifecycle, window, tray, updater, single-instance lock
+│   ├── auth.ts             # deep-link protocol registration + OAuth callback handling
 │   ├── tray.ts             # system tray + context menu
 │   ├── notifications.ts    # 10s reminder notification scheduler
 │   ├── windowState.ts      # persist/restore window bounds
 │   ├── updater.ts          # electron-updater wiring
-│   ├── ipc/                # IPC handlers (reminders, notes, todos, window/dialog)
+│   ├── ipc/                # IPC handlers (reminders, notes, todos, window/dialog, auth)
 │   └── storage/            # better-sqlite3 repos + schema migrations
 │
 ├── preload/
@@ -89,7 +92,8 @@ src/
     │   ├── useKeyboardShortcuts.ts
     │   ├── useSearch.ts
     │   └── useNotifications.ts
-    ├── store/              # Zustand stores (reminders, notes, todos, ui)
+    ├── lib/supabase.ts     # Supabase client singleton
+    ├── store/              # Zustand stores (reminders, notes, todos, ui, auth)
     ├── utils/              # recurrence helpers, date utils, exportImport
     └── types/models.ts     # Reminder, Note, Todo, RecurrenceRule
 ```
@@ -113,6 +117,27 @@ npm run typecheck
 
 # Lint
 npm run lint
+```
+
+### Environment variables
+
+Copy `.env.example` to `.env` and fill in your Supabase project details:
+
+```bash
+cp .env.example .env
+```
+
+| Variable | Description |
+|---|---|
+| `VITE_SUPABASE_URL` | Your Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | Your Supabase anon (publishable) key |
+
+Auth and sync work without these set — the app falls back to local-only mode. To enable magic link sign-in, also add the following to **Supabase → Authentication → URL Configuration → Redirect URLs**:
+
+```
+reminders://auth/callback    ← Electron
+http://localhost:5173         ← Web (dev)
+https://yourdomain.com        ← Web (prod)
 ```
 
 ### Building for distribution
@@ -145,10 +170,12 @@ npm run build:web     # outputs to dist/renderer/ — deploy to Vercel / Netlify
 
 ## Data & Export
 
-All data is stored locally:
+Data is stored locally by default:
 
 - **Electron** — SQLite database in the OS user-data directory (`app.getPath('userData')`)
 - **Web** — IndexedDB in the browser
+
+Sign in via Settings → Account to enable optional cloud sync (Supabase). Local data is never deleted — the app works fully offline and syncs when connected.
 
 **Export:** Settings → Export saves `reminders-export-YYYY-MM-DD.json` containing all reminders, notes, and todos.
 
@@ -171,7 +198,9 @@ All data is stored locally:
 - [x] Electron polish — system tray, native notifications, window state persistence, auto-updater
 - [x] Search, keyboard shortcuts, export/import, settings page
 - [x] Bug fixes — reminder checkbox, Today button, note badges on calendar, sidebar Add Reminder opens overlay, settings back navigation
-- [ ] Tests — Vitest unit tests, Cypress e2e, GitHub Actions CI
+- [x] Supabase auth — magic link sign-in, Electron deep-link protocol, session persistence
+- [ ] Cloud sync — Supabase schema, SQLite soft deletes, sync engine, first-login migration
+- [ ] Tests — Vitest unit tests, Playwright e2e, GitHub Actions CI
 - [ ] Mobile (Capacitor) — deferred until core app is stable
 
 ---
