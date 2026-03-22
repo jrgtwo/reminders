@@ -1,10 +1,11 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { Temporal } from '@js-temporal/polyfill'
 import { parseDateStr, today } from '../utils/dates'
 import { getOccurrencesInRange } from '../utils/recurrence'
 import { useRemindersStore } from '../store/reminders.store'
+import { useUIStore } from '../store/ui.store'
 import type { Reminder } from '../types/models'
 import Button from './ui/Button'
 import NoteEditor from './notes/NoteEditor'
@@ -27,8 +28,18 @@ export default function DayView() {
   const remove = useRemindersStore((s) => s.remove)
   const toggleComplete = useRemindersStore((s) => s.toggleComplete)
 
+  const triggerNewReminder = useUIStore((s) => s.triggerNewReminder)
+  const setTriggerNewReminder = useUIStore((s) => s.setTriggerNewReminder)
+
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<Reminder | null>(null)
+
+  useEffect(() => {
+    if (!triggerNewReminder) return
+    setTriggerNewReminder(false)
+    setEditing(null)
+    setFormOpen(true)
+  }, [triggerNewReminder, setTriggerNewReminder])
 
   // Filter reminders that have an occurrence on this specific date
   const dayReminders = useMemo(

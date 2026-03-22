@@ -10,6 +10,7 @@
     saveReminder(r: Reminder): Promise<Reminder> { return this.api.reminders.save(r) }
     deleteReminder(id: string): Promise<void> { return this.api.reminders.delete(id) }
 
+    getAllNotes(): Promise<Note[]> { return this.api.notes.getAll() }
     getNoteByDate(date: string): Promise<Note | null> { return this.api.notes.getByDate(date) }
     saveNote(n: Note): Promise<Note> { return this.api.notes.save(n) }
 

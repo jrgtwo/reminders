@@ -5,13 +5,20 @@ import icon from '../../resources/icon.png?asset'
 import { registerReminderHandlers } from './ipc/reminders'
 import { registerNoteHandlers } from './ipc/notes'
 import { registerTodoHandlers } from './ipc/todos'
+import { registerWindowHandlers } from './ipc/window'
 import { startNotificationScheduler } from './notifications'
+import { setupTray } from './tray'
+import { loadWindowState, saveWindowState } from './windowState'
+import { setupAutoUpdater } from './updater'
 
-function createWindow(): void {
+function createWindow(): BrowserWindow {
+  const state = loadWindowState()
+
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: state.width,
+    height: state.height,
+    ...(state.x !== undefined && state.y !== undefined ? { x: state.x, y: state.y } : {}),
     title: 'Reminders',
     show: false,
     autoHideMenuBar: true,
@@ -26,6 +33,10 @@ function createWindow(): void {
     mainWindow.show()
   })
 
+  mainWindow.on('close', () => {
+    saveWindowState(mainWindow)
+  })
+
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
@@ -38,6 +49,8 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+
+  return mainWindow
 }
 
 // This method will be called when Electron has finished
@@ -54,12 +67,15 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  registerWindowHandlers()
   registerReminderHandlers()
   registerNoteHandlers()
   registerTodoHandlers()
   startNotificationScheduler()
+  setupAutoUpdater()
 
-  createWindow()
+  const mainWindow = createWindow()
+  setupTray(mainWindow)
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the

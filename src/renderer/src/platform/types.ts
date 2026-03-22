@@ -8,6 +8,7 @@ export interface IStorageAdapter {
   deleteReminder(id: string): Promise<void>
 
   // Notes
+  getAllNotes(): Promise<Note[]>
   getNoteByDate(date: string): Promise<Note | null>
   saveNote(n: Note): Promise<Note>
 

@@ -10,6 +10,7 @@ import CalendarHeader from './components/calendar/CalendarHeader'
 import MonthView from './components/calendar/MonthView'
 import WeekView from './components/calendar/WeekView'
 import DayView from './components/DayView'
+import SettingsPage from './components/settings/SettingsPage'
 import {
   addMonths,
   subMonths,
@@ -67,9 +68,6 @@ function CalendarPage() {
 function DayPage() {
   return <DayView />
 }
-function SettingsPage() {
-  return <div className="p-6 text-gray-500 dark:text-gray-400">Settings — Phase 8</div>
-}
 
 const routes = [
   {
@@ -102,6 +100,12 @@ export default function App() {
 
   useEffect(() => {
     initStorage().then(() => setReady(true))
+  }, [])
+
+  useEffect(() => {
+    const api = (window as any).electronAPI
+    if (!api?.onNavigate) return
+    api.onNavigate((path: string) => router.navigate(path))
   }, [])
 
   if (!ready) return null

@@ -486,20 +486,23 @@ BrowserWindow settings: `sandbox: true`, `contextIsolation: true`, `nodeIntegrat
 24. ✅ Upcoming reminders query (next 30 days, rrule expansion) — `getOccurrencesInRange` used to expand recurring reminders; flat list sorted by date
 25. ✅ Scrollable list, click navigates to that day — relative date labels (Today / Tomorrow / Mon Mar 23); "Add Reminder" button navigates to today's day view
 
-### Phase 7 — Electron Polish
-26. Tray icon + context menu
-27. ⚠️ System notification scheduler — implemented (`src/main/notifications.ts`, polls every 10s, rrule-aware, dedup via fired Set); **macOS Electron notifications not firing** — likely a missing `NSUserNotificationUsageDescription` entitlement or the app not being code-signed; needs investigation before marking complete
-28. Window state persistence
-29. Auto-updater integration
+### Phase 7 — Electron Polish ✅
+26. ✅ Tray icon + context menu — `src/main/tray.ts`; context menu: Open, New Reminder (navigates to today's day view via IPC), Quit; double-click shows window
+27. ✅ System notification scheduler — `src/main/notifications.ts`; polls every 10s; rrule-aware; dedup via fired Set; `NSUserNotificationUsageDescription` added to `electron-builder.yml` for macOS packaged builds
+28. ✅ Window state persistence — `src/main/windowState.ts`; saves width/height/x/y to `userData/windowState.json` on close; restored on next launch
+29. ✅ Auto-updater — `src/main/updater.ts`; wraps `electron-updater`; skips in dev; downloads silently; prompts Restart Now / Later on update-downloaded
 
-**Known issues:**
-- **macOS Electron notifications silent:** Native `Notification` from the `electron` module fires no visible alert. Root cause not yet confirmed — candidates: (1) missing `NSUserNotificationUsageDescription` key in `entitlements.plist`, (2) unsigned/unpackaged app in dev mode bypasses macOS notification permissions, (3) `Notification.isSupported()` returns false silently. Investigate by calling `Notification.isSupported()` in main process on startup and logging the result; also check System Settings → Notifications for the app entry.
+**Navigation IPC:** Tray "New Reminder" sends `navigate` event to renderer via `mainWindow.webContents.send`. Preload exposes `electronAPI.onNavigate(cb)`. `App.tsx` registers the listener and calls `router.navigate(path)`.
 
-### Phase 8 — Value-Add
-30. Search (header input + FTS5/in-memory)
-31. Keyboard shortcuts
-32. Export/Import JSON
-33. Settings page
+**macOS notification note:** `NSUserNotificationUsageDescription` added to `extendInfo` in `electron-builder.yml`. Dev-mode unsigned apps may still be silenced by macOS — this resolves itself once the app is packaged and code-signed.
+
+### Phase 8 — Value-Add ✅
+30. ✅ Search — `useSearch.ts` (in-memory filter, ≤5 results per type); `SearchBar.tsx` (forwardRef input + floating results dropdown with Reminders/Todos sections); added to AppShell header
+31. ✅ Keyboard shortcuts — `useKeyboardShortcuts.ts` registered in AppShell: `/` focus search, `t` new todo, `n` new reminder (day view), `Ctrl/⌘,` settings; skips when focused in input/textarea/contenteditable
+32. ✅ Export/Import JSON — `utils/exportImport.ts`; export fetches all reminders/notes/todos → JSON file; Electron uses native `dialog:save`/`dialog:open` IPC (added to `window.ts` + preload); web uses anchor download + file input fallback; import upserts records and reloads stores
+33. ✅ Settings page — `components/settings/SettingsPage.tsx`; dark mode toggle, export/import buttons with status feedback, keyboard shortcut reference; reachable via Settings icon in header or `Ctrl/⌘,`
+
+**Storage layer addition:** `getAllNotes()` added to `IStorageAdapter`, `WebAdapter`, `ElectronAdapter`, `CapacitorAdapter`, `notes.repo.ts`, and notes IPC handler — required for complete data export.
 
 ### Phase 9 — Testing & Packaging
 34. Vitest unit tests (recurrence logic, date utils, storage repos)
@@ -520,23 +523,35 @@ BrowserWindow settings: `sandbox: true`, `contextIsolation: true`, `nodeIntegrat
 
 ## Critical Files
 
-- `src/renderer/platform/types.ts` — `IStorageAdapter` interface; central abstraction; must be finalized before any store or component
-- `src/renderer/platform/index.ts` — 3-way adapter selection (Electron → Capacitor → Web); controls which storage path runs
-- `src/renderer/platform/capacitor.ts` — stub adapter; satisfies the interface now; replace with real impl in Phase 10
-- `capacitor.config.ts` — points Capacitor at `dist/renderer`; required before `npx cap add ios/android` in Phase 10
-- `src/renderer/store/ui.store.ts` — sidebar state, selected date, view mode, dark mode; read by nearly every layout component
-- `src/renderer/components/layout/AppShell.tsx` — responsive breakpoint logic; determines whether sidebars or BottomNav render
-- `src/main/storage/db.ts` — SQLite init + migration runner; prerequisite for all Electron IPC handlers
+**Renderer (shared web + Electron)**
+- `src/renderer/src/platform/types.ts` — `IStorageAdapter` interface; central abstraction; all adapters must satisfy this
+- `src/renderer/src/platform/index.ts` — 3-way adapter selection (Electron → Capacitor → Web)
+- `src/renderer/src/platform/capacitor.ts` — stub adapter; replace with real impl in Phase 10
+- `src/renderer/src/store/ui.store.ts` — sidebar state, selected date, view mode, dark mode, trigger flags for keyboard shortcuts
+- `src/renderer/src/components/layout/AppShell.tsx` — top header (search + settings), responsive 3-col layout, keyboard shortcuts registration
+- `src/renderer/src/hooks/useKeyboardShortcuts.ts` — all keyboard shortcuts; registered once in AppShell
+- `src/renderer/src/utils/exportImport.ts` — export/import logic; relies on `getAllNotes()` for complete data export
+
+**Main process (Electron)**
+- `src/main/storage/db.ts` — SQLite init + migration runner; prerequisite for all IPC handlers
+- `src/main/tray.ts` — system tray icon + context menu; sends `navigate` IPC to renderer
+- `src/main/notifications.ts` — 10s poll scheduler; rrule-aware; fires native OS notifications
+- `src/main/windowState.ts` — persists window bounds to `userData/windowState.json`
+- `src/main/updater.ts` — electron-updater wiring; skips in dev; silent download + restart dialog
+
+**Config**
 - `src/preload/index.ts` — contextBridge surface; must stay in sync with IPC handlers and `ElectronAdapter`
 - `electron.vite.config.ts` — triple-target build config; incorrect externalization causes runtime crashes
+- `electron-builder.yml` — packaging config; `NSUserNotificationUsageDescription` required for macOS notifications
+- `capacitor.config.ts` — points Capacitor at `dist/renderer`; required before `npx cap add ios/android` in Phase 10
 
 ---
 
 ## Verification
 
-- **Web dev**: `npm run dev` → open browser at localhost → full app in browser with IndexedDB persistence
+- **Web dev**: `npm run dev:web` → open browser at localhost → full app with IndexedDB persistence
 - **Electron dev**: `npm run dev` → Electron window opens with HMR; test IPC data flow via DevTools console
 - **Web build**: `npm run build:web` → deploy `dist/renderer/` to Netlify/Vercel → verify IndexedDB works in production
-- **Electron package**: `npm run package:mac` / `npm run package:win` → install DMG/NSIS → verify notifications, tray, SQLite persistence, auto-updater
-- **Tests**: `npm test` → Vitest unit tests pass; `npm run test:e2e` → Playwright tests pass
+- **Electron package**: `npm run build:mac` / `npm run build:win` → install DMG/NSIS → verify notifications, tray, SQLite persistence, auto-updater
+- **Tests**: `npm test` → Vitest unit tests pass; `npm run test:e2e` → Cypress tests pass
 - **Capacitor scaffold**: `npx cap doctor` → reports `@capacitor/core` installed, no native platforms yet (expected at this stage)

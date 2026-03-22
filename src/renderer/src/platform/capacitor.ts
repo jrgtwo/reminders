@@ -13,6 +13,7 @@ import type { IStorageAdapter } from './types'
     saveReminder(_r: Reminder): Promise<Reminder> { return this.notImplemented() }
     deleteReminder(_id: string): Promise<void> { return this.notImplemented() }
 
+    getAllNotes(): Promise<Note[]> { return this.notImplemented() }
     getNoteByDate(_date: string): Promise<Note | null> { return this.notImplemented() }
     saveNote(_n: Note): Promise<Note> { return this.notImplemented() }
 

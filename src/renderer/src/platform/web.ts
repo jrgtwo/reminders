@@ -37,6 +37,10 @@ import { openDB, type IDBPDatabase } from 'idb'
      await this.db.delete('reminders', id)
    }
 
+   async getAllNotes(): Promise<Note[]> {
+     return this.db.getAll('notes')
+   }
+
    async getNoteByDate(date: string): Promise<Note | null> {
      return (await this.db.get('notes', date)) ?? null
    }

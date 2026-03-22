@@ -9,6 +9,8 @@ import TodoList from '../todos/TodoList'
 export default function RightSidebar() {
   const rightOpen = useUIStore((s) => s.rightOpen)
   const setRightOpen = useUIStore((s) => s.setRightOpen)
+  const triggerNewTodo = useUIStore((s) => s.triggerNewTodo)
+  const setTriggerNewTodo = useUIStore((s) => s.setTriggerNewTodo)
 
   const todos = useTodosStore((s) => s.todos)
   const load = useTodosStore((s) => s.load)
@@ -22,6 +24,14 @@ export default function RightSidebar() {
   useEffect(() => {
     load()
   }, [load])
+
+  useEffect(() => {
+    if (!triggerNewTodo) return
+    setTriggerNewTodo(false)
+    setRightOpen(true)
+    setEditing(null)
+    setFormOpen(true)
+  }, [triggerNewTodo, setTriggerNewTodo, setRightOpen])
 
   async function handleSave(t: Todo) {
     await save(t)
