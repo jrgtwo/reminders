@@ -519,7 +519,103 @@ Post-phase bug fixes identified during manual testing:
 36. GitHub Actions CI: lint → typecheck → test → build matrix (Windows + macOS)
 37. electron-builder configs: Windows NSIS installer, macOS DMG
 
-### Phase 10 — Mobile (Capacitor) — DEFERRED
+### Phase 10 — Auth + Sync
+
+**Decisions confirmed:**
+- Platforms: Electron + Web (Capacitor deferred)
+- Auth: OAuth providers (Google, GitHub); email/password deferred
+- Offline-first: app works fully without internet; sync on app focus
+- Conflict resolution: auto-merge (field-level last-write-wins; `completedDates` union; notes last-write-wins)
+- First login: prompt user when local data and/or cloud data already exists
+- Storage: SQLite remains local cache; Supabase is the sync backend (dual-write)
+
+**Architecture**
+
+```
+Renderer (React)
+  └── auth.store.ts          — session, user state
+  └── sync.store.ts          — sync status, last synced at
+
+Main process (Electron)
+  └── auth.ts                — OAuth deep-link flow, token management
+  └── sync.ts                — SyncEngine class (push/pull/merge)
+  └── storage/db.ts          — migration: add deleted_at + last_synced_at columns
+
+Supabase
+  └── Auth                   — OAuth (Google, GitHub)
+  └── Database               — reminders, notes, todos tables + user_id + deleted_at
+  └── Row Level Security     — users can only read/write their own rows
+```
+
+**Phase 10a — Supabase Auth**
+
+44. Install `@supabase/supabase-js`; add `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` env vars
+45. **Electron OAuth flow** (`src/main/auth.ts`):
+    - Register custom deep-link protocol `reminders://`
+    - `signIn(provider)`: open Supabase OAuth URL via `shell.openExternal()`
+    - Main process catches `reminders://auth/callback#access_token=…` redirect
+    - Extracts + stores session in `electron-store`; sends session to renderer via IPC
+    - Expose `auth.signIn`, `auth.signOut`, `auth.getSession` over IPC + preload bridge
+46. **Web OAuth flow**: standard `supabase.auth.signInWithOAuth()` redirect; Supabase SDK handles session in `localStorage`
+47. New `src/renderer/src/store/auth.store.ts` — holds `user`, `session`, `isLoggedIn`
+48. **Settings page — Account section**: "Sign in with Google / GitHub" buttons; user avatar + email when signed in; Sign out button
+
+**Phase 10b — Supabase Schema + Local Soft Deletes**
+
+49. **Supabase tables** (`reminders`, `notes`, `todos`) — mirror SQLite schema plus:
+    - `user_id uuid` (FK → `auth.users`, NOT NULL)
+    - `deleted_at timestamptz` (null = active; set = soft-deleted)
+    - RLS policies: `user_id = auth.uid()` on all CRUD operations
+50. **SQLite migration** (new migration entry in `db.ts`):
+    - Add `deleted_at TEXT` column to `reminders`, `notes`, `todos`
+    - Add `last_synced_at TEXT` column to track per-row sync state
+    - Add `sync_meta` table: `user_id TEXT, last_pull_at TEXT`
+    - All delete operations become soft deletes (set `deleted_at`, keep the row)
+
+**Phase 10c — Sync Engine**
+
+51. New `src/main/sync.ts` — `SyncEngine` class:
+
+```
+sync(userId, session):
+  1. Load lastPullAt from sync_meta for this user
+  2. PULL from Supabase: all rows where updated_at > lastPullAt
+     - deleted_at set remotely  → soft-delete locally
+     - not in local DB          → insert
+     - remote updatedAt > local → overwrite local
+     - both changed (conflict)  → auto-merge:
+         completedDates: union of both arrays
+         scalar fields: keep whichever updatedAt is later
+         note content: keep whichever updatedAt is later
+  3. PUSH to Supabase: local rows where updatedAt > lastPullAt OR last_synced_at IS NULL
+     - upsert each row (including soft-deleted rows)
+  4. Update lastPullAt = now in sync_meta
+```
+
+52. IPC: expose `sync.trigger()` + `sync.getStatus()` to renderer
+53. App focus trigger: `mainWindow.on('focus', () => syncEngine.sync())` in `src/main/index.ts`
+54. New `src/renderer/src/store/sync.store.ts` — holds `status: 'idle' | 'syncing' | 'error'`, `lastSyncedAt`
+
+**Phase 10d — First-Login Migration**
+
+55. On first sign-in, check both local SQLite and Supabase for existing data
+56. Four cases → prompt dialog:
+    - **Local only**: "Upload your local data to the cloud?" → Yes / Skip
+    - **Cloud only**: "Download your cloud data to this device?" → Yes / Skip
+    - **Both exist**: "Merge local and cloud data?" → Merge (runs sync engine) / Keep separate
+    - **Neither**: no prompt; start fresh
+57. After migration choice, store `userId` in `sync_meta` so first-login detection only runs once
+
+**Phase 10e — Sync Status UI**
+
+58. Sync indicator in `AppShell` header: cloud icon + "Last synced X min ago" / spinner while syncing
+59. Silent ignore when offline (catch network errors, leave status as last known)
+60. "Sync now" button in Settings page
+61. Error state: small alert banner in AppShell if sync fails for a non-network reason
+
+---
+
+### Phase 11 — Mobile (Capacitor) — DEFERRED
 > Complete once the app is functionally stable. No work needed until then.
 38. `npx cap add ios` + `npx cap add android` (creates native projects)
 39. Implement `CapacitorAdapter` using `@capacitor-community/sqlite` (same schema as Electron)
