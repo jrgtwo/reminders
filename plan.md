@@ -513,13 +513,7 @@ Post-phase bug fixes identified during manual testing:
 - ✅ **Today button — did nothing**: `onToday` in `CalendarPage` only reset local `displayDate` state but not `selectedDate` in the store, leaving the selected-day highlight out of sync. Now also calls `setSelectedDate(today().toString())`.
 - ✅ **Calendar — no note indicator**: Added `noteDates: string[]` + `loadNoteDates()` to `notes.store` (calls `getAllNotes()` and stores dates only). `CalendarPage` loads it on mount. `MonthView` and `WeekView` pass `hasNote` to `CalendarDay`, which renders a small `FileText` icon alongside reminder dots for days with a note.
 
-### Phase 9 — Testing & Packaging
-34. Vitest unit tests (recurrence logic, date utils, storage repos)
-35. Playwright e2e tests (renderer in browser)
-36. GitHub Actions CI: lint → typecheck → test → build matrix (Windows + macOS)
-37. electron-builder configs: Windows NSIS installer, macOS DMG
-
-### Phase 10 — Auth + Sync
+### Phase 9 — Auth + Sync
 
 **Decisions confirmed:**
 - Platforms: Electron + Web (Capacitor deferred)
@@ -547,7 +541,7 @@ Supabase
   └── Row Level Security     — users can only read/write their own rows
 ```
 
-**Phase 10a — Supabase Auth**
+**Phase 9a —Supabase Auth**
 
 44. Install `@supabase/supabase-js`; add `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` env vars
 45. **Electron OAuth flow** (`src/main/auth.ts`):
@@ -560,7 +554,7 @@ Supabase
 47. New `src/renderer/src/store/auth.store.ts` — holds `user`, `session`, `isLoggedIn`
 48. **Settings page — Account section**: "Sign in with Google / GitHub" buttons; user avatar + email when signed in; Sign out button
 
-**Phase 10b — Supabase Schema + Local Soft Deletes**
+**Phase 9b —Supabase Schema + Local Soft Deletes**
 
 49. **Supabase tables** (`reminders`, `notes`, `todos`) — mirror SQLite schema plus:
     - `user_id uuid` (FK → `auth.users`, NOT NULL)
@@ -572,7 +566,7 @@ Supabase
     - Add `sync_meta` table: `user_id TEXT, last_pull_at TEXT`
     - All delete operations become soft deletes (set `deleted_at`, keep the row)
 
-**Phase 10c — Sync Engine**
+**Phase 9c —Sync Engine**
 
 51. New `src/main/sync.ts` — `SyncEngine` class:
 
@@ -596,7 +590,7 @@ sync(userId, session):
 53. App focus trigger: `mainWindow.on('focus', () => syncEngine.sync())` in `src/main/index.ts`
 54. New `src/renderer/src/store/sync.store.ts` — holds `status: 'idle' | 'syncing' | 'error'`, `lastSyncedAt`
 
-**Phase 10d — First-Login Migration**
+**Phase 9d —First-Login Migration**
 
 55. On first sign-in, check both local SQLite and Supabase for existing data
 56. Four cases → prompt dialog:
@@ -606,12 +600,18 @@ sync(userId, session):
     - **Neither**: no prompt; start fresh
 57. After migration choice, store `userId` in `sync_meta` so first-login detection only runs once
 
-**Phase 10e — Sync Status UI**
+**Phase 9e —Sync Status UI**
 
 58. Sync indicator in `AppShell` header: cloud icon + "Last synced X min ago" / spinner while syncing
 59. Silent ignore when offline (catch network errors, leave status as last known)
 60. "Sync now" button in Settings page
 61. Error state: small alert banner in AppShell if sync fails for a non-network reason
+
+### Phase 10 — Testing & Packaging
+34. Vitest unit tests (recurrence logic, date utils, storage repos)
+35. Playwright e2e tests (renderer in browser)
+36. GitHub Actions CI: lint → typecheck → test → build matrix (Windows + macOS)
+37. electron-builder configs: Windows NSIS installer, macOS DMG
 
 ---
 
