@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNotifications } from './hooks/useNotifications'
 import { RouterProvider, createMemoryRouter, createBrowserRouter } from 'react-router-dom'
 import { Temporal } from '@js-temporal/polyfill'
 import { initStorage } from './platform'
@@ -93,6 +94,7 @@ const router = isElectronOrCapacitor
 export default function App() {
   const [ready, setReady] = useState(false)
   const darkMode = useUIStore((s) => s.darkMode)
+  useNotifications()
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode)

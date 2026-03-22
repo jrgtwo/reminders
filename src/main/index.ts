@@ -5,6 +5,7 @@ import icon from '../../resources/icon.png?asset'
 import { registerReminderHandlers } from './ipc/reminders'
 import { registerNoteHandlers } from './ipc/notes'
 import { registerTodoHandlers } from './ipc/todos'
+import { startNotificationScheduler } from './notifications'
 
 function createWindow(): void {
   // Create the browser window.
@@ -56,6 +57,7 @@ app.whenReady().then(() => {
   registerReminderHandlers()
   registerNoteHandlers()
   registerTodoHandlers()
+  startNotificationScheduler()
 
   createWindow()
 

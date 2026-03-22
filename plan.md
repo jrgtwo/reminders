@@ -482,15 +482,18 @@ BrowserWindow settings: `sandbox: true`, `contextIsolation: true`, `nodeIntegrat
 **Additions beyond original scope:**
 - `ui/MarkdownView.tsx` — reusable read-only Milkdown component (`editorViewOptionsCtx` `editable: () => false`); used to render todo descriptions as GFM markdown in the expanded panel
 
-### Phase 6 — Left Sidebar Reminders
-24. Upcoming reminders query (next 30 days, rrule expansion)
-25. Scrollable list, click navigates to that day
+### Phase 6 — Left Sidebar Reminders ✅
+24. ✅ Upcoming reminders query (next 30 days, rrule expansion) — `getOccurrencesInRange` used to expand recurring reminders; flat list sorted by date
+25. ✅ Scrollable list, click navigates to that day — relative date labels (Today / Tomorrow / Mon Mar 23); "Add Reminder" button navigates to today's day view
 
 ### Phase 7 — Electron Polish
 26. Tray icon + context menu
-27. System notification scheduler
+27. ⚠️ System notification scheduler — implemented (`src/main/notifications.ts`, polls every 10s, rrule-aware, dedup via fired Set); **macOS Electron notifications not firing** — likely a missing `NSUserNotificationUsageDescription` entitlement or the app not being code-signed; needs investigation before marking complete
 28. Window state persistence
 29. Auto-updater integration
+
+**Known issues:**
+- **macOS Electron notifications silent:** Native `Notification` from the `electron` module fires no visible alert. Root cause not yet confirmed — candidates: (1) missing `NSUserNotificationUsageDescription` key in `entitlements.plist`, (2) unsigned/unpackaged app in dev mode bypasses macOS notification permissions, (3) `Notification.isSupported()` returns false silently. Investigate by calling `Notification.isSupported()` in main process on startup and logging the result; also check System Settings → Notifications for the app entry.
 
 ### Phase 8 — Value-Add
 30. Search (header input + FTS5/in-memory)
