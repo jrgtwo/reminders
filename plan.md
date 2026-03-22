@@ -504,6 +504,15 @@ BrowserWindow settings: `sandbox: true`, `contextIsolation: true`, `nodeIntegrat
 
 **Storage layer addition:** `getAllNotes()` added to `IStorageAdapter`, `WebAdapter`, `ElectronAdapter`, `CapacitorAdapter`, `notes.repo.ts`, and notes IPC handler — required for complete data export.
 
+### Bug Fixes & Polish ✅
+Post-phase bug fixes identified during manual testing:
+
+- ✅ **Settings — no back navigation**: Added `ArrowLeft` + `useNavigate(-1)` back button to `SettingsPage.tsx`.
+- ✅ **Reminder checkbox — no-op**: `toggleComplete` in `reminders.store.ts` was calling `saveReminder(r)` inside the Immer `set()` producer with a draft proxy (revoked after the producer). Fixed by capturing a plain object copy after mutation and saving it outside the producer.
+- ✅ **Left sidebar "Add Reminder" — navigated away**: Added `newReminderDate: string | null` + `setNewReminderDate` to `ui.store`. Sidebar now sets the date flag; `AppShell` renders a global `ReminderForm` overlay so the user stays on the calendar view.
+- ✅ **Today button — did nothing**: `onToday` in `CalendarPage` only reset local `displayDate` state but not `selectedDate` in the store, leaving the selected-day highlight out of sync. Now also calls `setSelectedDate(today().toString())`.
+- ✅ **Calendar — no note indicator**: Added `noteDates: string[]` + `loadNoteDates()` to `notes.store` (calls `getAllNotes()` and stores dates only). `CalendarPage` loads it on mount. `MonthView` and `WeekView` pass `hasNote` to `CalendarDay`, which renders a small `FileText` icon alongside reminder dots for days with a note.
+
 ### Phase 9 — Testing & Packaging
 34. Vitest unit tests (recurrence logic, date utils, storage repos)
 35. Playwright e2e tests (renderer in browser)
@@ -527,8 +536,8 @@ BrowserWindow settings: `sandbox: true`, `contextIsolation: true`, `nodeIntegrat
 - `src/renderer/src/platform/types.ts` — `IStorageAdapter` interface; central abstraction; all adapters must satisfy this
 - `src/renderer/src/platform/index.ts` — 3-way adapter selection (Electron → Capacitor → Web)
 - `src/renderer/src/platform/capacitor.ts` — stub adapter; replace with real impl in Phase 10
-- `src/renderer/src/store/ui.store.ts` — sidebar state, selected date, view mode, dark mode, trigger flags for keyboard shortcuts
-- `src/renderer/src/components/layout/AppShell.tsx` — top header (search + settings), responsive 3-col layout, keyboard shortcuts registration
+- `src/renderer/src/store/ui.store.ts` — sidebar state, selected date, view mode, dark mode, keyboard trigger flags, `newReminderDate` for global form
+- `src/renderer/src/components/layout/AppShell.tsx` — top header (search + settings), responsive 3-col layout, keyboard shortcuts, global new-reminder form overlay
 - `src/renderer/src/hooks/useKeyboardShortcuts.ts` — all keyboard shortcuts; registered once in AppShell
 - `src/renderer/src/utils/exportImport.ts` — export/import logic; relies on `getAllNotes()` for complete data export
 

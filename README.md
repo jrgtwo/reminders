@@ -8,8 +8,8 @@ Runs as a native desktop app on Windows and macOS (Electron), a deployable web a
 
 ## Features
 
-- **Calendar** — Month and week views with reminder indicator dots. Click any day to open the day view.
-- **Reminders** — Create one-off or recurring reminders (daily, weekly, monthly, yearly). One record per series via RFC 5545 rrule; per-occurrence completion tracking.
+- **Calendar** — Month and week views with reminder indicator dots and note badges. Click any day to open the day view. Today button jumps to and selects today.
+- **Reminders** — Create one-off or recurring reminders (daily, weekly, monthly, yearly). One record per series via RFC 5545 rrule; per-occurrence completion tracking. Add from the sidebar without leaving the calendar view.
 - **Notes** — A rich Markdown note per day via Milkdown (ProseMirror). Supports headings, bold, italic, strikethrough, lists, blockquotes, tables, code blocks, and links. Full toolbar with responsive overflow. Autosaves on every keystroke (800ms debounce).
 - **Todos** — Persistent list with drag-to-reorder (float-gap ordering). Expandable descriptions rendered as Markdown.
 - **Search** — Live in-memory filter across all reminders and todos, accessible from the header or via `/`.
@@ -170,6 +170,7 @@ All data is stored locally:
 - [x] Left sidebar — upcoming reminders (next 30 days, rrule-expanded), click to navigate
 - [x] Electron polish — system tray, native notifications, window state persistence, auto-updater
 - [x] Search, keyboard shortcuts, export/import, settings page
+- [x] Bug fixes — reminder checkbox, Today button, note badges on calendar, sidebar Add Reminder opens overlay, settings back navigation
 - [ ] Tests — Vitest unit tests, Cypress e2e, GitHub Actions CI
 - [ ] Mobile (Capacitor) — deferred until core app is stable
 
