@@ -5,6 +5,7 @@ import { getWeekDays, isSameDay, parseDateStr } from '../../utils/dates'
 import { getOccurrencesInRange } from '../../utils/recurrence'
 import CalendarDay from './CalendarDay'
 import { useRemindersStore } from '../../store/reminders.store'
+import { useNotesStore } from '../../store/notes.store'
 import { useUIStore } from '../../store/ui.store'
 import type { Reminder } from '../../types/models'
 
@@ -17,6 +18,7 @@ interface Props {
 export default function WeekView({ displayDate }: Props) {
   const navigate = useNavigate()
   const reminders = useRemindersStore((s) => s.reminders)
+  const noteDates = useNotesStore((s) => s.noteDates)
   const selectedDate = useUIStore((s) => s.selectedDate)
   const setSelectedDate = useUIStore((s) => s.setSelectedDate)
 
@@ -60,6 +62,7 @@ export default function WeekView({ displayDate }: Props) {
             date={day}
             displayMonth={displayDate}
             reminders={remindersByDate[day.toString()] ?? []}
+            hasNote={noteDates.includes(day.toString())}
             isSelected={isSameDay(day, selectedPlainDate)}
             onClick={() => handleDayClick(day)}
             tall

@@ -1,4 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill'
+import { FileText } from 'lucide-react'
 import { formatDayNum, isToday, isSameMonth } from '../../utils/dates'
 import type { Reminder } from '../../types/models'
 
@@ -8,6 +9,7 @@ interface Props {
   date: Temporal.PlainDate
   displayMonth: Temporal.PlainDate
   reminders: Reminder[]
+  hasNote?: boolean
   isSelected: boolean
   onClick: () => void
   tall?: boolean
@@ -17,6 +19,7 @@ export default function CalendarDay({
   date,
   displayMonth,
   reminders,
+  hasNote,
   isSelected,
   onClick,
   tall,
@@ -50,8 +53,8 @@ export default function CalendarDay({
         {formatDayNum(date)}
       </span>
 
-      {reminders.length > 0 && (
-        <div className="flex gap-0.5 flex-wrap justify-center">
+      {(reminders.length > 0 || hasNote) && (
+        <div className="flex items-center gap-0.5 flex-wrap justify-center">
           {visibleDots.map((_, i) => (
             <span
               key={i}
@@ -60,6 +63,12 @@ export default function CalendarDay({
           ))}
           {extra > 0 && (
             <span className="text-[10px] text-gray-400 leading-none">+{extra}</span>
+          )}
+          {hasNote && (
+            <FileText
+              size={9}
+              className="text-gray-400 dark:text-gray-500 shrink-0"
+            />
           )}
         </div>
       )}

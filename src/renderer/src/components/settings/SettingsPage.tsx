@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { Moon, Sun, Download, Upload, Check, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Moon, Sun, Download, Upload, Check, AlertCircle } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useUIStore } from '../../store/ui.store'
 import Button from '../ui/Button'
 import { exportToFile, importFromFile } from '../../utils/exportImport'
 
 export default function SettingsPage() {
+  const navigate = useNavigate()
   const darkMode = useUIStore((s) => s.darkMode)
   const toggleDarkMode = useUIStore((s) => s.toggleDarkMode)
   const [importStatus, setImportStatus] = useState<{ ok: boolean; msg: string } | null>(null)
@@ -33,6 +35,12 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-lg mx-auto px-6 py-8 space-y-8">
+      <div className="flex items-center gap-3">
+        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="-ml-2">
+          <ArrowLeft size={16} />
+          Back
+        </Button>
+      </div>
       <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Settings</h1>
 
       {/* Appearance */}

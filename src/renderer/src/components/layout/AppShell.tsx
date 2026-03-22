@@ -6,11 +6,18 @@ import RightSidebar from './RightSidebar'
 import BottomNav from './BottomNav'
 import SearchBar from './SearchBar'
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts'
+import { useUIStore } from '../../store/ui.store'
+import { useRemindersStore } from '../../store/reminders.store'
+import ReminderForm from '../reminders/ReminderForm'
 
 export default function AppShell() {
   const searchRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
   const focusSearch = useCallback(() => searchRef.current?.focus(), [])
+
+  const newReminderDate = useUIStore((s) => s.newReminderDate)
+  const setNewReminderDate = useUIStore((s) => s.setNewReminderDate)
+  const saveReminder = useRemindersStore((s) => s.save)
 
   useKeyboardShortcuts(focusSearch)
 
@@ -52,6 +59,19 @@ export default function AppShell() {
 
       {/* Bottom nav — mobile only */}
       <BottomNav />
+
+      {/* Global new-reminder form (triggered from sidebar / tray) */}
+      {newReminderDate && (
+        <ReminderForm
+          date={newReminderDate}
+          reminder={null}
+          onSave={async (r) => {
+            await saveReminder(r)
+            setNewReminderDate(null)
+          }}
+          onClose={() => setNewReminderDate(null)}
+        />
+      )}
     </div>
   )
 }

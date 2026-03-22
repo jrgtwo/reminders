@@ -4,13 +4,22 @@ import { create } from 'zustand'
 
  interface NotesState {
    notes: Record<string, Note>
+   noteDates: string[]
    loadNote: (date: string) => Promise<void>
+   loadNoteDates: () => Promise<void>
    saveNote: (n: Note) => Promise<void>
  }
 
  export const useNotesStore = create<NotesState>()(
    immer((set) => ({
      notes: {},
+     noteDates: [],
+
+     loadNoteDates: async () => {
+       const { getStorage } = await import('../platform')
+       const all = await getStorage().getAllNotes()
+       set((s) => { s.noteDates = all.map((n) => n.date) })
+     },
 
      loadNote: async (date) => {
        const { getStorage } = await import('../platform')
@@ -23,7 +32,10 @@ import { create } from 'zustand'
      saveNote: async (n) => {
        const { getStorage } = await import('../platform')
        const saved = await getStorage().saveNote(n)
-       set((s) => { s.notes[saved.date] = saved })
+       set((s) => {
+         s.notes[saved.date] = saved
+         if (!s.noteDates.includes(saved.date)) s.noteDates.push(saved.date)
+       })
      },
    }))
  )

@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { Bell, ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useUIStore } from '../../store/ui.store'
+import { today as todayDate } from '../../utils/dates'
 import { useRemindersStore } from '../../store/reminders.store'
 import { getOccurrencesInRange } from '../../utils/recurrence'
 import { today, parseDateStr } from '../../utils/dates'
@@ -18,6 +19,7 @@ function formatUpcomingDate(dateStr: string): string {
 export default function LeftSidebar() {
   const leftOpen = useUIStore((s) => s.leftOpen)
   const setLeftOpen = useUIStore((s) => s.setLeftOpen)
+  const setNewReminderDate = useUIStore((s) => s.setNewReminderDate)
   const navigate = useNavigate()
   const reminders = useRemindersStore((s) => s.reminders)
 
@@ -93,7 +95,7 @@ export default function LeftSidebar() {
       {leftOpen && (
         <div className="p-3 border-t border-gray-200 dark:border-gray-700">
           <button
-            onClick={() => navigate(`/day/${today().toString()}`)}
+            onClick={() => setNewReminderDate(todayDate().toString())}
             className="flex items-center gap-2 w-full text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
           >
             <Plus size={14} />

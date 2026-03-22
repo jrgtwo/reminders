@@ -11,6 +11,7 @@ import { create } from 'zustand'
    darkMode: boolean
    triggerNewTodo: boolean
    triggerNewReminder: boolean
+   newReminderDate: string | null
    setLeftOpen: (v: boolean) => void
    setRightOpen: (v: boolean) => void
    setView: (v: View) => void
@@ -18,6 +19,7 @@ import { create } from 'zustand'
    toggleDarkMode: () => void
    setTriggerNewTodo: (v: boolean) => void
    setTriggerNewReminder: (v: boolean) => void
+   setNewReminderDate: (date: string | null) => void
  }
 
  const today = () => new Date().toISOString().slice(0, 10)
@@ -32,12 +34,14 @@ import { create } from 'zustand'
        darkMode: false,
        triggerNewTodo: false,
        triggerNewReminder: false,
+       newReminderDate: null,
        setLeftOpen: (v) => set({ leftOpen: v }),
        setRightOpen: (v) => set({ rightOpen: v }),
        setView: (v) => set({ currentView: v }),
        setSelectedDate: (d) => set({ selectedDate: d }),
        setTriggerNewTodo: (v) => set({ triggerNewTodo: v }),
        setTriggerNewReminder: (v) => set({ triggerNewReminder: v }),
+       setNewReminderDate: (date) => set({ newReminderDate: date }),
        toggleDarkMode: () =>
          set((s) => {
            const next = !s.darkMode

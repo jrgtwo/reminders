@@ -41,6 +41,7 @@ import { create } from 'zustand'
 
      toggleComplete: async (id, date) => {
        const { getStorage } = await import('../platform')
+       let updated: Reminder | null = null
        set((s) => {
          const r = s.reminders.find((x) => x.id === id)
          if (!r) return
@@ -48,8 +49,10 @@ import { create } from 'zustand'
          if (idx >= 0) r.completedDates.splice(idx, 1)
          else r.completedDates.push(date)
          r.updatedAt = new Date().toISOString()
-         getStorage().saveReminder(r)
+         // Capture a plain object — Immer draft proxies must not escape the producer
+         updated = { ...r, completedDates: [...r.completedDates] }
        })
+       if (updated) getStorage().saveReminder(updated)
      },
    }))
  )

@@ -5,6 +5,7 @@ import { Temporal } from '@js-temporal/polyfill'
 import { initStorage } from './platform'
 import { useUIStore } from './store/ui.store'
 import { useRemindersStore } from './store/reminders.store'
+import { useNotesStore } from './store/notes.store'
 import AppShell from './components/layout/AppShell'
 import CalendarHeader from './components/calendar/CalendarHeader'
 import MonthView from './components/calendar/MonthView'
@@ -23,9 +24,11 @@ import {
 
 function CalendarPage() {
   const selectedDateStr = useUIStore((s) => s.selectedDate)
+  const setSelectedDate = useUIStore((s) => s.setSelectedDate)
   const currentView = useUIStore((s) => s.currentView)
   const setView = useUIStore((s) => s.setView)
   const load = useRemindersStore((s) => s.load)
+  const loadNoteDates = useNotesStore((s) => s.loadNoteDates)
 
   const [displayDate, setDisplayDate] = useState<Temporal.PlainDate>(() =>
     parseDateStr(selectedDateStr),
@@ -33,7 +36,8 @@ function CalendarPage() {
 
   useEffect(() => {
     load()
-  }, [load])
+    loadNoteDates()
+  }, [load, loadNoteDates])
 
   const view: 'month' | 'week' = currentView === 'week' ? 'week' : 'month'
   const weekDays = useMemo(() => getWeekDays(displayDate), [displayDate])
@@ -54,7 +58,11 @@ function CalendarPage() {
         weekDays={weekDays}
         onPrev={handlePrev}
         onNext={handleNext}
-        onToday={() => setDisplayDate(today())}
+        onToday={() => {
+            const t = today()
+            setDisplayDate(t)
+            setSelectedDate(t.toString())
+          }}
         onViewChange={(v) => setView(v)}
       />
       {view === 'month' ? (
