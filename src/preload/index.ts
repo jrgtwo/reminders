@@ -25,7 +25,7 @@ const api = {
     },
   },
   sync: {
-    trigger: (session: unknown) => ipcRenderer.invoke('sync:trigger', session),
+    trigger: (session: unknown, config: unknown) => ipcRenderer.invoke('sync:trigger', session, config),
     getStatus: () => ipcRenderer.invoke('sync:getStatus'),
   },
   onNavigate: (cb: (path: string) => void) => {

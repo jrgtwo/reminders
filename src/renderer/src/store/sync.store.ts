@@ -10,6 +10,11 @@ interface SyncState {
   init: () => void
 }
 
+const supabaseConfig = {
+  supabaseUrl: import.meta.env.VITE_SUPABASE_URL as string,
+  supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY as string,
+}
+
 export const useSyncStore = create<SyncState>((set) => ({
   status: 'idle',
   lastSyncedAt: null,
@@ -21,7 +26,7 @@ export const useSyncStore = create<SyncState>((set) => ({
     set({ status: 'syncing' })
     try {
       const api = (window as any).electronAPI
-      const result = await api.sync.trigger(session)
+      const result = await api.sync.trigger(session, supabaseConfig)
       set({ status: result.status, lastSyncedAt: result.lastSyncedAt })
     } catch {
       set({ status: 'error' })
@@ -29,12 +34,10 @@ export const useSyncStore = create<SyncState>((set) => ({
   },
 
   init: () => {
-    // Sync when the window regains focus
     window.addEventListener('focus', () => {
       useSyncStore.getState().trigger()
     })
 
-    // Sync whenever the user signs in
     useAuthStore.subscribe((state, prev) => {
       if (!prev.isLoggedIn && state.isLoggedIn) {
         useSyncStore.getState().trigger()

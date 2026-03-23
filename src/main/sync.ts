@@ -3,29 +3,38 @@ import { getDb } from './storage/db'
 
 type SyncStatus = 'idle' | 'syncing' | 'error'
 
+export interface SyncConfig {
+  supabaseUrl: string
+  supabaseAnonKey: string
+}
+
 export class SyncEngine {
   private status: SyncStatus = 'idle'
   private lastSyncedAt: string | null = null
-  private supabase: SupabaseClient
+  private client: SupabaseClient | null = null
+  private clientUrl: string | null = null
 
-  constructor() {
-    this.supabase = createClient(
-      import.meta.env.VITE_SUPABASE_URL as string,
-      import.meta.env.VITE_SUPABASE_ANON_KEY as string,
-      { auth: { persistSession: false } }
-    )
+  private getClient(config: SyncConfig): SupabaseClient {
+    if (!this.client || this.clientUrl !== config.supabaseUrl) {
+      this.clientUrl = config.supabaseUrl
+      this.client = createClient(config.supabaseUrl, config.supabaseAnonKey, {
+        auth: { persistSession: false }
+      })
+    }
+    return this.client
   }
 
   getStatus() {
     return { status: this.status, lastSyncedAt: this.lastSyncedAt }
   }
 
-  async sync(session: Session): Promise<void> {
+  async sync(session: Session, config: SyncConfig): Promise<void> {
     if (this.status === 'syncing') return
     this.status = 'syncing'
 
     try {
-      await this.supabase.auth.setSession({
+      const sb = this.getClient(config)
+      await sb.auth.setSession({
         access_token: session.access_token,
         refresh_token: session.refresh_token
       })
@@ -38,8 +47,8 @@ export class SyncEngine {
         .get(userId) as { last_pull_at: string } | undefined
       const lastPullAt = meta?.last_pull_at ?? null
 
-      await this.pull(userId, lastPullAt)
-      await this.push(userId)
+      await this.pull(sb, userId, lastPullAt)
+      await this.push(sb, userId)
 
       const now = new Date().toISOString()
       db.prepare(
@@ -54,11 +63,11 @@ export class SyncEngine {
     }
   }
 
-  private async pull(userId: string, lastPullAt: string | null): Promise<void> {
+  private async pull(sb: SupabaseClient, userId: string, lastPullAt: string | null): Promise<void> {
     const db = getDb()
 
     // --- Reminders ---
-    let remindersQuery = this.supabase.from('reminders').select('*').eq('user_id', userId)
+    let remindersQuery = sb.from('reminders').select('*').eq('user_id', userId)
     if (lastPullAt) remindersQuery = remindersQuery.gt('updated_at', lastPullAt)
     const { data: reminders, error: rErr } = await remindersQuery
     if (rErr) throw rErr
@@ -80,7 +89,6 @@ export class SyncEngine {
           db.prepare('UPDATE reminders SET deleted_at = ?, updated_at = ?, last_synced_at = ? WHERE id = ?')
             .run(r.deleted_at, r.updated_at, r.updated_at, r.id)
         } else if (remoteTs >= localTs) {
-          // Remote wins — union completedDates
           const localDates: string[] = JSON.parse(local.completed_dates ?? '[]')
           const remoteDates: string[] = JSON.parse(r.completed_dates ?? '[]')
           const merged = JSON.stringify([...new Set([...localDates, ...remoteDates])])
@@ -103,7 +111,7 @@ export class SyncEngine {
     }
 
     // --- Notes ---
-    let notesQuery = this.supabase.from('notes').select('*').eq('user_id', userId)
+    let notesQuery = sb.from('notes').select('*').eq('user_id', userId)
     if (lastPullAt) notesQuery = notesQuery.gt('updated_at', lastPullAt)
     const { data: notes, error: nErr } = await notesQuery
     if (nErr) throw nErr
@@ -129,7 +137,7 @@ export class SyncEngine {
     }
 
     // --- Todos ---
-    let todosQuery = this.supabase.from('todos').select('*').eq('user_id', userId)
+    let todosQuery = sb.from('todos').select('*').eq('user_id', userId)
     if (lastPullAt) todosQuery = todosQuery.gt('updated_at', lastPullAt)
     const { data: todos, error: tErr } = await todosQuery
     if (tErr) throw tErr
@@ -160,27 +168,19 @@ export class SyncEngine {
     }
   }
 
-  private async push(userId: string): Promise<void> {
+  private async push(sb: SupabaseClient, userId: string): Promise<void> {
     const db = getDb()
 
-    // Push any row not yet synced or changed since last sync
     const reminders = db
       .prepare('SELECT * FROM reminders WHERE last_synced_at IS NULL OR updated_at > last_synced_at')
       .all() as any[]
 
     for (const r of reminders) {
-      const { error } = await this.supabase.from('reminders').upsert({
-        id: r.id,
-        user_id: userId,
-        title: r.title,
-        description: r.description,
-        date: r.date,
-        time: r.time,
-        recurrence: r.recurrence,
-        completed_dates: r.completed_dates,
-        created_at: r.created_at,
-        updated_at: r.updated_at,
-        deleted_at: r.deleted_at
+      const { error } = await sb.from('reminders').upsert({
+        id: r.id, user_id: userId, title: r.title, description: r.description,
+        date: r.date, time: r.time, recurrence: r.recurrence,
+        completed_dates: r.completed_dates, created_at: r.created_at,
+        updated_at: r.updated_at, deleted_at: r.deleted_at
       })
       if (!error) {
         db.prepare('UPDATE reminders SET last_synced_at = ? WHERE id = ?')
@@ -193,12 +193,9 @@ export class SyncEngine {
       .all() as any[]
 
     for (const n of notes) {
-      const { error } = await this.supabase.from('notes').upsert({
-        date: n.date,
-        user_id: userId,
-        content: n.content,
-        updated_at: n.updated_at,
-        deleted_at: n.deleted_at
+      const { error } = await sb.from('notes').upsert({
+        date: n.date, user_id: userId, content: n.content,
+        updated_at: n.updated_at, deleted_at: n.deleted_at
       })
       if (!error) {
         db.prepare('UPDATE notes SET last_synced_at = ? WHERE date = ?')
@@ -211,17 +208,10 @@ export class SyncEngine {
       .all() as any[]
 
     for (const t of todos) {
-      const { error } = await this.supabase.from('todos').upsert({
-        id: t.id,
-        user_id: userId,
-        title: t.title,
-        description: t.description,
-        sort_order: t.sort_order,
-        completed: t.completed,
-        completed_at: t.completed_at,
-        created_at: t.created_at,
-        updated_at: t.updated_at,
-        deleted_at: t.deleted_at
+      const { error } = await sb.from('todos').upsert({
+        id: t.id, user_id: userId, title: t.title, description: t.description,
+        sort_order: t.sort_order, completed: t.completed, completed_at: t.completed_at,
+        created_at: t.created_at, updated_at: t.updated_at, deleted_at: t.deleted_at
       })
       if (!error) {
         db.prepare('UPDATE todos SET last_synced_at = ? WHERE id = ?')
