@@ -28,6 +28,39 @@ export class SyncEngine {
     return { status: this.status, lastSyncedAt: this.lastSyncedAt }
   }
 
+  async checkFirstLogin(
+    userId: string,
+    session: Session,
+    config: SyncConfig
+  ): Promise<{ isFirstLogin: boolean; hasLocal: boolean; hasRemote: boolean }> {
+    const db = getDb()
+    const meta = db.prepare('SELECT user_id FROM sync_meta WHERE user_id = ?').get(userId)
+    if (meta) return { isFirstLogin: false, hasLocal: false, hasRemote: false }
+
+    const localCount =
+      (db.prepare('SELECT COUNT(*) as n FROM reminders WHERE deleted_at IS NULL').get() as any).n +
+      (db.prepare('SELECT COUNT(*) as n FROM notes WHERE deleted_at IS NULL').get() as any).n +
+      (db.prepare('SELECT COUNT(*) as n FROM todos WHERE deleted_at IS NULL').get() as any).n
+
+    const sb = this.getClient(config)
+    await sb.auth.setSession({ access_token: session.access_token, refresh_token: session.refresh_token })
+
+    const [{ count: rc }, { count: nc }, { count: tc }] = await Promise.all([
+      sb.from('reminders').select('*', { count: 'exact', head: true }).eq('user_id', userId).is('deleted_at', null),
+      sb.from('notes').select('*', { count: 'exact', head: true }).eq('user_id', userId).is('deleted_at', null),
+      sb.from('todos').select('*', { count: 'exact', head: true }).eq('user_id', userId).is('deleted_at', null),
+    ])
+    const remoteCount = (rc ?? 0) + (nc ?? 0) + (tc ?? 0)
+
+    return { isFirstLogin: true, hasLocal: localCount > 0, hasRemote: remoteCount > 0 }
+  }
+
+  markFirstLoginDone(userId: string): void {
+    getDb()
+      .prepare('INSERT INTO sync_meta (user_id, last_pull_at) VALUES (?, NULL) ON CONFLICT(user_id) DO NOTHING')
+      .run(userId)
+  }
+
   async sync(session: Session, config: SyncConfig): Promise<void> {
     if (this.status === 'syncing') return
     this.status = 'syncing'

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNotifications } from './hooks/useNotifications'
 import { useAuthStore } from './store/auth.store'
 import { useSyncStore } from './store/sync.store'
+import FirstLoginDialog from './components/sync/FirstLoginDialog'
 import { RouterProvider, createMemoryRouter, createBrowserRouter } from 'react-router-dom'
 import { Temporal } from '@js-temporal/polyfill'
 import { initStorage } from './platform'
@@ -124,5 +125,10 @@ export default function App() {
 
   if (!ready) return null
 
-  return <RouterProvider router={router} />
+  return (
+    <>
+      <RouterProvider router={router} />
+      <FirstLoginDialog />
+    </>
+  )
 }

@@ -27,6 +27,9 @@ const api = {
   sync: {
     trigger: (session: unknown, config: unknown) => ipcRenderer.invoke('sync:trigger', session, config),
     getStatus: () => ipcRenderer.invoke('sync:getStatus'),
+    checkFirstLogin: (userId: string, session: unknown, config: unknown) =>
+      ipcRenderer.invoke('sync:checkFirstLogin', userId, session, config),
+    markFirstLoginDone: (userId: string) => ipcRenderer.invoke('sync:markFirstLoginDone', userId),
   },
   onNavigate: (cb: (path: string) => void) => {
     ipcRenderer.on('navigate', (_, path: string) => cb(path))

@@ -10,4 +10,14 @@ export function registerSyncHandlers(): void {
   })
 
   ipcMain.handle('sync:getStatus', () => syncEngine.getStatus())
+
+  ipcMain.handle(
+    'sync:checkFirstLogin',
+    (_e, userId: string, session: Session, config: SyncConfig) =>
+      syncEngine.checkFirstLogin(userId, session, config)
+  )
+
+  ipcMain.handle('sync:markFirstLoginDone', (_e, userId: string) =>
+    syncEngine.markFirstLoginDone(userId)
+  )
 }
