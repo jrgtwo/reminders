@@ -595,15 +595,24 @@ sync(session, config):
     - Also triggers on sign-in via `useAuthStore.subscribe`
 54. ✅ New `src/renderer/src/store/sync.store.ts` — holds `status: 'idle' | 'syncing' | 'error'`, `lastSyncedAt`; `init()` called from `App.tsx`
 
-**Phase 9d —First-Login Migration**
+**Phase 9d — First-Login Migration ✅**
 
-55. On first sign-in, check both local SQLite and Supabase for existing data
-56. Four cases → prompt dialog:
-    - **Local only**: "Upload your local data to the cloud?" → Yes / Skip
-    - **Cloud only**: "Download your cloud data to this device?" → Yes / Skip
-    - **Both exist**: "Merge local and cloud data?" → Merge (runs sync engine) / Keep separate
-    - **Neither**: no prompt; start fresh
-57. After migration choice, store `userId` in `sync_meta` so first-login detection only runs once
+55. ✅ `SyncEngine.checkFirstLogin(userId, session, config)` (`src/main/sync.ts`):
+    - Reads `sync_meta` — if userId present, returns `{ isFirstLogin: false }` (skips to normal sync)
+    - Counts local active rows + remote rows via Supabase `count` API
+    - Returns `{ isFirstLogin: true, hasLocal, hasRemote }`
+56. ✅ `SyncEngine.markFirstLoginDone(userId)` — inserts userId into `sync_meta` with `last_pull_at = NULL`
+57. ✅ IPC: `sync:checkFirstLogin` + `sync:markFirstLoginDone` (`src/main/ipc/sync.ts`)
+58. ✅ `FirstLoginDialog` (`src/renderer/src/components/sync/FirstLoginDialog.tsx`):
+    - **Local only**: "Upload your local data to the cloud?" → Upload / Skip
+    - **Cloud only**: "Download your cloud data to this device?" → Download / Skip
+    - **Both exist**: "Merge local and cloud data?" → Merge / Skip
+    - **Neither**: silent — marks done + triggers initial sync, no dialog
+59. ✅ `sync.store.ts` — `checkFirstLogin()`, `completeMigration('sync'|'skip')`, `migrationCase` state
+    - `checkingFirstLogin` flag blocks focus-triggered syncs during the check (race condition fix)
+    - `isElectron()` guard — web app silently skips all sync/IPC calls
+    - try-catch with `console.error` throughout
+60. ✅ `FirstLoginDialog` rendered in `App.tsx`; triggered on sign-in via `useAuthStore.subscribe`
 
 **Phase 9e —Sync Status UI**
 

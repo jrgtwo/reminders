@@ -202,7 +202,7 @@ Sign in via Settings → Account to enable optional cloud sync (Supabase). Local
 - [x] Supabase auth — magic link sign-in, Electron deep-link protocol, session persistence
 - [x] Cloud sync (9b) — Supabase tables with RLS, SQLite soft deletes, `deleted_at` + `last_synced_at` columns, `sync_meta` table
 - [x] Cloud sync (9c) — `SyncEngine` (pull/merge/push), `sync:trigger` IPC, focus + sign-in auto-trigger, `sync.store.ts`
-- [ ] Cloud sync (9d) — first-login migration dialog (local-only / cloud-only / merge prompt)
+- [x] Cloud sync (9d) — first-login migration dialog (local-only / cloud-only / merge / neither), race condition fix, Electron-only guard
 - [ ] Cloud sync (9e) — sync status UI (header indicator, "Sync now" button, error banner)
 - [ ] Tests — Vitest unit tests, Playwright e2e, GitHub Actions CI
 - [ ] Mobile (Capacitor) — deferred until core app is stable
