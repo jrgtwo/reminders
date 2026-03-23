@@ -7,6 +7,7 @@ import { registerNoteHandlers } from './ipc/notes'
 import { registerTodoHandlers } from './ipc/todos'
 import { registerWindowHandlers } from './ipc/window'
 import { registerAuthHandlers } from './ipc/auth'
+import { registerSyncHandlers } from './ipc/sync'
 import { startNotificationScheduler } from './notifications'
 import { setupTray } from './tray'
 import { loadWindowState, saveWindowState } from './windowState'
@@ -86,6 +87,7 @@ app.whenReady().then(() => {
   registerNoteHandlers()
   registerTodoHandlers()
   registerAuthHandlers()
+  registerSyncHandlers()
   startNotificationScheduler()
   setupAutoUpdater()
 

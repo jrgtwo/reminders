@@ -24,6 +24,10 @@ const api = {
       ipcRenderer.on('auth:callback', (_, url: string) => cb(url))
     },
   },
+  sync: {
+    trigger: (session: unknown) => ipcRenderer.invoke('sync:trigger', session),
+    getStatus: () => ipcRenderer.invoke('sync:getStatus'),
+  },
   onNavigate: (cb: (path: string) => void) => {
     ipcRenderer.on('navigate', (_, path: string) => cb(path))
   },

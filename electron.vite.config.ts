@@ -5,6 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   main: {
+    envDir: resolve('.'),
     build: {
       rollupOptions: {
         external: ['better-sqlite3']

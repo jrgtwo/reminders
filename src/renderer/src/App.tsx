@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNotifications } from './hooks/useNotifications'
 import { useAuthStore } from './store/auth.store'
+import { useSyncStore } from './store/sync.store'
 import { RouterProvider, createMemoryRouter, createBrowserRouter } from 'react-router-dom'
 import { Temporal } from '@js-temporal/polyfill'
 import { initStorage } from './platform'
@@ -102,6 +103,7 @@ export default function App() {
   const [ready, setReady] = useState(false)
   const darkMode = useUIStore((s) => s.darkMode)
   const initAuth = useAuthStore((s) => s.init)
+  const initSync = useSyncStore((s) => s.init)
   useNotifications()
 
   useEffect(() => {
@@ -111,6 +113,7 @@ export default function App() {
   useEffect(() => {
     initStorage().then(() => setReady(true))
     initAuth()
+    initSync()
   }, [])
 
   useEffect(() => {
