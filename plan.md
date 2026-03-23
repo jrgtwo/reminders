@@ -560,41 +560,40 @@ Supabase
 47. ✅ **Settings page — Account section**: email input + "Send link" button; sent confirmation state; signed-in user display with email initial avatar + sign out
 48. ✅ CSP updated in `index.html` to allow `connect-src` and `img-src` for `*.supabase.co`
 
-**Phase 9b —Supabase Schema + Local Soft Deletes**
+**Phase 9b — Supabase Schema + Local Soft Deletes ✅**
 
-49. **Supabase tables** (`reminders`, `notes`, `todos`) — mirror SQLite schema plus:
+49. ✅ **Supabase tables** (`reminders`, `notes`, `todos`) — mirror SQLite schema plus:
     - `user_id uuid` (FK → `auth.users`, NOT NULL)
     - `deleted_at timestamptz` (null = active; set = soft-deleted)
     - RLS policies: `user_id = auth.uid()` on all CRUD operations
-50. **SQLite migration** (new migration entry in `db.ts`):
+50. ✅ **SQLite migration** (new migration entry in `db.ts`):
     - Add `deleted_at TEXT` column to `reminders`, `notes`, `todos`
     - Add `last_synced_at TEXT` column to track per-row sync state
     - Add `sync_meta` table: `user_id TEXT, last_pull_at TEXT`
     - All delete operations become soft deletes (set `deleted_at`, keep the row)
 
-**Phase 9c —Sync Engine**
+**Phase 9c — Sync Engine ✅**
 
-51. New `src/main/sync.ts` — `SyncEngine` class:
+51. ✅ New `src/main/sync.ts` — `SyncEngine` class:
 
 ```
-sync(userId, session):
+sync(session, config):
   1. Load lastPullAt from sync_meta for this user
   2. PULL from Supabase: all rows where updated_at > lastPullAt
      - deleted_at set remotely  → soft-delete locally
      - not in local DB          → insert
-     - remote updatedAt > local → overwrite local
-     - both changed (conflict)  → auto-merge:
-         completedDates: union of both arrays
-         scalar fields: keep whichever updatedAt is later
-         note content: keep whichever updatedAt is later
-  3. PUSH to Supabase: local rows where updatedAt > lastPullAt OR last_synced_at IS NULL
+     - remote updatedAt >= local → overwrite local (union completedDates)
+     - local newer               → keep local, still union completedDates
+  3. PUSH to Supabase: local rows where last_synced_at IS NULL OR updated_at > last_synced_at
      - upsert each row (including soft-deleted rows)
   4. Update lastPullAt = now in sync_meta
 ```
 
-52. IPC: expose `sync.trigger()` + `sync.getStatus()` to renderer
-53. App focus trigger: `mainWindow.on('focus', () => syncEngine.sync())` in `src/main/index.ts`
-54. New `src/renderer/src/store/sync.store.ts` — holds `status: 'idle' | 'syncing' | 'error'`, `lastSyncedAt`
+52. ✅ IPC: `sync:trigger(session, config)` + `sync:getStatus()` (`src/main/ipc/sync.ts`)
+    - Supabase URL + anon key passed from renderer to avoid env var issues in main process
+53. ✅ Focus trigger: `window.addEventListener('focus', ...)` in `sync.store.ts` (renderer-side)
+    - Also triggers on sign-in via `useAuthStore.subscribe`
+54. ✅ New `src/renderer/src/store/sync.store.ts` — holds `status: 'idle' | 'syncing' | 'error'`, `lastSyncedAt`; `init()` called from `App.tsx`
 
 **Phase 9d —First-Login Migration**
 

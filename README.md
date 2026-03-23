@@ -67,7 +67,8 @@ src/
 │   ├── notifications.ts    # 10s reminder notification scheduler
 │   ├── windowState.ts      # persist/restore window bounds
 │   ├── updater.ts          # electron-updater wiring
-│   ├── ipc/                # IPC handlers (reminders, notes, todos, window/dialog, auth)
+│   ├── sync.ts             # SyncEngine — pull/push/merge with Supabase
+│   ├── ipc/                # IPC handlers (reminders, notes, todos, window/dialog, auth, sync)
 │   └── storage/            # better-sqlite3 repos + schema migrations
 │
 ├── preload/
@@ -93,7 +94,7 @@ src/
     │   ├── useSearch.ts
     │   └── useNotifications.ts
     ├── lib/supabase.ts     # Supabase client singleton
-    ├── store/              # Zustand stores (reminders, notes, todos, ui, auth)
+    ├── store/              # Zustand stores (reminders, notes, todos, ui, auth, sync)
     ├── utils/              # recurrence helpers, date utils, exportImport
     └── types/models.ts     # Reminder, Note, Todo, RecurrenceRule
 ```
@@ -199,7 +200,10 @@ Sign in via Settings → Account to enable optional cloud sync (Supabase). Local
 - [x] Search, keyboard shortcuts, export/import, settings page
 - [x] Bug fixes — reminder checkbox, Today button, note badges on calendar, sidebar Add Reminder opens overlay, settings back navigation
 - [x] Supabase auth — magic link sign-in, Electron deep-link protocol, session persistence
-- [ ] Cloud sync — Supabase schema, SQLite soft deletes, sync engine, first-login migration
+- [x] Cloud sync (9b) — Supabase tables with RLS, SQLite soft deletes, `deleted_at` + `last_synced_at` columns, `sync_meta` table
+- [x] Cloud sync (9c) — `SyncEngine` (pull/merge/push), `sync:trigger` IPC, focus + sign-in auto-trigger, `sync.store.ts`
+- [ ] Cloud sync (9d) — first-login migration dialog (local-only / cloud-only / merge prompt)
+- [ ] Cloud sync (9e) — sync status UI (header indicator, "Sync now" button, error banner)
 - [ ] Tests — Vitest unit tests, Playwright e2e, GitHub Actions CI
 - [ ] Mobile (Capacitor) — deferred until core app is stable
 
