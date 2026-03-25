@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { useAuthStore } from './auth.store'
+import { webSync, webCheckFirstLogin, webMarkFirstLoginDone } from '../lib/webSync'
 
 type SyncStatus = 'idle' | 'syncing' | 'error'
 export type MigrationCase = 'local-only' | 'cloud-only' | 'both' | 'neither'
@@ -30,7 +31,6 @@ export const useSyncStore = create<SyncState>((set, get) => ({
   checkingFirstLogin: false,
 
   trigger: async () => {
-    if (!isElectron()) return
     if (get().checkingFirstLogin) return
 
     const session = useAuthStore.getState().session
@@ -38,28 +38,38 @@ export const useSyncStore = create<SyncState>((set, get) => ({
 
     set({ status: 'syncing' })
     try {
-      const api = (window as any).electronAPI
-      const result = await api.sync.trigger(session, supabaseConfig)
-      set({ status: result.status, lastSyncedAt: result.lastSyncedAt })
+      let result: { status?: string; lastSyncedAt: string }
+      if (isElectron()) {
+        const api = (window as any).electronAPI
+        result = await api.sync.trigger(session, supabaseConfig)
+      } else {
+        result = await webSync(session)
+      }
+      set({ status: 'idle', lastSyncedAt: result.lastSyncedAt })
     } catch (err) {
       console.error('[sync] trigger failed:', err)
-      set({ status: 'error' })
+      const isNetworkError =
+        !navigator.onLine ||
+        (err instanceof TypeError && err.message.toLowerCase().includes('fetch'))
+      set({ status: isNetworkError ? 'idle' : 'error' })
     }
   },
 
   checkFirstLogin: async () => {
-    if (!isElectron()) return
-
     const { session, user } = useAuthStore.getState()
     if (!session || !user) return
 
     set({ checkingFirstLogin: true })
     try {
-      const api = (window as any).electronAPI
-      const result = await api.sync.checkFirstLogin(user.id, session, supabaseConfig)
+      let result: { isFirstLogin: boolean; hasLocal: boolean; hasRemote: boolean }
+      if (isElectron()) {
+        const api = (window as any).electronAPI
+        result = await api.sync.checkFirstLogin(user.id, session, supabaseConfig)
+      } else {
+        result = await webCheckFirstLogin(user.id)
+      }
 
       if (!result.isFirstLogin) {
-        // Returning user — run normal sync
         set({ checkingFirstLogin: false })
         await get().trigger()
         return
@@ -67,9 +77,12 @@ export const useSyncStore = create<SyncState>((set, get) => ({
 
       const { hasLocal, hasRemote } = result
       if (!hasLocal && !hasRemote) {
-        // Neither side has data — mark done and do an initial sync
-        // so future data gets pushed on the next trigger
-        await api.sync.markFirstLoginDone(user.id)
+        if (isElectron()) {
+          const api = (window as any).electronAPI
+          await api.sync.markFirstLoginDone(user.id)
+        } else {
+          webMarkFirstLoginDone(user.id)
+        }
         set({ checkingFirstLogin: false })
         await get().trigger()
       } else {
@@ -85,16 +98,19 @@ export const useSyncStore = create<SyncState>((set, get) => ({
 
   completeMigration: async (action) => {
     const { session, user } = useAuthStore.getState()
-    if (!user || !isElectron()) return
+    if (!user) return
 
-    const api = (window as any).electronAPI
     set({ migrationCase: null })
 
     if (action === 'sync' && session) {
-      // trigger() will write to sync_meta when it completes
       await get().trigger()
     } else {
-      await api.sync.markFirstLoginDone(user.id)
+      if (isElectron()) {
+        const api = (window as any).electronAPI
+        await api.sync.markFirstLoginDone(user.id)
+      } else {
+        webMarkFirstLoginDone(user.id)
+      }
     }
   },
 

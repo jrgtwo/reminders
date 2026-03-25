@@ -1,16 +1,28 @@
 import { useState } from 'react'
-import { ArrowLeft, Moon, Sun, Download, Upload, Check, AlertCircle, LogOut, Mail } from 'lucide-react'
+import { ArrowLeft, Moon, Sun, Download, Upload, Check, AlertCircle, LogOut, Mail, RefreshCw, Cloud, CloudOff } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useUIStore } from '../../store/ui.store'
 import { useAuthStore } from '../../store/auth.store'
+import { useSyncStore } from '../../store/sync.store'
 import Button from '../ui/Button'
 import { exportToFile, importFromFile } from '../../utils/exportImport'
+
+function formatLastSynced(isoStr: string): string {
+  const minutes = Math.floor((Date.now() - new Date(isoStr).getTime()) / 60_000)
+  if (minutes < 1) return 'Just now'
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.floor(minutes / 60)
+  return `${hours}h ago`
+}
 
 export default function SettingsPage() {
   const navigate = useNavigate()
   const darkMode = useUIStore((s) => s.darkMode)
   const toggleDarkMode = useUIStore((s) => s.toggleDarkMode)
   const { user, isLoggedIn, sendMagicLink, signOut } = useAuthStore()
+  const syncStatus = useSyncStore((s) => s.status)
+  const lastSyncedAt = useSyncStore((s) => s.lastSyncedAt)
+  const triggerSync = useSyncStore((s) => s.trigger)
   const [importStatus, setImportStatus] = useState<{ ok: boolean; msg: string } | null>(null)
   const [exporting, setExporting] = useState(false)
   const [importing, setImporting] = useState(false)
@@ -116,6 +128,47 @@ export default function SettingsPage() {
           </form>
         )}
       </section>
+
+      {/* Sync — only when logged in */}
+      {isLoggedIn && (
+        <section className="space-y-3">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            Sync
+          </h2>
+          <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800">
+            <div className="flex items-center gap-3">
+              {syncStatus === 'error' ? (
+                <CloudOff size={16} className="text-red-400" />
+              ) : (
+                <Cloud size={16} className="text-gray-400 dark:text-gray-500" />
+              )}
+              <div>
+                <p className="text-sm font-medium">
+                  {syncStatus === 'syncing'
+                    ? 'Syncing…'
+                    : syncStatus === 'error'
+                    ? 'Sync failed'
+                    : 'Cloud sync'}
+                </p>
+                {lastSyncedAt && syncStatus !== 'syncing' && (
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Last synced: {formatLastSynced(lastSyncedAt)}
+                  </p>
+                )}
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={triggerSync}
+              disabled={syncStatus === 'syncing'}
+            >
+              <RefreshCw size={14} className={syncStatus === 'syncing' ? 'animate-spin' : ''} />
+              {syncStatus === 'syncing' ? 'Syncing…' : 'Sync now'}
+            </Button>
+          </div>
+        </section>
+      )}
 
       {/* Appearance */}
       <section className="space-y-3">

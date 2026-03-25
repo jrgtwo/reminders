@@ -14,7 +14,7 @@ Runs as a native desktop app on Windows and macOS (Electron), a deployable web a
 - **Todos** — Persistent list with drag-to-reorder (float-gap ordering). Expandable descriptions rendered as Markdown.
 - **Search** — Live in-memory filter across all reminders and todos, accessible from the header or via `/`.
 - **Export / Import** — Full JSON backup and restore (all reminders, notes, and todos).
-- **Account + sync** — Optional sign-in via magic link (email). Once signed in, data syncs across devices via Supabase (sync engine in progress).
+- **Account + sync** — Optional sign-in via magic link (email). Once signed in, data syncs across devices via Supabase. Works on both the web app (renderer-side sync engine) and Electron (main-process SQLite sync). Offline-first: changes are saved locally and synced on next connection. First-login migration dialog handles merging pre-existing local and cloud data. Sync status visible in the header; "Sync now" button in Settings.
 - **Dark mode** — Toggle persisted across sessions.
 - **Keyboard shortcuts** — Full keyboard navigation (see below).
 - **Electron extras** — System tray, native OS notifications at scheduled times, window state persistence, background auto-updater.
@@ -93,7 +93,9 @@ src/
     │   ├── useKeyboardShortcuts.ts
     │   ├── useSearch.ts
     │   └── useNotifications.ts
-    ├── lib/supabase.ts     # Supabase client singleton
+    ├── lib/
+    │   ├── supabase.ts     # Supabase client singleton
+    │   └── webSync.ts      # Renderer-side sync engine (web platform)
     ├── store/              # Zustand stores (reminders, notes, todos, ui, auth, sync)
     ├── utils/              # recurrence helpers, date utils, exportImport
     └── types/models.ts     # Reminder, Note, Todo, RecurrenceRule
@@ -202,8 +204,8 @@ Sign in via Settings → Account to enable optional cloud sync (Supabase). Local
 - [x] Supabase auth — magic link sign-in, Electron deep-link protocol, session persistence
 - [x] Cloud sync (9b) — Supabase tables with RLS, SQLite soft deletes, `deleted_at` + `last_synced_at` columns, `sync_meta` table
 - [x] Cloud sync (9c) — `SyncEngine` (pull/merge/push), `sync:trigger` IPC, focus + sign-in auto-trigger, `sync.store.ts`
-- [x] Cloud sync (9d) — first-login migration dialog (local-only / cloud-only / merge / neither), race condition fix, Electron-only guard
-- [ ] Cloud sync (9e) — sync status UI (header indicator, "Sync now" button, error banner)
+- [x] Cloud sync (9d) — first-login migration dialog (local-only / cloud-only / merge / neither), race condition fix
+- [x] Cloud sync (9e) — sync status UI (header indicator, "Sync now" button in Settings, error banner); web sync engine (`lib/webSync.ts`) — sync now works on web app too, not just Electron; storage init race condition fix
 - [ ] Tests — Vitest unit tests, Playwright e2e, GitHub Actions CI
 - [ ] Mobile (Capacitor) — deferred until core app is stable
 

@@ -614,12 +614,17 @@ sync(session, config):
     - try-catch with `console.error` throughout
 60. ✅ `FirstLoginDialog` rendered in `App.tsx`; triggered on sign-in via `useAuthStore.subscribe`
 
-**Phase 9e —Sync Status UI**
+**Phase 9e — Sync Status UI ✅**
 
-58. Sync indicator in `AppShell` header: cloud icon + "Last synced X min ago" / spinner while syncing
-59. Silent ignore when offline (catch network errors, leave status as last known)
-60. "Sync now" button in Settings page
-61. Error state: small alert banner in AppShell if sync fails for a non-network reason
+58. ✅ Sync indicator in `AppShell` header: `Cloud`/`Loader2`/`CloudOff` icons + "Synced Xm ago" label (hidden on mobile); only renders when logged in
+59. ✅ Silent ignore when offline: `trigger()` catch block checks `!navigator.onLine` and `TypeError` fetch errors — sets status back to `'idle'` instead of `'error'`
+60. ✅ "Sync now" button in Settings page — Sync section appears when logged in; shows cloud icon, last synced time, spinning `RefreshCw` while syncing
+61. ✅ Error state: dismissible red alert banner below AppShell header; re-shows after each new failed sync attempt (tracked via `syncing → error` transition)
+
+**Phase 9 Bug Fixes ✅**
+
+- ✅ **Web sync was a no-op**: `trigger()`, `checkFirstLogin()`, and `completeMigration()` all had `if (!isElectron()) return` guards. Created `src/renderer/src/lib/webSync.ts` — a renderer-side sync engine that uses the `supabase` client singleton + `initStorage()` adapter directly. Implements the same pull/push/merge logic as `src/main/sync.ts`. Tracks `lastPullAt` and first-login state in `localStorage` per user. `sync.store.ts` now branches on `isElectron()` in all three methods.
+- ✅ **Storage race condition on web**: On app load, `initAuth()` fires `onAuthStateChange` (restoring session from localStorage) before `initStorage()` resolves, crashing `webCheckFirstLogin` with "Storage not initialized". Fixed by using `initStorage()` (idempotent, awaitable) instead of `getStorage()` inside `webSync.ts`.
 
 ### Phase 10 — Testing & Packaging
 34. Vitest unit tests (recurrence logic, date utils, storage repos)
@@ -647,9 +652,11 @@ sync(session, config):
 - `src/renderer/src/platform/index.ts` — 3-way adapter selection (Electron → Capacitor → Web)
 - `src/renderer/src/platform/capacitor.ts` — stub adapter; replace with real impl in Phase 10
 - `src/renderer/src/store/ui.store.ts` — sidebar state, selected date, view mode, dark mode, keyboard trigger flags, `newReminderDate` for global form
-- `src/renderer/src/components/layout/AppShell.tsx` — top header (search + settings), responsive 3-col layout, keyboard shortcuts, global new-reminder form overlay
+- `src/renderer/src/components/layout/AppShell.tsx` — top header (search + settings + sync indicator), responsive 3-col layout, keyboard shortcuts, global new-reminder form overlay, sync error banner
 - `src/renderer/src/hooks/useKeyboardShortcuts.ts` — all keyboard shortcuts; registered once in AppShell
 - `src/renderer/src/utils/exportImport.ts` — export/import logic; relies on `getAllNotes()` for complete data export
+- `src/renderer/src/lib/webSync.ts` — renderer-side sync engine for web; mirrors `src/main/sync.ts`; uses Supabase client + `initStorage()` adapter; tracks state in `localStorage`
+- `src/renderer/src/store/sync.store.ts` — sync status, `lastSyncedAt`, first-login flow; branches on `isElectron()` for all sync operations
 
 **Main process (Electron)**
 - `src/main/storage/db.ts` — SQLite init + migration runner; prerequisite for all IPC handlers
