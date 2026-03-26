@@ -627,7 +627,9 @@ sync(session, config):
 - ✅ **Storage race condition on web**: On app load, `initAuth()` fires `onAuthStateChange` (restoring session from localStorage) before `initStorage()` resolves, crashing `webCheckFirstLogin` with "Storage not initialized". Fixed by using `initStorage()` (idempotent, awaitable) instead of `getStorage()` inside `webSync.ts`.
 
 ### Phase 10 — Testing & Packaging
-34. Vitest unit tests (recurrence logic, date utils, storage repos)
+34. ✅ Vitest unit tests — `vitest@^3.2` added; `vitest.config.ts` at root; 51 tests in 2 files:
+    - `utils/__tests__/recurrence.test.ts` — 18 tests covering non-recurring, daily (interval/endDate/count), weekly (byDay/interval), monthly, yearly
+    - `utils/__tests__/dates.test.ts` — 33 tests covering `parseDateStr`/`toDateStr`, `isSameDay/Month`, `addMonths`/`subMonths` (incl. leap-year clamp), `addWeeks`/`subWeeks`, `getMonthGrid` (shape/leap Feb), `getWeekDays`, `formatWeekRange`
 35. Playwright e2e tests (renderer in browser)
 36. GitHub Actions CI: lint → typecheck → test → build matrix (Windows + macOS)
 37. electron-builder configs: Windows NSIS installer, macOS DMG
