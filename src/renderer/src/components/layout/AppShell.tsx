@@ -33,7 +33,6 @@ export default function AppShell() {
   const syncStatus = useSyncStore((s) => s.status)
   const lastSyncedAt = useSyncStore((s) => s.lastSyncedAt)
 
-  // Reset dismissed state whenever a new sync completes with error
   const prevSyncStatus = useRef(syncStatus)
   useEffect(() => {
     if (prevSyncStatus.current === 'syncing' && syncStatus === 'error') {
@@ -47,18 +46,22 @@ export default function AppShell() {
   useKeyboardShortcuts(focusSearch)
 
   return (
-    <div className="flex flex-col h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <div className="flex flex-col h-screen bg-white dark:bg-[#080c14] text-gray-900 dark:text-gray-100 relative overflow-hidden">
+      {/* Ambient background orbs — dark mode only */}
+      <div className="hidden dark:block absolute top-[-10%] right-[15%] w-[600px] h-[600px] bg-blue-600/20 rounded-full blur-[140px] pointer-events-none" />
+      <div className="hidden dark:block absolute bottom-[-5%] left-[10%] w-[500px] h-[500px] bg-indigo-700/15 rounded-full blur-[120px] pointer-events-none" />
+      <div className="hidden dark:block absolute top-[40%] right-[-5%] w-[300px] h-[300px] bg-cyan-600/10 rounded-full blur-[100px] pointer-events-none" />
+
       {/* Top header */}
-      <header className="flex items-center gap-4 px-4 py-2 border-b border-gray-200 dark:border-gray-700 shrink-0">
-        <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 hidden md:block shrink-0">
+      <header className="relative flex items-center gap-4 px-4 py-2 border-b border-gray-200 dark:border-white/[0.08] shrink-0 bg-white dark:bg-white/[0.05] dark:backdrop-blur-xl">
+        <span className="text-sm font-semibold text-gray-700 dark:text-white/80 hidden md:block shrink-0">
           Reminders
         </span>
         <div className="flex-1 flex justify-center">
           <SearchBar ref={searchRef} />
         </div>
-        {/* Sync indicator — only when logged in */}
         {isLoggedIn && (
-          <div className="hidden md:flex items-center gap-1.5 text-xs text-gray-400 shrink-0">
+          <div className="hidden md:flex items-center gap-1.5 text-xs text-gray-400 dark:text-white/40 shrink-0">
             {syncStatus === 'syncing' ? (
               <>
                 <Loader2 size={13} className="animate-spin" />
@@ -76,7 +79,7 @@ export default function AppShell() {
         )}
         <button
           onClick={() => navigate('/settings')}
-          className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 shrink-0"
+          className="p-1.5 rounded-lg text-gray-400 dark:text-white/40 hover:text-gray-600 dark:hover:text-white/80 hover:bg-gray-100 dark:hover:bg-white/10 transition-all shrink-0"
           title="Settings (Ctrl+,)"
         >
           <Settings size={16} />
@@ -85,39 +88,32 @@ export default function AppShell() {
 
       {/* Sync error banner */}
       {showErrorBanner && (
-        <div className="flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-xs shrink-0">
+        <div className="relative flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-500/10 border-b border-red-200 dark:border-red-500/20 text-red-700 dark:text-red-300 text-xs shrink-0">
           <CloudOff size={13} />
           <span className="flex-1">Sync failed — your changes are saved locally and will sync when the issue is resolved.</span>
           <button
             onClick={() => setErrorDismissed(true)}
-            className="p-0.5 hover:bg-red-100 dark:hover:bg-red-800/40 rounded"
+            className="p-0.5 hover:bg-red-100 dark:hover:bg-red-500/20 rounded"
           >
             <X size={13} />
           </button>
         </div>
       )}
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left sidebar — desktop only */}
+      <div className="relative flex flex-1 overflow-hidden">
         <div className="hidden md:flex">
           <LeftSidebar />
         </div>
-
-        {/* Main content */}
         <main className="flex-1 overflow-auto">
           <Outlet />
         </main>
-
-        {/* Right sidebar — desktop only */}
         <div className="hidden md:flex">
           <RightSidebar />
         </div>
       </div>
 
-      {/* Bottom nav — mobile only */}
       <BottomNav />
 
-      {/* Global new-reminder form (triggered from sidebar / tray) */}
       {newReminderDate && (
         <ReminderForm
           date={newReminderDate}

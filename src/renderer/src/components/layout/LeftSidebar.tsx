@@ -38,18 +38,18 @@ export default function LeftSidebar() {
 
   return (
     <aside
-      className={`flex flex-col border-r border-gray-200 dark:border-gray-700 transition-[width] duration-200 overflow-hidden ${
+      className={`flex flex-col border-r border-gray-200 dark:border-white/[0.08] transition-[width] duration-200 overflow-hidden bg-white dark:bg-white/[0.04] dark:backdrop-blur-xl ${
         leftOpen ? 'w-64' : 'w-12'
       }`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-3 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between px-3 py-3 border-b border-gray-200 dark:border-white/[0.07] bg-gray-50/50 dark:bg-white/[0.03]">
         {leftOpen && (
-          <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Upcoming</span>
+          <span className="text-sm font-semibold text-gray-700 dark:text-white/70">Upcoming</span>
         )}
         <button
           onClick={() => setLeftOpen(!leftOpen)}
-          className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 ml-auto"
+          className="p-1 rounded hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 dark:text-white/40 hover:text-gray-700 dark:hover:text-white/80 ml-auto transition-all"
         >
           {leftOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
         </button>
@@ -59,7 +59,7 @@ export default function LeftSidebar() {
       <div className="flex-1 overflow-y-auto">
         {leftOpen ? (
           upcoming.length === 0 ? (
-            <p className="text-xs text-gray-400 dark:text-gray-500 px-2 py-4 text-center">
+            <p className="text-xs text-gray-400 dark:text-white/30 px-3 py-4 text-center">
               No upcoming reminders in the next 30 days.
             </p>
           ) : (
@@ -68,16 +68,14 @@ export default function LeftSidebar() {
                 <li key={`${item.id}-${item.dateStr}-${i}`}>
                   <button
                     onClick={() => navigate(`/day/${item.dateStr}`)}
-                    className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-white/[0.06] transition-all"
                   >
-                    <div className="text-xs font-medium text-blue-500 dark:text-blue-400 mb-0.5">
+                    <div className="text-xs font-medium text-blue-500 dark:text-blue-300/80 mb-0.5">
                       {formatUpcomingDate(item.dateStr)}
                     </div>
-                    <div className="text-sm text-gray-800 dark:text-gray-200 truncate">
-                      {item.title}
-                    </div>
+                    <div className="text-sm text-gray-800 dark:text-white/80 truncate">{item.title}</div>
                     {item.time && (
-                      <div className="text-xs text-gray-400 dark:text-gray-500">{item.time}</div>
+                      <div className="text-xs text-gray-400 dark:text-white/30">{item.time}</div>
                     )}
                   </button>
                 </li>
@@ -86,17 +84,17 @@ export default function LeftSidebar() {
           )
         ) : (
           <div className="flex flex-col items-center gap-3 pt-2">
-            <Bell size={16} className="text-gray-400 dark:text-gray-500" />
+            <Bell size={16} className="text-gray-400 dark:text-white/30" />
           </div>
         )}
       </div>
 
       {/* Add button */}
       {leftOpen && (
-        <div className="p-3 border-t border-gray-200 dark:border-gray-700">
+        <div className="p-3 border-t border-gray-200 dark:border-white/[0.07]">
           <button
             onClick={() => setNewReminderDate(todayDate().toString())}
-            className="flex items-center gap-2 w-full text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+            className="flex items-center justify-center gap-2 w-full text-sm text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-white/[0.08] hover:bg-gray-200 dark:hover:bg-white/[0.14] border border-gray-200 dark:border-white/[0.12] px-3 py-2 rounded-lg transition-all"
           >
             <Plus size={14} />
             Add Reminder

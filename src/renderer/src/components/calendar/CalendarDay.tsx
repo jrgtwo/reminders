@@ -1,9 +1,13 @@
 import { Temporal } from '@js-temporal/polyfill'
-import { FileText } from 'lucide-react'
 import { formatDayNum, isToday, isSameMonth } from '../../utils/dates'
 import type { Reminder } from '../../types/models'
 
-const DOT_COLORS = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-orange-500']
+const EVENT_STYLES = [
+  'bg-blue-50 border border-blue-200 text-blue-700 dark:bg-blue-400/20 dark:border-blue-400/30 dark:text-blue-200',
+  'bg-green-50 border border-green-200 text-green-700 dark:bg-green-400/20 dark:border-green-400/30 dark:text-green-200',
+  'bg-purple-50 border border-purple-200 text-purple-700 dark:bg-purple-400/20 dark:border-purple-400/30 dark:text-purple-200',
+  'bg-orange-50 border border-orange-200 text-orange-700 dark:bg-orange-400/20 dark:border-orange-400/30 dark:text-orange-200',
+]
 
 interface Props {
   date: Temporal.PlainDate
@@ -11,6 +15,7 @@ interface Props {
   reminders: Reminder[]
   hasNote?: boolean
   isSelected: boolean
+  isWeekend?: boolean
   onClick: () => void
   tall?: boolean
 }
@@ -21,23 +26,28 @@ export default function CalendarDay({
   reminders,
   hasNote,
   isSelected,
+  isWeekend,
   onClick,
   tall,
 }: Props) {
   const todayDate = isToday(date)
   const inMonth = isSameMonth(date, displayMonth)
-  const visibleDots = reminders.slice(0, 3)
-  const extra = reminders.length - 3
 
   return (
     <button
       onClick={onClick}
       className={[
-        'relative flex flex-col items-center pt-1 pb-2 gap-1 w-full rounded-lg transition-colors cursor-pointer',
+        'relative flex flex-col items-start p-2 gap-1 w-full transition-all cursor-pointer',
         tall ? 'min-h-[120px]' : 'min-h-[60px]',
-        inMonth ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-600',
-        isSelected && !todayDate ? 'bg-blue-50 dark:bg-blue-900/30' : '',
-        !isSelected ? 'hover:bg-gray-100 dark:hover:bg-gray-800' : '',
+        inMonth
+          ? isWeekend
+            ? 'bg-gray-50/60 dark:bg-white/[0.02]'
+            : 'bg-white dark:bg-[#080c14]/60'
+          : 'bg-gray-50 dark:bg-black/30',
+        inMonth ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-white/25',
+        isSelected
+          ? 'ring-1 ring-inset ring-blue-500 dark:ring-white/25 bg-blue-50/50 dark:bg-white/[0.1]'
+          : 'hover:bg-gray-100 dark:hover:bg-white/[0.06]',
       ]
         .filter(Boolean)
         .join(' ')}
@@ -45,7 +55,9 @@ export default function CalendarDay({
       <span
         className={[
           'w-7 h-7 flex items-center justify-center rounded-full text-sm font-medium',
-          todayDate ? 'bg-blue-600 text-white' : '',
+          todayDate
+            ? 'bg-blue-600 dark:bg-white/25 text-white dark:ring-1 dark:ring-white/40'
+            : '',
         ]
           .filter(Boolean)
           .join(' ')}
@@ -54,21 +66,24 @@ export default function CalendarDay({
       </span>
 
       {(reminders.length > 0 || hasNote) && (
-        <div className="flex items-center gap-0.5 flex-wrap justify-center">
-          {visibleDots.map((_, i) => (
+        <div className="flex flex-col gap-0.5 w-full">
+          {reminders.slice(0, 2).map((r, i) => (
             <span
-              key={i}
-              className={`w-1.5 h-1.5 rounded-full ${DOT_COLORS[i % DOT_COLORS.length]}`}
-            />
+              key={r.id}
+              className={`text-[10px] leading-tight truncate w-full px-1 py-0.5 rounded ${EVENT_STYLES[i % EVENT_STYLES.length]}`}
+            >
+              {r.title}
+            </span>
           ))}
-          {extra > 0 && (
-            <span className="text-[10px] text-gray-400 leading-none">+{extra}</span>
+          {reminders.length > 2 && (
+            <span className="text-[10px] text-gray-400 dark:text-white/30 leading-none px-1">
+              +{reminders.length - 2} more
+            </span>
           )}
           {hasNote && (
-            <FileText
-              size={9}
-              className="text-gray-400 dark:text-gray-500 shrink-0"
-            />
+            <span className="flex items-center gap-1 px-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+            </span>
           )}
         </div>
       )}

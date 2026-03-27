@@ -45,17 +45,17 @@ export default function WeekView({ displayDate }: Props) {
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
-      <div className="grid grid-cols-7 border-b border-gray-200 dark:border-gray-700">
+      <div className="grid grid-cols-7 border-b border-gray-200 dark:border-white/[0.07] bg-gray-50 dark:bg-white/[0.04] dark:backdrop-blur-sm">
         {DAY_NAMES.map((name) => (
           <div
             key={name}
-            className="py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide"
+            className="py-2 text-center text-xs font-medium text-gray-500 dark:text-white/40 uppercase tracking-wide"
           >
             {name}
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-7">
+      <div className="grid grid-cols-7 gap-px bg-gray-200 dark:bg-white/[0.04]">
         {days.map((day) => (
           <CalendarDay
             key={day.toString()}
@@ -64,6 +64,7 @@ export default function WeekView({ displayDate }: Props) {
             reminders={remindersByDate[day.toString()] ?? []}
             hasNote={noteDates.includes(day.toString())}
             isSelected={isSameDay(day, selectedPlainDate)}
+            isWeekend={day.dayOfWeek === 6 || day.dayOfWeek === 7}
             onClick={() => handleDayClick(day)}
             tall
           />
