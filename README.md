@@ -14,7 +14,7 @@ Runs as a native desktop app on Windows and macOS (Electron), a deployable web a
 - **Todos** — Persistent list with drag-to-reorder (float-gap ordering). Expandable descriptions rendered as Markdown.
 - **Search** — Live in-memory filter across all reminders and todos, accessible from the header or via `/`.
 - **Export / Import** — Full JSON backup and restore (all reminders, notes, and todos).
-- **Account + sync** — Optional sign-in via magic link (email). Once signed in, data syncs across devices via Supabase. Works on both the web app (renderer-side sync engine) and Electron (main-process SQLite sync). Offline-first: changes are saved locally and synced on next connection. First-login migration dialog handles merging pre-existing local and cloud data. Sync status visible in the header; "Sync now" button in Settings.
+- **Account + sync** — Sign-in via magic link (email). Required on the web app; optional on Electron (falls back to local-only). Once signed in, data syncs across devices via Supabase. Offline-first: changes are saved locally and synced on next connection. First-login migration dialog handles merging pre-existing local and cloud data. Sync status visible in the header; "Sync now" button in Settings.
 - **Dark mode** — Toggle persisted across sessions.
 - **Keyboard shortcuts** — Full keyboard navigation (see below).
 - **Electron extras** — System tray, native OS notifications at scheduled times, window state persistence, background auto-updater.
@@ -111,6 +111,9 @@ npm install
 
 # Run in development — web (browser, IndexedDB)
 npm run dev:web
+# Runs at https://local.remindertoday.com:5173
+# Requires local.remindertoday.com → 127.0.0.1 in /etc/hosts
+# Uses a self-signed cert (@vitejs/plugin-basic-ssl) — accept it in the browser on first run
 
 # Run in development — Electron (SQLite, HMR)
 npm run dev
@@ -135,7 +138,7 @@ cp .env.example .env
 | `VITE_SUPABASE_URL` | Your Supabase project URL |
 | `VITE_SUPABASE_ANON_KEY` | Your Supabase anon (publishable) key |
 
-Auth and sync work without these set — the app falls back to local-only mode. To enable magic link sign-in, also add the following to **Supabase → Authentication → URL Configuration → Redirect URLs**:
+The web app requires sign-in — new user accounts must be created via **Supabase → Authentication → Users → Invite user** (public signups are disabled). To enable magic link sign-in, also add the following to **Supabase → Authentication → URL Configuration → Redirect URLs**:
 
 ```
 reminders://auth/callback          ← Electron
@@ -154,8 +157,19 @@ npm run build:linux   # Linux AppImage / deb / snap
 ### Web build
 
 ```bash
-npm run build:web     # outputs to dist/renderer/ — deploy to Vercel / Netlify
+npm run build:web     # outputs to dist/renderer/
 ```
+
+Deployed to [remindertoday.com](https://remindertoday.com) via Vercel. Dashboard settings:
+
+| Setting | Value |
+|---|---|
+| Build command | `npm run build:web` |
+| Output directory | `dist/renderer` |
+| Root directory | `./` |
+| Environment variables | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` |
+
+SPA routing is handled by `vercel.json` (catch-all rewrite to `index.html`). Email delivery for magic links uses Amazon SES via Supabase SMTP settings.
 
 ---
 
@@ -206,6 +220,8 @@ Sign in via Settings → Account to enable optional cloud sync (Supabase). Local
 - [x] Cloud sync (9c) — `SyncEngine` (pull/merge/push), `sync:trigger` IPC, focus + sign-in auto-trigger, `sync.store.ts`
 - [x] Cloud sync (9d) — first-login migration dialog (local-only / cloud-only / merge / neither), race condition fix
 - [x] Cloud sync (9e) — sync status UI (header indicator, "Sync now" button in Settings, error banner); web sync engine (`lib/webSync.ts`) — sync now works on web app too, not just Electron; storage init race condition fix
+- [x] Web deployment — remindertoday.com on Vercel; `vercel.json` SPA routing; invite-only access gate (web requires sign-in, public signups disabled); local HTTPS dev via `@vitejs/plugin-basic-ssl`
+- [ ] Amazon SES SMTP — configure SES sending domain + Supabase SMTP settings for magic link email delivery
 - [ ] Tests — Vitest unit tests, Playwright e2e, GitHub Actions CI
 - [ ] Mobile (Capacitor) — deferred until core app is stable
 
