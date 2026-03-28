@@ -2,12 +2,19 @@ import { Temporal } from '@js-temporal/polyfill'
 import { formatDayNum, isToday, isSameMonth } from '../../utils/dates'
 import type { Reminder } from '../../types/models'
 
-const EVENT_STYLES = [
+const FUTURE_STYLES = [
   'bg-blue-50 border border-blue-200 text-blue-700 dark:bg-blue-400/20 dark:border-blue-400/30 dark:text-blue-200',
   'bg-green-50 border border-green-200 text-green-700 dark:bg-green-400/20 dark:border-green-400/30 dark:text-green-200',
   'bg-purple-50 border border-purple-200 text-purple-700 dark:bg-purple-400/20 dark:border-purple-400/30 dark:text-purple-200',
   'bg-orange-50 border border-orange-200 text-orange-700 dark:bg-orange-400/20 dark:border-orange-400/30 dark:text-orange-200',
 ]
+
+function getReminderStyle(date: Temporal.PlainDate, index: number): string {
+  const cmp = Temporal.PlainDate.compare(date, Temporal.Now.plainDateISO())
+  if (cmp < 0) return 'bg-red-50 border border-red-200 text-red-700 dark:bg-red-500/20 dark:border-red-500/30 dark:text-red-300'
+  if (cmp === 0) return 'bg-amber-50 border border-amber-200 text-amber-700 dark:bg-amber-400/20 dark:border-amber-400/30 dark:text-amber-200'
+  return FUTURE_STYLES[index % FUTURE_STYLES.length]
+}
 
 interface Props {
   date: Temporal.PlainDate
@@ -67,17 +74,17 @@ export default function CalendarDay({
 
       {(reminders.length > 0 || hasNote) && (
         <div className="flex flex-col gap-0.5 w-full">
-          {reminders.slice(0, 2).map((r, i) => (
+          {reminders.slice(0, 3).map((r, i) => (
             <span
               key={r.id}
-              className={`text-[10px] leading-tight truncate w-full px-1 py-0.5 rounded ${EVENT_STYLES[i % EVENT_STYLES.length]}`}
+              className={`text-[10px] leading-tight truncate w-full px-1 py-0.5 rounded ${getReminderStyle(date, i)}`}
             >
               {r.title}
             </span>
           ))}
-          {reminders.length > 2 && (
-            <span className="text-[10px] text-gray-400 dark:text-white/30 leading-none px-1">
-              +{reminders.length - 2} more
+          {reminders.length > 3 && (
+            <span className="text-[10px] font-medium text-gray-500 dark:text-white/40 leading-none px-1 py-0.5 bg-gray-100 dark:bg-white/[0.06] rounded">
+              +{reminders.length - 3} more
             </span>
           )}
           {hasNote && (

@@ -29,7 +29,7 @@ import { create } from 'zustand'
      (set) => ({
        leftOpen: true,
        rightOpen: true,
-       currentView: 'month',
+       currentView: 'week',
        selectedDate: today(),
        darkMode: false,
        triggerNewTodo: false,

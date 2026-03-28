@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState, useEffect } from 'react'
+import { useRef, useCallback, useState, useEffect, useMemo } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { Settings, Cloud, CloudOff, Loader2, X } from 'lucide-react'
 import LeftSidebar from './LeftSidebar'
@@ -10,6 +10,8 @@ import { useUIStore } from '../../store/ui.store'
 import { useRemindersStore } from '../../store/reminders.store'
 import { useAuthStore } from '../../store/auth.store'
 import { useSyncStore } from '../../store/sync.store'
+import { getOccurrencesInRange } from '../../utils/recurrence'
+import { today, parseDateStr } from '../../utils/dates'
 import ReminderForm from '../reminders/ReminderForm'
 
 function formatLastSynced(isoStr: string): string {
@@ -29,7 +31,18 @@ export default function AppShell() {
   const newReminderDate = useUIStore((s) => s.newReminderDate)
   const setNewReminderDate = useUIStore((s) => s.setNewReminderDate)
   const saveReminder = useRemindersStore((s) => s.save)
+  const reminders = useRemindersStore((s) => s.reminders)
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn)
+
+  const overdueCount = useMemo(() => {
+    const end = today().subtract({ days: 1 })
+    const start = end.subtract({ days: 365 })
+    let count = 0
+    for (const r of reminders) {
+      count += getOccurrencesInRange(r, start, end).length
+    }
+    return count
+  }, [reminders])
   const syncStatus = useSyncStore((s) => s.status)
   const lastSyncedAt = useSyncStore((s) => s.lastSyncedAt)
 
@@ -54,9 +67,14 @@ export default function AppShell() {
 
       {/* Top header */}
       <header className="relative flex items-center gap-4 px-4 py-2 border-b border-gray-200 dark:border-white/[0.08] shrink-0 bg-white dark:bg-white/[0.05] dark:backdrop-blur-xl">
-        <span className="text-sm font-semibold text-gray-700 dark:text-white/80 hidden md:block shrink-0">
-          Reminders
-        </span>
+        <div className="hidden md:flex items-center gap-2 shrink-0">
+          <span className="text-sm font-semibold text-gray-700 dark:text-white/80">Reminders</span>
+          {overdueCount > 0 && (
+            <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-red-500 text-white rounded-full leading-none">
+              {overdueCount}
+            </span>
+          )}
+        </div>
         <div className="flex-1 flex justify-center">
           <SearchBar ref={searchRef} />
         </div>
