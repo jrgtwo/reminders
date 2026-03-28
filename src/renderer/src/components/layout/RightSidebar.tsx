@@ -60,23 +60,23 @@ export default function RightSidebar() {
   return (
     <>
       <aside
-        className={`flex flex-col border-l border-gray-200 dark:border-white/[0.08] transition-[width] duration-200 overflow-hidden bg-white dark:bg-white/[0.04] dark:backdrop-blur-xl ${
+        className={`flex flex-col border-l border-gray-200 dark:border-white/[0.1] transition-[width] duration-200 overflow-hidden bg-white dark:bg-[#040811] ${
           rightOpen ? 'w-72' : 'w-12'
         }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-3 py-3 border-b border-gray-200 dark:border-white/[0.07] bg-gray-50/50 dark:bg-white/[0.03]">
+        <div className="flex items-center justify-between px-3 py-3 border-b border-gray-900/20 dark:border-white/[0.08] bg-gray-900 dark:bg-[#040811]">
           <button
             onClick={() => setRightOpen(!rightOpen)}
-            className="p-1 rounded hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 dark:text-white/40 hover:text-gray-700 dark:hover:text-white/80 transition-all"
+            className="p-1 rounded hover:bg-white/10 text-white/40 hover:text-white transition-all"
           >
             {rightOpen ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </button>
           {rightOpen && (
-            <span className="text-sm font-semibold text-gray-700 dark:text-white/70 ml-2 flex-1">Todos</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-white/60 ml-2 flex-1">Todos</span>
           )}
           {rightOpen && (
-            <span className="text-xs text-gray-400 dark:text-white/30">{incomplete.length} left</span>
+            <span className="text-xs font-semibold text-white/40">{incomplete.length} left</span>
           )}
         </div>
 

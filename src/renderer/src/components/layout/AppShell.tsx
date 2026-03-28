@@ -8,10 +8,11 @@ import SearchBar from './SearchBar'
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts'
 import { useUIStore } from '../../store/ui.store'
 import { useRemindersStore } from '../../store/reminders.store'
+import { useTodosStore } from '../../store/todos.store'
 import { useAuthStore } from '../../store/auth.store'
 import { useSyncStore } from '../../store/sync.store'
 import { getOccurrencesInRange } from '../../utils/recurrence'
-import { today, parseDateStr } from '../../utils/dates'
+import { today } from '../../utils/dates'
 import ReminderForm from '../reminders/ReminderForm'
 
 function formatLastSynced(isoStr: string): string {
@@ -32,6 +33,7 @@ export default function AppShell() {
   const setNewReminderDate = useUIStore((s) => s.setNewReminderDate)
   const saveReminder = useRemindersStore((s) => s.save)
   const reminders = useRemindersStore((s) => s.reminders)
+  const todos = useTodosStore((s) => s.todos)
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn)
 
   const overdueCount = useMemo(() => {
@@ -43,6 +45,18 @@ export default function AppShell() {
     }
     return count
   }, [reminders])
+
+  const upcomingCount = useMemo(() => {
+    const start = today()
+    const end = start.add({ days: 30 })
+    let count = 0
+    for (const r of reminders) {
+      count += getOccurrencesInRange(r, start, end).length
+    }
+    return count
+  }, [reminders])
+
+  const todoCount = todos.filter((t) => !t.completed).length
   const syncStatus = useSyncStore((s) => s.status)
   const lastSyncedAt = useSyncStore((s) => s.lastSyncedAt)
 
@@ -59,27 +73,30 @@ export default function AppShell() {
   useKeyboardShortcuts(focusSearch)
 
   return (
-    <div className="flex flex-col h-screen bg-white dark:bg-[#080c14] text-gray-900 dark:text-gray-100 relative overflow-hidden">
-      {/* Ambient background orbs — dark mode only */}
-      <div className="hidden dark:block absolute top-[-10%] right-[15%] w-[600px] h-[600px] bg-blue-600/20 rounded-full blur-[140px] pointer-events-none" />
-      <div className="hidden dark:block absolute bottom-[-5%] left-[10%] w-[500px] h-[500px] bg-indigo-700/15 rounded-full blur-[120px] pointer-events-none" />
-      <div className="hidden dark:block absolute top-[40%] right-[-5%] w-[300px] h-[300px] bg-cyan-600/10 rounded-full blur-[100px] pointer-events-none" />
-
+    <div className="flex flex-col h-screen bg-white dark:bg-[#07101e] text-gray-900 dark:text-gray-100 relative overflow-hidden">
       {/* Top header */}
-      <header className="relative flex items-center gap-4 px-4 py-2 border-b border-gray-200 dark:border-white/[0.08] shrink-0 bg-white dark:bg-white/[0.05] dark:backdrop-blur-xl">
-        <div className="hidden md:flex items-center gap-2 shrink-0">
-          <span className="text-sm font-semibold text-gray-700 dark:text-white/80">Reminders</span>
-          {overdueCount > 0 && (
-            <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-red-500 text-white rounded-full leading-none">
-              {overdueCount}
+      <header className="relative flex items-center gap-4 px-4 py-2.5 border-b border-gray-900/20 dark:border-white/[0.12] shrink-0 bg-gray-900 dark:bg-[#060a11]">
+        <div className="hidden md:flex items-center gap-4 shrink-0">
+          <span className="text-sm font-bold text-white tracking-wide">REMINDERS</span>
+          <div className="flex items-center gap-3 text-[11px] font-semibold">
+            <span className={overdueCount > 0 ? 'text-red-400' : 'text-white/30'}>
+              {overdueCount} overdue
             </span>
-          )}
+            <span className="text-white/20">·</span>
+            <span className={upcomingCount > 0 ? 'text-white/70' : 'text-white/30'}>
+              {upcomingCount} upcoming
+            </span>
+            <span className="text-white/20">·</span>
+            <span className={todoCount > 0 ? 'text-blue-300' : 'text-white/30'}>
+              {todoCount} todos
+            </span>
+          </div>
         </div>
         <div className="flex-1 flex justify-center">
           <SearchBar ref={searchRef} />
         </div>
         {isLoggedIn && (
-          <div className="hidden md:flex items-center gap-1.5 text-xs text-gray-400 dark:text-white/40 shrink-0">
+          <div className="hidden md:flex items-center gap-1.5 text-xs text-white/40 shrink-0">
             {syncStatus === 'syncing' ? (
               <>
                 <Loader2 size={13} className="animate-spin" />
@@ -97,7 +114,7 @@ export default function AppShell() {
         )}
         <button
           onClick={() => navigate('/settings')}
-          className="p-1.5 rounded-lg text-gray-400 dark:text-white/40 hover:text-gray-600 dark:hover:text-white/80 hover:bg-gray-100 dark:hover:bg-white/10 transition-all shrink-0"
+          className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-all shrink-0"
           title="Settings (Ctrl+,)"
         >
           <Settings size={16} />

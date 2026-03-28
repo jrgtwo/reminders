@@ -51,25 +51,18 @@ export default function LeftSidebar() {
 
   return (
     <aside
-      className={`flex flex-col border-r border-gray-200 dark:border-white/[0.08] transition-[width] duration-200 overflow-hidden bg-gray-50 dark:bg-white/[0.04] dark:backdrop-blur-xl ${
+      className={`flex flex-col border-r border-gray-200 dark:border-white/[0.1] transition-[width] duration-200 overflow-hidden bg-gray-50 dark:bg-[#040811] ${
         leftOpen ? 'w-64' : 'w-12'
       }`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-3 border-b border-gray-200 dark:border-white/[0.07] bg-gray-100/60 dark:bg-white/[0.03]">
+      <div className="flex items-center justify-between px-3 py-3 border-b border-gray-900/20 dark:border-white/[0.08] bg-gray-900 dark:bg-[#040811]">
         {leftOpen && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-gray-700 dark:text-white/70">Upcoming</span>
-            {overdue.length > 0 && (
-              <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-red-500 text-white rounded-full leading-none">
-                {overdue.length} overdue
-              </span>
-            )}
-          </div>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">Schedule</span>
         )}
         <button
           onClick={() => setLeftOpen(!leftOpen)}
-          className="p-1 rounded hover:bg-gray-100 dark:hover:bg-white/10 text-gray-500 dark:text-white/40 hover:text-gray-700 dark:hover:text-white/80 ml-auto transition-all"
+          className="p-1 rounded hover:bg-white/10 text-white/40 hover:text-white ml-auto transition-all"
         >
           {leftOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
         </button>
@@ -81,10 +74,13 @@ export default function LeftSidebar() {
           <>
             {/* Overdue section */}
             {overdue.length > 0 && (
-              <div className="border-b border-red-100 dark:border-red-500/20">
-                <div className="px-3 pt-3 pb-1">
-                  <span className="text-[10px] font-semibold uppercase tracking-wide text-red-500 dark:text-red-400">
-                    Overdue
+              <div className="bg-red-50 dark:bg-red-950/40 border-b-2 border-red-200 dark:border-red-500/30">
+                <div className="flex items-center gap-2 px-3 pt-3 pb-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-red-600 dark:text-red-400">
+                    ⚠ Overdue
+                  </span>
+                  <span className="ml-auto text-[10px] font-bold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-500/20 px-1.5 py-0.5 rounded-full">
+                    {overdue.length}
                   </span>
                 </div>
                 <ul>
@@ -92,12 +88,12 @@ export default function LeftSidebar() {
                     <li key={`${item.id}-${item.dateStr}-${i}`}>
                       <button
                         onClick={() => navigate(`/day/${item.dateStr}`)}
-                        className="w-full text-left px-3 py-2 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"
+                        className="w-full text-left px-3 py-2 hover:bg-red-100 dark:hover:bg-red-500/10 transition-all"
                       >
-                        <div className="text-xs font-medium text-red-400 dark:text-red-400/80 mb-0.5">
+                        <div className="text-xs font-medium text-red-500 dark:text-red-400/80 mb-0.5">
                           {item.dateStr}
                         </div>
-                        <div className="text-sm text-gray-800 dark:text-white/80 truncate">{item.title}</div>
+                        <div className="text-sm font-medium text-red-900 dark:text-red-200 truncate">{item.title}</div>
                       </button>
                     </li>
                   ))}

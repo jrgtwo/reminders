@@ -1,62 +1,62 @@
 import { create } from 'zustand'
- import { persist } from 'zustand/middleware'
+import { persist } from 'zustand/middleware'
 
- type View = 'month' | 'week' | 'day'
+type View = 'month' | 'week' | 'day'
 
- interface UIState {
-   leftOpen: boolean
-   rightOpen: boolean
-   currentView: View
-   selectedDate: string   // 'YYYY-MM-DD'
-   darkMode: boolean
-   triggerNewTodo: boolean
-   triggerNewReminder: boolean
-   newReminderDate: string | null
-   setLeftOpen: (v: boolean) => void
-   setRightOpen: (v: boolean) => void
-   setView: (v: View) => void
-   setSelectedDate: (d: string) => void
-   toggleDarkMode: () => void
-   setTriggerNewTodo: (v: boolean) => void
-   setTriggerNewReminder: (v: boolean) => void
-   setNewReminderDate: (date: string | null) => void
- }
+interface UIState {
+  leftOpen: boolean
+  rightOpen: boolean
+  currentView: View
+  selectedDate: string   // 'YYYY-MM-DD'
+  darkMode: boolean
+  triggerNewTodo: boolean
+  triggerNewReminder: boolean
+  newReminderDate: string | null
+  setLeftOpen: (v: boolean) => void
+  setRightOpen: (v: boolean) => void
+  setView: (v: View) => void
+  setSelectedDate: (d: string) => void
+  toggleDarkMode: () => void
+  setTriggerNewTodo: (v: boolean) => void
+  setTriggerNewReminder: (v: boolean) => void
+  setNewReminderDate: (date: string | null) => void
+}
 
- const today = () => new Date().toISOString().slice(0, 10)
+const today = () => new Date().toISOString().slice(0, 10)
 
- export const useUIStore = create<UIState>()(
-   persist(
-     (set) => ({
-       leftOpen: true,
-       rightOpen: true,
-       currentView: 'week',
-       selectedDate: today(),
-       darkMode: false,
-       triggerNewTodo: false,
-       triggerNewReminder: false,
-       newReminderDate: null,
-       setLeftOpen: (v) => set({ leftOpen: v }),
-       setRightOpen: (v) => set({ rightOpen: v }),
-       setView: (v) => set({ currentView: v }),
-       setSelectedDate: (d) => set({ selectedDate: d }),
-       setTriggerNewTodo: (v) => set({ triggerNewTodo: v }),
-       setTriggerNewReminder: (v) => set({ triggerNewReminder: v }),
-       setNewReminderDate: (date) => set({ newReminderDate: date }),
-       toggleDarkMode: () =>
-         set((s) => {
-           const next = !s.darkMode
-           document.documentElement.classList.toggle('dark', next)
-           return { darkMode: next }
-         }),
-     }),
-     {
-       name: 'reminders-ui',
-       partialize: (s) => ({
-         leftOpen: s.leftOpen,
-         rightOpen: s.rightOpen,
-         currentView: s.currentView,
-         darkMode: s.darkMode,
-       }),
-     }
-   )
- )
+export const useUIStore = create<UIState>()(
+  persist(
+    (set) => ({
+      leftOpen: true,
+      rightOpen: true,
+      currentView: 'week',
+      selectedDate: today(),
+      darkMode: true,
+      triggerNewTodo: false,
+      triggerNewReminder: false,
+      newReminderDate: null,
+      setLeftOpen: (v) => set({ leftOpen: v }),
+      setRightOpen: (v) => set({ rightOpen: v }),
+      setView: (v) => set({ currentView: v }),
+      setSelectedDate: (d) => set({ selectedDate: d }),
+      setTriggerNewTodo: (v) => set({ triggerNewTodo: v }),
+      setTriggerNewReminder: (v) => set({ triggerNewReminder: v }),
+      setNewReminderDate: (date) => set({ newReminderDate: date }),
+      toggleDarkMode: () =>
+        set((s) => {
+          const next = !s.darkMode
+          document.documentElement.classList.toggle('dark', next)
+          return { darkMode: next }
+        }),
+    }),
+    {
+      name: 'reminders-ui-v2',
+      partialize: (s) => ({
+        leftOpen: s.leftOpen,
+        rightOpen: s.rightOpen,
+        currentView: s.currentView,
+        darkMode: s.darkMode,
+      }),
+    }
+  )
+)

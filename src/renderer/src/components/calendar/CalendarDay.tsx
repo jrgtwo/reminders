@@ -1,4 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill'
+import { FileText } from 'lucide-react'
 import { formatDayNum, isToday, isSameMonth } from '../../utils/dates'
 import type { Reminder } from '../../types/models'
 
@@ -48,9 +49,9 @@ export default function CalendarDay({
         tall ? 'min-h-[120px]' : 'min-h-[60px]',
         inMonth
           ? isWeekend
-            ? 'bg-gray-50/60 dark:bg-white/[0.02]'
-            : 'bg-white dark:bg-[#080c14]/60'
-          : 'bg-gray-50 dark:bg-black/30',
+            ? 'bg-gray-50/60 dark:bg-white/[0.015]'
+            : 'bg-white dark:bg-[#07101e]'
+          : 'bg-gray-50 dark:bg-[#040811]/80',
         inMonth ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-white/25',
         isSelected
           ? 'ring-1 ring-inset ring-blue-500 dark:ring-white/25 bg-blue-50/50 dark:bg-white/[0.1]'
@@ -88,8 +89,9 @@ export default function CalendarDay({
             </span>
           )}
           {hasNote && (
-            <span className="flex items-center gap-1 px-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+            <span className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded bg-gray-100 border border-gray-200 text-gray-500 dark:bg-white/[0.08] dark:border-white/[0.1] dark:text-white/50">
+              <FileText size={10} />
+              <span>note</span>
             </span>
           )}
         </div>
