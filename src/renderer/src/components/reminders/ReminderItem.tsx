@@ -1,7 +1,5 @@
 import { Check, Clock, Edit2, RefreshCw, Trash2 } from 'lucide-react'
 import type { Reminder } from '../../types/models'
-import Badge from '../ui/Badge'
-import Button from '../ui/Button'
 
 interface Props {
   reminder: Reminder
@@ -16,69 +14,70 @@ export default function ReminderItem({ reminder, date, onToggle, onEdit, onDelet
 
   return (
     <div
-      className={`flex items-start gap-3 px-3 py-2.5 rounded-lg group transition-colors ${
-        isCompleted ? 'opacity-60' : ''
-      } hover:bg-gray-50 dark:hover:bg-gray-800/60`}
+      className={`flex items-start gap-3 px-4 py-3 group transition-colors rounded-lg ${
+        isCompleted ? 'opacity-40' : ''
+      } hover:bg-slate-50 dark:hover:bg-white/[0.03]`}
     >
-      {/* Completion toggle */}
+      {/* Checkbox */}
       <button
         onClick={() => onToggle(reminder.id, date)}
-        className={`mt-0.5 w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors ${
+        className={`mt-[3px] w-4 h-4 rounded-full border-[1.5px] flex-shrink-0 flex items-center justify-center transition-all ${
           isCompleted
-            ? 'bg-green-500 border-green-500 text-white'
-            : 'border-gray-300 dark:border-gray-600 hover:border-green-400'
+            ? 'bg-emerald-500 border-emerald-500 text-white'
+            : 'border-slate-300 dark:border-white/20 hover:border-emerald-400 dark:hover:border-emerald-400'
         }`}
       >
-        {isCompleted && <Check size={11} />}
+        {isCompleted && <Check size={9} strokeWidth={3} />}
       </button>
 
       {/* Content */}
       <div className="flex-1 min-w-0">
         <p
-          className={`text-sm font-medium leading-snug ${
+          className={`text-sm leading-snug ${
             isCompleted
-              ? 'line-through text-gray-400 dark:text-gray-500'
-              : 'text-gray-900 dark:text-gray-100'
+              ? 'line-through text-slate-300 dark:text-white/20'
+              : 'text-slate-800 dark:text-white/80 font-medium'
           }`}
         >
           {reminder.title}
         </p>
         {reminder.description && (
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+          <p className="text-xs text-slate-400 dark:text-white/30 mt-0.5 leading-snug">
             {reminder.description}
           </p>
         )}
         {(reminder.time || reminder.recurrence) && (
-          <div className="flex items-center gap-2 mt-1.5">
+          <div className="flex items-center gap-1.5 mt-1.5">
             {reminder.time && (
-              <Badge variant="blue">
-                <Clock size={10} className="mr-1" />
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-1.5 py-0.5 rounded">
+                <Clock size={9} />
                 {reminder.time}
-              </Badge>
+              </span>
             )}
             {reminder.recurrence && (
-              <Badge variant="orange">
-                <RefreshCw size={10} className="mr-1" />
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-400/10 px-1.5 py-0.5 rounded">
+                <RefreshCw size={9} />
                 {reminder.recurrence.frequency}
-              </Badge>
+              </span>
             )}
           </div>
         )}
       </div>
 
-      {/* Actions — visible on hover */}
-      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-        <Button size="sm" variant="ghost" onClick={() => onEdit(reminder)} className="p-1.5">
-          <Edit2 size={13} />
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => onDelete(reminder.id)}
-          className="p-1.5 hover:text-red-500"
+      {/* Actions */}
+      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5">
+        <button
+          onClick={() => onEdit(reminder)}
+          className="w-6 h-6 flex items-center justify-center rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-all"
         >
-          <Trash2 size={13} />
-        </Button>
+          <Edit2 size={12} />
+        </button>
+        <button
+          onClick={() => onDelete(reminder.id)}
+          className="w-6 h-6 flex items-center justify-center rounded text-slate-300 dark:text-white/20 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"
+        >
+          <Trash2 size={12} />
+        </button>
       </div>
     </div>
   )

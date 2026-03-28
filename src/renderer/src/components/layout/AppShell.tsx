@@ -17,10 +17,10 @@ import ReminderForm from '../reminders/ReminderForm'
 
 function formatLastSynced(isoStr: string): string {
   const minutes = Math.floor((Date.now() - new Date(isoStr).getTime()) / 60_000)
-  if (minutes < 1) return 'Synced just now'
-  if (minutes < 60) return `Synced ${minutes}m ago`
+  if (minutes < 1) return 'just now'
+  if (minutes < 60) return `${minutes}m ago`
   const hours = Math.floor(minutes / 60)
-  return `Synced ${hours}h ago`
+  return `${hours}h ago`
 }
 
 export default function AppShell() {
@@ -73,59 +73,90 @@ export default function AppShell() {
   useKeyboardShortcuts(focusSearch)
 
   return (
-    <div className="flex flex-col h-screen bg-white dark:bg-[#07101e] text-gray-900 dark:text-gray-100 relative overflow-hidden">
+    <div className="flex flex-col h-screen bg-[#F3F4F6] dark:bg-[#0d1117] text-slate-900 dark:text-slate-100 relative overflow-hidden">
       {/* Top header */}
-      <header className="relative flex items-center gap-4 px-4 py-2.5 border-b border-gray-900/20 dark:border-white/[0.12] shrink-0 bg-gray-900 dark:bg-[#060a11]">
+      <header className="relative flex items-center gap-3 px-4 py-0 border-b border-black/30 dark:border-black/60 shrink-0 bg-[#1c1f26] dark:bg-[#010409] h-11">
+        {/* Brand + stats */}
         <div className="hidden md:flex items-center gap-4 shrink-0">
-          <span className="text-sm font-bold text-white tracking-wide">REMINDERS</span>
-          <div className="flex items-center gap-3 text-[11px] font-semibold">
-            <span className={overdueCount > 0 ? 'text-red-400' : 'text-white/30'}>
-              {overdueCount} overdue
-            </span>
-            <span className="text-white/20">·</span>
-            <span className={upcomingCount > 0 ? 'text-white/70' : 'text-white/30'}>
-              {upcomingCount} upcoming
-            </span>
-            <span className="text-white/20">·</span>
-            <span className={todoCount > 0 ? 'text-blue-300' : 'text-white/30'}>
-              {todoCount} todos
-            </span>
+          <span className="text-[11px] font-black text-white/90 tracking-[0.2em] uppercase">
+            Reminders
+          </span>
+          <div className="h-3.5 w-px bg-white/10" />
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <span
+                className={`text-[11px] font-bold tabular-nums ${overdueCount > 0 ? 'text-red-400' : 'text-white/25'}`}
+              >
+                {overdueCount}
+              </span>
+              <span className={`text-[10px] ${overdueCount > 0 ? 'text-red-400/70' : 'text-white/20'}`}>
+                overdue
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span
+                className={`text-[11px] font-bold tabular-nums ${upcomingCount > 0 ? 'text-white/80' : 'text-white/25'}`}
+              >
+                {upcomingCount}
+              </span>
+              <span className={`text-[10px] ${upcomingCount > 0 ? 'text-white/40' : 'text-white/20'}`}>
+                upcoming
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span
+                className={`text-[11px] font-bold tabular-nums ${todoCount > 0 ? 'text-blue-400' : 'text-white/25'}`}
+              >
+                {todoCount}
+              </span>
+              <span className={`text-[10px] ${todoCount > 0 ? 'text-blue-400/70' : 'text-white/20'}`}>
+                todos
+              </span>
+            </div>
           </div>
         </div>
+
+        {/* Search — centered */}
         <div className="flex-1 flex justify-center">
           <SearchBar ref={searchRef} />
         </div>
-        {isLoggedIn && (
-          <div className="hidden md:flex items-center gap-1.5 text-xs text-white/40 shrink-0">
-            {syncStatus === 'syncing' ? (
-              <>
-                <Loader2 size={13} className="animate-spin" />
-                <span>Syncing…</span>
-              </>
-            ) : syncStatus === 'error' ? (
-              <CloudOff size={14} className="text-red-400" />
-            ) : lastSyncedAt ? (
-              <>
-                <Cloud size={13} />
-                <span>{formatLastSynced(lastSyncedAt)}</span>
-              </>
-            ) : null}
-          </div>
-        )}
-        <button
-          onClick={() => navigate('/settings')}
-          className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-all shrink-0"
-          title="Settings (Ctrl+,)"
-        >
-          <Settings size={16} />
-        </button>
+
+        {/* Right: sync + settings */}
+        <div className="flex items-center gap-2 shrink-0">
+          {isLoggedIn && (
+            <div className="hidden md:flex items-center gap-1.5 text-[10px] text-white/30">
+              {syncStatus === 'syncing' ? (
+                <>
+                  <Loader2 size={11} className="animate-spin" />
+                  <span>Syncing</span>
+                </>
+              ) : syncStatus === 'error' ? (
+                <CloudOff size={12} className="text-red-400" />
+              ) : lastSyncedAt ? (
+                <>
+                  <Cloud size={11} />
+                  <span>{formatLastSynced(lastSyncedAt)}</span>
+                </>
+              ) : null}
+            </div>
+          )}
+          <button
+            onClick={() => navigate('/settings')}
+            className="w-7 h-7 flex items-center justify-center rounded text-white/30 hover:text-white/80 hover:bg-white/[0.08] transition-all"
+            title="Settings (Ctrl+,)"
+          >
+            <Settings size={14} />
+          </button>
+        </div>
       </header>
 
       {/* Sync error banner */}
       {showErrorBanner && (
-        <div className="relative flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-500/10 border-b border-red-200 dark:border-red-500/20 text-red-700 dark:text-red-300 text-xs shrink-0">
+        <div className="relative flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-500/[0.08] border-b border-red-200 dark:border-red-500/20 text-red-700 dark:text-red-400 text-xs shrink-0">
           <CloudOff size={13} />
-          <span className="flex-1">Sync failed — your changes are saved locally and will sync when the issue is resolved.</span>
+          <span className="flex-1">
+            Sync failed — changes are saved locally and will sync when resolved.
+          </span>
           <button
             onClick={() => setErrorDismissed(true)}
             className="p-0.5 hover:bg-red-100 dark:hover:bg-red-500/20 rounded"
@@ -139,7 +170,7 @@ export default function AppShell() {
         <div className="hidden md:flex">
           <LeftSidebar />
         </div>
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-auto bg-[#F3F4F6] dark:bg-[#0d1117]">
           <Outlet />
         </main>
         <div className="hidden md:flex">

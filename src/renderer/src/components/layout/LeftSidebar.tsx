@@ -51,20 +51,22 @@ export default function LeftSidebar() {
 
   return (
     <aside
-      className={`flex flex-col border-r border-gray-200 dark:border-white/[0.1] transition-[width] duration-200 overflow-hidden bg-gray-50 dark:bg-[#040811] ${
-        leftOpen ? 'w-64' : 'w-12'
+      className={`flex flex-col border-r border-slate-300/60 dark:border-white/[0.07] transition-[width] duration-200 overflow-hidden bg-[#F3F4F6] dark:bg-[#0d1117] ${
+        leftOpen ? 'w-60' : 'w-11'
       }`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-3 border-b border-gray-900/20 dark:border-white/[0.08] bg-gray-900 dark:bg-[#040811]">
+      <div className="flex items-center px-3 py-2.5 border-b border-black/30 dark:border-black/60 bg-[#1c1f26] dark:bg-[#010409] shrink-0 h-11">
         {leftOpen && (
-          <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">Schedule</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 flex-1">
+            Schedule
+          </span>
         )}
         <button
           onClick={() => setLeftOpen(!leftOpen)}
-          className="p-1 rounded hover:bg-white/10 text-white/40 hover:text-white ml-auto transition-all"
+          className={`w-6 h-6 flex items-center justify-center rounded text-white/25 hover:text-white/70 hover:bg-white/[0.08] transition-all ${leftOpen ? '' : 'mx-auto'}`}
         >
-          {leftOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+          {leftOpen ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
         </button>
       </div>
 
@@ -74,73 +76,87 @@ export default function LeftSidebar() {
           <>
             {/* Overdue section */}
             {overdue.length > 0 && (
-              <div className="bg-red-50 dark:bg-red-950/40 border-b-2 border-red-200 dark:border-red-500/30">
-                <div className="flex items-center gap-2 px-3 pt-3 pb-1.5">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-red-600 dark:text-red-400">
-                    ⚠ Overdue
+              <div className="border-b border-slate-200 dark:border-white/[0.07]">
+                <div className="flex items-center gap-2 px-4 pt-4 pb-2">
+                  <span className="text-[10px] font-black uppercase tracking-[0.15em] text-red-500 dark:text-red-400">
+                    Overdue
                   </span>
-                  <span className="ml-auto text-[10px] font-bold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-500/20 px-1.5 py-0.5 rounded-full">
+                  <span className="ml-auto text-[10px] font-bold text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-500/15 px-1.5 py-0.5 rounded-full">
                     {overdue.length}
                   </span>
                 </div>
-                <ul>
+                <ul className="pb-2">
                   {overdue.map((item, i) => (
                     <li key={`${item.id}-${item.dateStr}-${i}`}>
                       <button
                         onClick={() => navigate(`/day/${item.dateStr}`)}
-                        className="w-full text-left px-3 py-2 hover:bg-red-100 dark:hover:bg-red-500/10 transition-all"
+                        className="w-full text-left px-4 py-2 hover:bg-red-50 dark:hover:bg-red-500/[0.06] transition-colors group"
                       >
-                        <div className="text-xs font-medium text-red-500 dark:text-red-400/80 mb-0.5">
+                        <div className="text-[10px] font-semibold text-red-400 dark:text-red-400/70 mb-0.5 uppercase tracking-wide">
                           {item.dateStr}
                         </div>
-                        <div className="text-sm font-medium text-red-900 dark:text-red-200 truncate">{item.title}</div>
+                        <div className="text-[13px] font-medium text-slate-700 dark:text-white/75 truncate group-hover:text-slate-900 dark:group-hover:text-white">
+                          {item.title}
+                        </div>
                       </button>
                     </li>
                   ))}
                 </ul>
               </div>
             )}
+
             {/* Upcoming section */}
             {upcoming.length === 0 && overdue.length === 0 ? (
-              <p className="text-xs text-gray-400 dark:text-white/30 px-3 py-4 text-center">
-                No upcoming reminders in the next 30 days.
+              <p className="text-[12px] text-slate-400 dark:text-white/25 px-4 py-6 text-center leading-relaxed">
+                No upcoming reminders<br />in the next 30 days
               </p>
             ) : upcoming.length > 0 ? (
-              <ul className="py-1">
-                {upcoming.map((item, i) => (
-                  <li key={`${item.id}-${item.dateStr}-${i}`}>
-                    <button
-                      onClick={() => navigate(`/day/${item.dateStr}`)}
-                      className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-white/[0.06] transition-all"
-                    >
-                      <div className="text-xs font-medium text-blue-500 dark:text-blue-300/80 mb-0.5">
-                        {formatUpcomingDate(item.dateStr)}
-                      </div>
-                      <div className="text-sm text-gray-800 dark:text-white/80 truncate">{item.title}</div>
-                      {item.time && (
-                        <div className="text-xs text-gray-400 dark:text-white/30">{item.time}</div>
-                      )}
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              <div>
+                <div className="px-4 pt-4 pb-2">
+                  <span className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 dark:text-white/25">
+                    Upcoming
+                  </span>
+                </div>
+                <ul className="pb-2">
+                  {upcoming.map((item, i) => (
+                    <li key={`${item.id}-${item.dateStr}-${i}`}>
+                      <button
+                        onClick={() => navigate(`/day/${item.dateStr}`)}
+                        className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors group"
+                      >
+                        <div className="text-[10px] font-semibold text-blue-500 dark:text-blue-400/80 mb-0.5">
+                          {formatUpcomingDate(item.dateStr)}
+                        </div>
+                        <div className="text-[13px] font-medium text-slate-700 dark:text-white/75 truncate group-hover:text-slate-900 dark:group-hover:text-white">
+                          {item.title}
+                        </div>
+                        {item.time && (
+                          <div className="text-[11px] text-slate-400 dark:text-white/30 mt-0.5">
+                            {item.time}
+                          </div>
+                        )}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ) : null}
           </>
         ) : (
-          <div className="flex flex-col items-center gap-3 pt-2">
-            <Bell size={16} className="text-gray-400 dark:text-white/30" />
+          <div className="flex flex-col items-center pt-3">
+            <Bell size={14} className="text-slate-300 dark:text-white/20" />
           </div>
         )}
       </div>
 
       {/* Add button */}
       {leftOpen && (
-        <div className="p-3 border-t border-gray-200 dark:border-white/[0.07]">
+        <div className="p-3 border-t border-slate-200 dark:border-white/[0.07] shrink-0">
           <button
             onClick={() => setNewReminderDate(todayDate().toString())}
-            className="flex items-center justify-center gap-2 w-full text-sm text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-white/[0.08] hover:bg-gray-200 dark:hover:bg-white/[0.14] border border-gray-200 dark:border-white/[0.12] px-3 py-2 rounded-lg transition-all"
+            className="flex items-center justify-center gap-2 w-full text-[13px] font-medium text-slate-500 dark:text-white/50 hover:text-slate-800 dark:hover:text-white/80 bg-white dark:bg-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.1] px-3 py-2 rounded-lg transition-all"
           >
-            <Plus size={14} />
+            <Plus size={13} />
             Add Reminder
           </button>
         </div>

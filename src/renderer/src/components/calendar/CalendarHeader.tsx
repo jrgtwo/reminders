@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Temporal } from '@js-temporal/polyfill'
-import { formatMonthYear, formatWeekRange } from '../../utils/dates'
+import { formatWeekRange } from '../../utils/dates'
 
 interface Props {
   displayDate: Temporal.PlainDate
@@ -21,45 +21,60 @@ export default function CalendarHeader({
   onToday,
   onViewChange,
 }: Props) {
-  const title = view === 'week' ? formatWeekRange(weekDays) : formatMonthYear(displayDate)
+  const isMonth = view === 'month'
+  const monthName = isMonth
+    ? displayDate.toLocaleString('en-US', { month: 'long' })
+    : formatWeekRange(weekDays)
+  const yearStr = isMonth ? String(displayDate.year) : ''
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-white/[0.07] shrink-0 bg-white dark:bg-white/[0.03] dark:backdrop-blur-sm">
-      <div className="flex items-center gap-1">
-        <button
-          onClick={onPrev}
-          aria-label="Previous"
-          className="p-1.5 rounded-lg text-gray-500 dark:text-white/60 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-all"
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </button>
-        <button
-          onClick={onNext}
-          aria-label="Next"
-          className="p-1.5 rounded-lg text-gray-500 dark:text-white/60 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-all"
-        >
-          <ChevronRight className="w-4 h-4" />
-        </button>
-        <h2 className="text-2xl font-bold ml-2 min-w-[220px] text-gray-900 dark:text-white">{title}</h2>
+    <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-white/[0.07] shrink-0 bg-white dark:bg-[#0d1117]">
+      <div className="flex items-end gap-3">
+        <div className="flex items-baseline gap-2.5 leading-none">
+          <h2 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">
+            {monthName}
+          </h2>
+          {yearStr && (
+            <span className="text-xl font-light text-slate-300 dark:text-white/25 tracking-tight">
+              {yearStr}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-0.5 mb-1">
+          <button
+            onClick={onPrev}
+            aria-label="Previous"
+            className="w-7 h-7 flex items-center justify-center rounded-md text-slate-300 dark:text-white/20 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-all"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <button
+            onClick={onNext}
+            aria-label="Next"
+            className="w-7 h-7 flex items-center justify-center rounded-md text-slate-300 dark:text-white/20 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-all"
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
       </div>
 
       <div className="flex items-center gap-2">
         <button
           onClick={onToday}
-          className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-white/[0.12] bg-white dark:bg-white/[0.07] hover:bg-gray-100 dark:hover:bg-white/[0.12] text-gray-700 dark:text-white/80 transition-all"
+          className="px-3 py-1.5 text-xs font-semibold rounded-md border border-slate-200 dark:border-white/[0.1] text-slate-500 dark:text-white/40 hover:text-slate-800 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-all"
         >
           Today
         </button>
-        <div className="flex rounded-lg border border-gray-200 dark:border-white/[0.12] overflow-hidden">
+        <div className="flex bg-slate-100 dark:bg-white/[0.06] rounded-lg p-0.5">
           {(['month', 'week'] as const).map((v) => (
             <button
               key={v}
               onClick={() => onViewChange(v)}
               className={[
-                'px-3 py-1.5 text-sm transition-all capitalize',
+                'px-3 py-1.5 text-xs font-semibold rounded-md transition-all capitalize',
                 view === v
-                  ? 'bg-blue-600 dark:bg-white/20 text-white dark:text-white'
-                  : 'text-gray-600 dark:text-white/60 hover:bg-gray-100 dark:hover:bg-white/[0.08]',
+                  ? 'bg-white dark:bg-white/[0.12] text-slate-900 dark:text-white shadow-sm'
+                  : 'text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/60',
               ].join(' ')}
             >
               {v}

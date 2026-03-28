@@ -47,17 +47,19 @@ export default function MonthView({ displayDate }: Props) {
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
-      <div className="grid grid-cols-7 border-b border-gray-200 dark:border-white/[0.07] bg-gray-50 dark:bg-white/[0.04] dark:backdrop-blur-sm">
+      {/* Day names */}
+      <div className="grid grid-cols-7 border-b border-slate-200/60 dark:border-white/[0.06] bg-[#F3F4F6] dark:bg-[#0d1117]">
         {DAY_NAMES.map((name) => (
           <div
             key={name}
-            className="py-2 text-center text-xs font-medium text-gray-500 dark:text-white/40 uppercase tracking-wide"
+            className="py-2 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-slate-300 dark:text-white/18"
           >
             {name}
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-7 auto-rows-[1fr] gap-px bg-gray-200 dark:bg-white/[0.04] overflow-hidden flex-1">
+      {/* Grid */}
+      <div className="grid grid-cols-7 auto-rows-[1fr] overflow-hidden flex-1 gap-px bg-slate-200/60 dark:bg-white/[0.04]">
         {days.map((day) => (
           <CalendarDay
             key={day.toString()}

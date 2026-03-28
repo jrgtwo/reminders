@@ -1,20 +1,26 @@
 import { Temporal } from '@js-temporal/polyfill'
-import { FileText } from 'lucide-react'
 import { formatDayNum, isToday, isSameMonth } from '../../utils/dates'
 import type { Reminder } from '../../types/models'
 
-const FUTURE_STYLES = [
-  'bg-blue-50 border border-blue-200 text-blue-700 dark:bg-blue-400/20 dark:border-blue-400/30 dark:text-blue-200',
-  'bg-green-50 border border-green-200 text-green-700 dark:bg-green-400/20 dark:border-green-400/30 dark:text-green-200',
-  'bg-purple-50 border border-purple-200 text-purple-700 dark:bg-purple-400/20 dark:border-purple-400/30 dark:text-purple-200',
-  'bg-orange-50 border border-orange-200 text-orange-700 dark:bg-orange-400/20 dark:border-orange-400/30 dark:text-orange-200',
-]
-
-function getReminderStyle(date: Temporal.PlainDate, index: number): string {
+function getEventColor(date: Temporal.PlainDate): { dot: string; text: string; chip: string } {
   const cmp = Temporal.PlainDate.compare(date, Temporal.Now.plainDateISO())
-  if (cmp < 0) return 'bg-red-50 border border-red-200 text-red-700 dark:bg-red-500/20 dark:border-red-500/30 dark:text-red-300'
-  if (cmp === 0) return 'bg-amber-50 border border-amber-200 text-amber-700 dark:bg-amber-400/20 dark:border-amber-400/30 dark:text-amber-200'
-  return FUTURE_STYLES[index % FUTURE_STYLES.length]
+  if (cmp < 0)
+    return {
+      dot: 'bg-red-400',
+      text: 'text-red-600 dark:text-red-400',
+      chip: 'bg-red-50 text-red-700 dark:bg-red-500/[0.15] dark:text-red-300',
+    }
+  if (cmp === 0)
+    return {
+      dot: 'bg-amber-400',
+      text: 'text-amber-700 dark:text-amber-400',
+      chip: 'bg-amber-50 text-amber-800 dark:bg-amber-400/[0.15] dark:text-amber-300',
+    }
+  return {
+    dot: 'bg-indigo-400',
+    text: 'text-indigo-600 dark:text-indigo-400',
+    chip: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/[0.12] dark:text-indigo-300',
+  }
 }
 
 interface Props {
@@ -40,32 +46,49 @@ export default function CalendarDay({
 }: Props) {
   const todayDate = isToday(date)
   const inMonth = isSameMonth(date, displayMonth)
+  const colors = getEventColor(date)
+
+  let bg: string
+  if (isSelected) {
+    bg = 'bg-blue-50 dark:bg-blue-500/[0.08]'
+  } else if (todayDate) {
+    bg = 'bg-blue-50/70 dark:bg-blue-950/40'
+  } else if (!inMonth) {
+    bg = 'bg-slate-50 dark:bg-black/20'
+  } else if (isWeekend) {
+    bg = 'bg-white dark:bg-transparent'
+  } else {
+    bg = 'bg-white dark:bg-transparent'
+  }
 
   return (
     <button
       onClick={onClick}
       className={[
-        'relative flex flex-col items-start p-2 gap-1 w-full transition-all cursor-pointer',
-        tall ? 'min-h-[120px]' : 'min-h-[60px]',
-        inMonth
-          ? isWeekend
-            ? 'bg-gray-50/60 dark:bg-white/[0.015]'
-            : 'bg-white dark:bg-[#07101e]'
-          : 'bg-gray-50 dark:bg-[#040811]/80',
-        inMonth ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-white/25',
-        isSelected
-          ? 'ring-1 ring-inset ring-blue-500 dark:ring-white/25 bg-blue-50/50 dark:bg-white/[0.1]'
-          : 'hover:bg-gray-100 dark:hover:bg-white/[0.06]',
+        'relative flex flex-col items-start w-full text-left cursor-pointer transition-colors duration-100',
+        tall ? 'p-3 gap-2 min-h-[110px]' : 'p-2 gap-1.5 min-h-[76px]',
+        bg,
+        !isSelected && !todayDate && 'hover:bg-slate-50 dark:hover:bg-white/[0.02]',
+        todayDate && !isSelected && 'hover:bg-blue-100/60 dark:hover:bg-blue-950/50',
       ]
         .filter(Boolean)
         .join(' ')}
     >
+      {/* Selected ring */}
+      {isSelected && (
+        <span className="absolute inset-0 ring-2 ring-inset ring-blue-500/60 dark:ring-blue-400/50 pointer-events-none" />
+      )}
+
+      {/* Date number */}
       <span
         className={[
-          'w-7 h-7 flex items-center justify-center rounded-full text-sm font-medium',
+          'flex items-center justify-center rounded-full shrink-0 font-bold leading-none',
+          tall ? 'w-8 h-8 text-[15px]' : 'w-6 h-6 text-[13px]',
           todayDate
-            ? 'bg-blue-600 dark:bg-white/25 text-white dark:ring-1 dark:ring-white/40'
-            : '',
+            ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/30'
+            : inMonth
+            ? 'text-slate-700 dark:text-white/65'
+            : 'text-slate-300 dark:text-white/15',
         ]
           .filter(Boolean)
           .join(' ')}
@@ -73,28 +96,50 @@ export default function CalendarDay({
         {formatDayNum(date)}
       </span>
 
-      {(reminders.length > 0 || hasNote) && (
-        <div className="flex flex-col gap-0.5 w-full">
-          {reminders.slice(0, 3).map((r, i) => (
-            <span
-              key={r.id}
-              className={`text-[10px] leading-tight truncate w-full px-1 py-0.5 rounded ${getReminderStyle(date, i)}`}
-            >
-              {r.title}
-            </span>
-          ))}
-          {reminders.length > 3 && (
-            <span className="text-[10px] font-medium text-gray-500 dark:text-white/40 leading-none px-1 py-0.5 bg-gray-100 dark:bg-white/[0.06] rounded">
-              +{reminders.length - 3} more
-            </span>
-          )}
-          {hasNote && (
-            <span className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded bg-gray-100 border border-gray-200 text-gray-500 dark:bg-white/[0.08] dark:border-white/[0.1] dark:text-white/50">
-              <FileText size={10} />
-              <span>note</span>
-            </span>
+      {/* Events */}
+      {reminders.length > 0 && (
+        <div className={`flex flex-col w-full ${tall ? 'gap-1' : 'gap-[3px]'}`}>
+          {tall ? (
+            // Week view: full-width chips
+            <>
+              {reminders.slice(0, 4).map((r) => (
+                <div
+                  key={r.id}
+                  className={`w-full px-2 py-[4px] rounded-md text-[11px] font-semibold leading-tight truncate ${colors.chip}`}
+                >
+                  {r.title}
+                </div>
+              ))}
+              {reminders.length > 4 && (
+                <span className="text-[10px] font-medium text-slate-400 dark:text-white/25 px-1">
+                  +{reminders.length - 4} more
+                </span>
+              )}
+            </>
+          ) : (
+            // Month view: dot + text (compact, elegant)
+            <>
+              {reminders.slice(0, 3).map((r) => (
+                <div key={r.id} className="flex items-center gap-1.5 w-full overflow-hidden">
+                  <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${colors.dot}`} />
+                  <span className={`text-[11px] font-medium leading-none truncate ${colors.text}`}>
+                    {r.title}
+                  </span>
+                </div>
+              ))}
+              {reminders.length > 3 && (
+                <span className="text-[10px] text-slate-400 dark:text-white/25 pl-3 leading-none">
+                  +{reminders.length - 3}
+                </span>
+              )}
+            </>
           )}
         </div>
+      )}
+
+      {/* Note dot */}
+      {hasNote && (
+        <div className={`w-1 h-1 rounded-full bg-slate-300 dark:bg-white/20 ${tall ? '' : 'mt-auto'}`} />
       )}
     </button>
   )
