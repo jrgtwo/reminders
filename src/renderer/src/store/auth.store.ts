@@ -6,7 +6,7 @@ interface AuthState {
   user: User | null
   session: Session | null
   isLoggedIn: boolean
-  init: () => void
+  init: () => Promise<void>
   sendMagicLink: (email: string) => Promise<void>
   signOut: () => Promise<void>
 }
@@ -18,7 +18,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   init: () => {
     // Restore existing session on app launch
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const sessionReady = supabase.auth.getSession().then(({ data: { session } }) => {
       set({ session, user: session?.user ?? null, isLoggedIn: !!session })
     })
 
@@ -47,6 +47,8 @@ export const useAuthStore = create<AuthState>((set) => ({
         }
       })
     }
+
+    return sessionReady
   },
 
   sendMagicLink: async (email) => {

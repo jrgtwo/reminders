@@ -10,6 +10,7 @@ import { useUIStore } from './store/ui.store'
 import { useRemindersStore } from './store/reminders.store'
 import { useNotesStore } from './store/notes.store'
 import AppShell from './components/layout/AppShell'
+import SignInPage from './components/SignInPage'
 import CalendarHeader from './components/calendar/CalendarHeader'
 import MonthView from './components/calendar/MonthView'
 import WeekView from './components/calendar/WeekView'
@@ -102,7 +103,9 @@ const router = isElectronOrCapacitor
 
 export default function App() {
   const [ready, setReady] = useState(false)
+  const [authReady, setAuthReady] = useState(false)
   const darkMode = useUIStore((s) => s.darkMode)
+  const isLoggedIn = useAuthStore((s) => s.isLoggedIn)
   const initAuth = useAuthStore((s) => s.init)
   const initSync = useSyncStore((s) => s.init)
   useNotifications()
@@ -113,7 +116,7 @@ export default function App() {
 
   useEffect(() => {
     initStorage().then(() => setReady(true))
-    initAuth()
+    initAuth().then(() => setAuthReady(true))
     initSync()
   }, [])
 
@@ -123,7 +126,9 @@ export default function App() {
     api.onNavigate((path: string) => router.navigate(path))
   }, [])
 
-  if (!ready) return null
+  if (!ready || !authReady) return null
+
+  if (!isElectronOrCapacitor && !isLoggedIn) return <SignInPage />
 
   return (
     <>

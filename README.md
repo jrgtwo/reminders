@@ -138,9 +138,9 @@ cp .env.example .env
 Auth and sync work without these set — the app falls back to local-only mode. To enable magic link sign-in, also add the following to **Supabase → Authentication → URL Configuration → Redirect URLs**:
 
 ```
-reminders://auth/callback    ← Electron
-http://localhost:5173         ← Web (dev)
-https://yourdomain.com        ← Web (prod)
+reminders://auth/callback          ← Electron
+https://local.remindertoday.com:5173  ← Web (dev)
+https://remindertoday.com            ← Web (prod)
 ```
 
 ### Building for distribution
