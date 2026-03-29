@@ -36,7 +36,7 @@ export default function TodoList({ todos, onToggle, onEdit, onDelete, onReorder 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={sorted.map((t) => t.id)} strategy={verticalListSortingStrategy}>
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-1 py-1">
           {sorted.map((todo) => (
             <TodoItem
               key={todo.id}

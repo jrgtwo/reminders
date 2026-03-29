@@ -50,13 +50,11 @@ export default function CalendarDay({
 
   let bg: string
   if (isSelected) {
-    bg = 'bg-blue-50 dark:bg-blue-500/[0.08]'
+    bg = 'bg-white dark:bg-[#131c2e]'
   } else if (todayDate) {
     bg = 'bg-blue-50/70 dark:bg-blue-950/40'
   } else if (!inMonth) {
     bg = 'bg-slate-50 dark:bg-black/20'
-  } else if (isWeekend) {
-    bg = 'bg-white dark:bg-transparent'
   } else {
     bg = 'bg-white dark:bg-transparent'
   }
@@ -65,20 +63,20 @@ export default function CalendarDay({
     <button
       onClick={onClick}
       className={[
-        'relative flex flex-col items-start w-full text-left cursor-pointer transition-colors duration-100',
-        tall ? 'p-3 gap-2 min-h-[110px]' : 'p-2 gap-1.5 min-h-[76px]',
+        'relative flex flex-col items-start w-full text-left cursor-pointer',
+        'transition-all duration-150',
+        'z-0 hover:z-10',
+        tall ? 'p-3.5 gap-2 min-h-[110px]' : 'p-2.5 gap-1.5 min-h-[76px]',
         bg,
-        !isSelected && !todayDate && 'hover:bg-slate-50 dark:hover:bg-white/[0.02]',
-        todayDate && !isSelected && 'hover:bg-blue-100/60 dark:hover:bg-blue-950/50',
+        isSelected
+          ? 'shadow-[0_0_0_2px_rgba(59,130,246,0.5),0_4px_20px_rgba(59,130,246,0.14)] dark:shadow-[0_0_0_2px_rgba(96,165,250,0.45),0_4px_20px_rgba(59,130,246,0.18)]'
+          : todayDate
+          ? 'hover:shadow-[0_2px_12px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_2px_12px_rgba(0,0,0,0.35)]'
+          : 'hover:shadow-[0_2px_12px_rgba(0,0,0,0.07)] dark:hover:shadow-[0_2px_12px_rgba(0,0,0,0.3)]',
       ]
         .filter(Boolean)
         .join(' ')}
     >
-      {/* Selected ring */}
-      {isSelected && (
-        <span className="absolute inset-0 ring-2 ring-inset ring-blue-500/60 dark:ring-blue-400/50 pointer-events-none" />
-      )}
-
       {/* Date number */}
       <span
         className={[
@@ -100,7 +98,6 @@ export default function CalendarDay({
       {reminders.length > 0 && (
         <div className={`flex flex-col w-full ${tall ? 'gap-1' : 'gap-[3px]'}`}>
           {tall ? (
-            // Week view: full-width chips
             <>
               {reminders.slice(0, 4).map((r) => (
                 <div
@@ -117,7 +114,6 @@ export default function CalendarDay({
               )}
             </>
           ) : (
-            // Month view: dot + text (compact, elegant)
             <>
               {reminders.slice(0, 3).map((r) => (
                 <div key={r.id} className="flex items-center gap-1.5 w-full overflow-hidden">
@@ -139,7 +135,7 @@ export default function CalendarDay({
 
       {/* Note dot */}
       {hasNote && (
-        <div className={`w-1 h-1 rounded-full bg-slate-300 dark:bg-white/20 ${tall ? '' : 'mt-auto'}`} />
+        <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-white/20" />
       )}
     </button>
   )

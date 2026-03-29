@@ -65,14 +65,14 @@ export default function DayView() {
       {/* Back */}
       <button
         onClick={() => navigate(-1)}
-        className="flex items-center gap-1.5 text-[13px] text-slate-400 dark:text-white/30 hover:text-slate-700 dark:hover:text-white/60 mb-6 transition-colors -ml-0.5"
+        className="flex items-center gap-1.5 text-[13px] text-slate-400 dark:text-white/30 hover:text-slate-700 dark:hover:text-white/60 mb-8 transition-colors -ml-0.5"
       >
         <ArrowLeft size={14} />
         Calendar
       </button>
 
       {/* Heading */}
-      <div className="mb-7">
+      <div className="mb-8">
         <div className="flex items-baseline gap-3 mb-1">
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight leading-none">
             {weekday}
@@ -90,6 +90,7 @@ export default function DayView() {
       <NoteEditor date={dateStr} />
 
       {/* Reminders */}
+      <div className="mt-8" />
       <ReminderList
         date={dateStr}
         reminders={dayReminders}

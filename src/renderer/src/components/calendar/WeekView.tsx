@@ -57,7 +57,7 @@ export default function WeekView({ displayDate }: Props) {
         ))}
       </div>
       {/* Grid */}
-      <div className="grid grid-cols-7 flex-1 gap-px bg-slate-200/60 dark:bg-white/[0.04]">
+      <div className="grid grid-cols-7 flex-1 gap-[2px] bg-slate-200/60 dark:bg-white/[0.04]">
         {days.map((day) => (
           <CalendarDay
             key={day.toString()}
