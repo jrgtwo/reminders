@@ -626,17 +626,30 @@ sync(session, config):
 - ✅ **Web sync was a no-op**: `trigger()`, `checkFirstLogin()`, and `completeMigration()` all had `if (!isElectron()) return` guards. Created `src/renderer/src/lib/webSync.ts` — a renderer-side sync engine that uses the `supabase` client singleton + `initStorage()` adapter directly. Implements the same pull/push/merge logic as `src/main/sync.ts`. Tracks `lastPullAt` and first-login state in `localStorage` per user. `sync.store.ts` now branches on `isElectron()` in all three methods.
 - ✅ **Storage race condition on web**: On app load, `initAuth()` fires `onAuthStateChange` (restoring session from localStorage) before `initStorage()` resolves, crashing `webCheckFirstLogin` with "Storage not initialized". Fixed by using `initStorage()` (idempotent, awaitable) instead of `getStorage()` inside `webSync.ts`.
 
-### Phase 10 — Testing & Packaging
+### Phase 10 — Testing ✅
 34. ✅ Vitest unit tests — `vitest@^3.2` added; `vitest.config.ts` at root; 51 tests in 2 files:
     - `utils/__tests__/recurrence.test.ts` — 18 tests covering non-recurring, daily (interval/endDate/count), weekly (byDay/interval), monthly, yearly
     - `utils/__tests__/dates.test.ts` — 33 tests covering `parseDateStr`/`toDateStr`, `isSameDay/Month`, `addMonths`/`subMonths` (incl. leap-year clamp), `addWeeks`/`subWeeks`, `getMonthGrid` (shape/leap Feb), `getWeekDays`, `formatWeekRange`
-35. Playwright e2e tests (renderer in browser)
-36. GitHub Actions CI: lint → typecheck → test → build matrix (Windows + macOS)
-37. electron-builder configs: Windows NSIS installer, macOS DMG
 
 ---
 
-### Phase 11 — Mobile (Capacitor) — DEFERRED
+### Phase 11 — Web Launch
+> Focus: get the web app production-ready and deployed.
+35. Web deployment (Vercel/Netlify) — `npm run build:web` → deploy `dist/renderer/`
+36. Production env vars — `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` configured in host
+37. Supabase production project — RLS policies verified, auth email templates customized
+
+---
+
+### Phase 12 — Packaging & CI — DEFERRED
+> After web launch.
+38. electron-builder configs: Windows NSIS installer, macOS DMG
+39. Playwright e2e tests (renderer in browser)
+40. GitHub Actions CI: lint → typecheck → test → build matrix (Windows + macOS)
+
+---
+
+### Phase 13 — Mobile (Capacitor) — DEFERRED
 > Complete once the app is functionally stable. No work needed until then.
 38. `npx cap add ios` + `npx cap add android` (creates native projects)
 39. Implement `CapacitorAdapter` using `@capacitor-community/sqlite` (same schema as Electron)
