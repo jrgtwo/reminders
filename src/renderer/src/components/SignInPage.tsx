@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
 import { Mail, Check, AlertCircle } from 'lucide-react'
 import { useAuthStore } from '../store/auth.store'
 import Button from './ui/Button'
@@ -7,16 +8,21 @@ export default function SignInPage() {
   const sendMagicLink = useAuthStore((s) => s.sendMagicLink)
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const turnstileRef = useRef<TurnstileInstance>(null)
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
-    if (!email.trim()) return
+    if (!email.trim() || !captchaToken) return
     setStatus('sending')
     try {
-      await sendMagicLink(email.trim())
+      await sendMagicLink(email.trim(), captchaToken)
       setStatus('sent')
     } catch {
       setStatus('error')
+      // Reset widget so the user can get a fresh token and retry
+      turnstileRef.current?.reset()
+      setCaptchaToken(null)
     }
   }
 
@@ -54,7 +60,18 @@ export default function SignInPage() {
               required
               className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <Button type="submit" className="w-full justify-center" disabled={status === 'sending'}>
+            <Turnstile
+              ref={turnstileRef}
+              siteKey={import.meta.env.VITE_CAPTCHA_SITE_KEY}
+              onSuccess={setCaptchaToken}
+              onExpire={() => setCaptchaToken(null)}
+              onError={() => setCaptchaToken(null)}
+            />
+            <Button
+              type="submit"
+              className="w-full justify-center"
+              disabled={status === 'sending' || !captchaToken}
+            >
               <Mail size={14} />
               {status === 'sending' ? 'Sending…' : 'Send sign-in link'}
             </Button>
