@@ -635,9 +635,19 @@ sync(session, config):
 
 ### Phase 11 — Web Launch
 > Focus: get the web app production-ready and deployed.
-35. Web deployment (Vercel/Netlify) — `npm run build:web` → deploy `dist/renderer/`
-36. Production env vars — `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` configured in host
-37. Supabase production project — RLS policies verified, auth email templates customized
+
+**Blockers (must be done before launch):**
+35. ✅ CAPTCHA — Cloudflare Turnstile added to sign-in form (`@marsidev/react-turnstile`); token passed to `signInWithOtp`
+36. Fix CSP in `index.html` — add `challenges.cloudflare.com` to `script-src` and `frame-src` so Turnstile widget loads in production
+37. Cloudflare Turnstile dashboard — add production Vercel domain to allowed domains list
+38. Vercel env vars — set `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_CAPTCHA_SITE_KEY` in Vercel project settings
+39. Supabase redirect URL — add production Vercel domain to Auth → URL Configuration → Redirect URLs
+40. Web deployment — connect repo to Vercel; set build command `npm run build:web`, output dir `dist/renderer/`
+
+**Nice to have:**
+41. Supabase auth email templates — replace default Supabase branding with app name/logo
+42. Favicon — add `<link rel="icon">` to `index.html`
+43. HTML meta tags — add `<meta name="description">` and viewport meta tag to `index.html`
 
 ---
 
