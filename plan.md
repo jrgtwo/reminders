@@ -638,7 +638,7 @@ sync(session, config):
 
 **Blockers (must be done before launch):**
 35. ✅ CAPTCHA — Cloudflare Turnstile added to sign-in form (`@marsidev/react-turnstile`); token passed to `signInWithOtp`
-36. Fix CSP in `index.html` — add `challenges.cloudflare.com` to `script-src` and `frame-src` so Turnstile widget loads in production
+36. ✅ Fix CSP in `index.html` — add `challenges.cloudflare.com` to `script-src` and `frame-src` so Turnstile widget loads in production
 37. Cloudflare Turnstile dashboard — add production Vercel domain to allowed domains list
 38. Vercel env vars — set `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_CAPTCHA_SITE_KEY` in Vercel project settings
 39. Supabase redirect URL — add production Vercel domain to Auth → URL Configuration → Redirect URLs
