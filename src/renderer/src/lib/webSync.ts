@@ -62,7 +62,7 @@ function todoToRow(t: Todo, userId: string) {
     title: t.title,
     description: t.description ?? null,
     sort_order: t.order,
-    completed: t.completed,
+    completed: t.completed ? 1 : 0,
     completed_at: t.completedAt ?? null,
     created_at: t.createdAt,
     updated_at: t.updatedAt,
