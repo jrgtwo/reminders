@@ -1,6 +1,7 @@
 import { create } from 'zustand'
  import { immer } from 'zustand/middleware/immer'
  import type { Todo } from '../types/models'
+ import { capture } from '../lib/analytics'
 
  interface TodosState {
    todos: Todo[]
@@ -25,18 +26,21 @@ import { create } from 'zustand'
 
      save: async (t) => {
        const { getStorage } = await import('../platform')
+       const isNew = !useTodosStore.getState().todos.find((x) => x.id === t.id)
        const saved = await getStorage().saveTodo(t)
        set((s) => {
          const idx = s.todos.findIndex((x) => x.id === saved.id)
          if (idx >= 0) s.todos[idx] = saved
          else s.todos.push(saved)
        })
+       capture(isNew ? 'todo_created' : 'todo_updated')
      },
 
      remove: async (id) => {
        const { getStorage } = await import('../platform')
        await getStorage().deleteTodo(id)
        set((s) => { s.todos = s.todos.filter((t) => t.id !== id) })
+       capture('todo_deleted')
      },
 
      reorder: async (orderedIds) => {
@@ -49,6 +53,7 @@ import { create } from 'zustand'
          .filter(Boolean) as Todo[]
        set((s) => { s.todos = sorted })
        await getStorage().reorderTodos(orderedIds)
+       capture('todos_reordered', { count: orderedIds.length })
      },
    }))
  )

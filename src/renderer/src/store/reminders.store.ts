@@ -1,6 +1,7 @@
 import { create } from 'zustand'
  import { immer } from 'zustand/middleware/immer'
  import type { Reminder } from '../types/models'
+ import { capture } from '../lib/analytics'
 
  interface RemindersState {
    reminders: Reminder[]
@@ -25,11 +26,17 @@ import { create } from 'zustand'
 
      save: async (r) => {
        const { getStorage } = await import('../platform')
+       const isNew = !useRemindersStore.getState().reminders.find((x) => x.id === r.id)
        const saved = await getStorage().saveReminder(r)
        set((s) => {
          const idx = s.reminders.findIndex((x) => x.id === saved.id)
          if (idx >= 0) s.reminders[idx] = saved
          else s.reminders.push(saved)
+       })
+       capture(isNew ? 'reminder_created' : 'reminder_updated', {
+         has_time: !!saved.time,
+         has_recurrence: !!saved.recurrence,
+         recurrence_frequency: saved.recurrence?.frequency ?? null,
        })
      },
 
@@ -37,10 +44,13 @@ import { create } from 'zustand'
        const { getStorage } = await import('../platform')
        await getStorage().deleteReminder(id)
        set((s) => { s.reminders = s.reminders.filter((r) => r.id !== id) })
+       capture('reminder_deleted')
      },
 
      toggleComplete: async (id, date) => {
        const { getStorage } = await import('../platform')
+       const wasCompleted = !!useRemindersStore.getState().reminders
+         .find((x) => x.id === id)?.completedDates.includes(date)
        let updated: Reminder | null = null
        set((s) => {
          const r = s.reminders.find((x) => x.id === id)
@@ -52,7 +62,10 @@ import { create } from 'zustand'
          // Capture a plain object — Immer draft proxies must not escape the producer
          updated = { ...r, completedDates: [...r.completedDates] }
        })
-       if (updated) getStorage().saveReminder(updated)
+       if (updated) {
+         getStorage().saveReminder(updated)
+         capture('reminder_toggled', { completed: !wasCompleted })
+       }
      },
    }))
  )

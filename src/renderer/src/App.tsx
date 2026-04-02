@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNotifications } from './hooks/useNotifications'
 import { useAuthStore } from './store/auth.store'
+import { identifyUser, resetUser } from './lib/analytics'
 import { useSyncStore } from './store/sync.store'
 import FirstLoginDialog from './components/sync/FirstLoginDialog'
 import { RouterProvider, createMemoryRouter, createBrowserRouter } from 'react-router-dom'
@@ -124,6 +125,17 @@ export default function App() {
     const api = (window as any).electronAPI
     if (!api?.onNavigate) return
     api.onNavigate((path: string) => router.navigate(path))
+  }, [])
+
+  useEffect(() => {
+    return useAuthStore.subscribe((state, prev) => {
+      if (!prev.isLoggedIn && state.isLoggedIn && state.user) {
+        identifyUser(state.user.id, state.user.email ?? '')
+      }
+      if (prev.isLoggedIn && !state.isLoggedIn) {
+        resetUser()
+      }
+    })
   }, [])
 
   if (!ready || !authReady) return null

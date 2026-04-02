@@ -4,6 +4,7 @@ import { useRemindersStore } from './reminders.store'
 import { useNotesStore } from './notes.store'
 import { useTodosStore } from './todos.store'
 import { webSync, webCheckFirstLogin, webMarkFirstLoginDone } from '../lib/webSync'
+import { capture } from '../lib/analytics'
 
 type SyncStatus = 'idle' | 'syncing' | 'error'
 export type MigrationCase = 'local-only' | 'cloud-only' | 'both' | 'neither'
@@ -49,6 +50,7 @@ export const useSyncStore = create<SyncState>((set, get) => ({
         result = await webSync(session)
       }
       set({ status: 'idle', lastSyncedAt: result.lastSyncedAt })
+      capture('sync_completed', { last_synced_at: result.lastSyncedAt })
       await Promise.all([
         useRemindersStore.getState().load(),
         useNotesStore.getState().loadNoteDates(),
@@ -108,6 +110,7 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     const { session, user } = useAuthStore.getState()
     if (!user) return
 
+    capture('sync_first_login_migration', { action, migration_case: get().migrationCase })
     set({ migrationCase: null })
 
     if (action === 'sync' && session) {

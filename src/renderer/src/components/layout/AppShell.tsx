@@ -6,6 +6,7 @@ import RightSidebar from './RightSidebar'
 import BottomNav from './BottomNav'
 import SearchBar from './SearchBar'
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts'
+import { usePageTracking } from '../../hooks/usePageTracking'
 import { useUIStore } from '../../store/ui.store'
 import { useRemindersStore } from '../../store/reminders.store'
 import { useTodosStore } from '../../store/todos.store'
@@ -71,6 +72,7 @@ export default function AppShell() {
   const showErrorBanner = isLoggedIn && syncStatus === 'error' && !errorDismissed
 
   useKeyboardShortcuts(focusSearch)
+  usePageTracking()
 
   return (
     <div className="flex flex-col h-screen bg-[#F3F4F6] dark:bg-[#0d1117] text-slate-900 dark:text-slate-100 relative overflow-hidden">

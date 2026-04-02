@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
+import { capture } from '../lib/analytics'
 
 interface AuthState {
   user: User | null
@@ -59,9 +60,11 @@ export const useAuthStore = create<AuthState>((set) => ({
       options: { emailRedirectTo: redirectTo, captchaToken },
     })
     if (error) throw error
+    capture('auth_magic_link_sent')
   },
 
   signOut: async () => {
+    capture('auth_signed_out')
     await supabase.auth.signOut()
     set({ user: null, session: null, isLoggedIn: false })
   },

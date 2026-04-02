@@ -13,7 +13,7 @@ export default defineConfig({
   resolve: {
     alias: { '@renderer': resolve('src/renderer/src') },
   },
-  plugins: [basicSsl(), react(), tailwindcss()],
+  plugins: [basicSsl({ domains: ['local.remindertoday.com'] }), react(), tailwindcss()],
   build: {
     outDir: resolve('dist/renderer'),
     emptyOutDir: true,

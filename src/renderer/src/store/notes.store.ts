@@ -1,6 +1,7 @@
 import { create } from 'zustand'
  import { immer } from 'zustand/middleware/immer'
  import type { Note } from '../types/models'
+ import { capture } from '../lib/analytics'
 
  interface NotesState {
    notes: Record<string, Note>
@@ -36,6 +37,7 @@ import { create } from 'zustand'
          s.notes[saved.date] = saved
          if (!s.noteDates.includes(saved.date)) s.noteDates.push(saved.date)
        })
+       capture('note_saved', { date: saved.date, content_length: saved.content.length })
      },
    }))
  )

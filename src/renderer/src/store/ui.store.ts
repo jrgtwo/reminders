@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { capture } from '../lib/analytics'
 
 type View = 'month' | 'week' | 'day'
 
@@ -37,7 +38,7 @@ export const useUIStore = create<UIState>()(
       newReminderDate: null,
       setLeftOpen: (v) => set({ leftOpen: v }),
       setRightOpen: (v) => set({ rightOpen: v }),
-      setView: (v) => set({ currentView: v }),
+      setView: (v) => { set({ currentView: v }); capture('ui_view_changed', { view: v }) },
       setSelectedDate: (d) => set({ selectedDate: d }),
       setTriggerNewTodo: (v) => set({ triggerNewTodo: v }),
       setTriggerNewReminder: (v) => set({ triggerNewReminder: v }),
@@ -46,6 +47,7 @@ export const useUIStore = create<UIState>()(
         set((s) => {
           const next = !s.darkMode
           document.documentElement.classList.toggle('dark', next)
+          capture('ui_dark_mode_toggled', { dark_mode: next })
           return { darkMode: next }
         }),
     }),
