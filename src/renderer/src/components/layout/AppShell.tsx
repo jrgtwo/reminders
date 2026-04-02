@@ -77,78 +77,59 @@ export default function AppShell() {
   return (
     <div className="flex flex-col h-screen bg-[var(--bg-app)] text-slate-900 dark:text-slate-100 relative overflow-hidden">
       {/* Top header */}
-      <header className="relative flex items-center gap-3 px-4 py-0 border-b border-black/30 dark:border-black/60 shrink-0 bg-[var(--bg-header)] h-11">
-        {/* Brand + stats */}
-        <div className="hidden md:flex items-center gap-4 shrink-0">
-          <span className="text-[13px] font-semibold text-white/90">
-            Reminders
+      <header className="relative flex flex-col border-b border-black/30 dark:border-black/60 shrink-0 bg-[var(--bg-header)]">
+        {/* Row 1: brand + sync + settings */}
+        <div className="flex items-center justify-between px-4 h-10 border-b border-white/[0.06]">
+          <span className="text-[15px] font-bold tracking-tight text-white">
+            ReminderToday
           </span>
-          <div className="h-3.5 w-px bg-white/10" />
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5">
-              <span
-                className={`text-[11px] font-bold tabular-nums ${overdueCount > 0 ? 'text-red-400' : 'text-white/25'}`}
-              >
-                {overdueCount}
-              </span>
-              <span className={`text-[11px] ${overdueCount > 0 ? 'text-red-400/70' : 'text-white/20'}`}>
-                overdue
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span
-                className={`text-[11px] font-bold tabular-nums ${upcomingCount > 0 ? 'text-white/80' : 'text-white/25'}`}
-              >
-                {upcomingCount}
-              </span>
-              <span className={`text-[11px] ${upcomingCount > 0 ? 'text-white/40' : 'text-white/20'}`}>
-                upcoming
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span
-                className={`text-[11px] font-bold tabular-nums ${todoCount > 0 ? 'text-blue-400' : 'text-white/25'}`}
-              >
-                {todoCount}
-              </span>
-              <span className={`text-[11px] ${todoCount > 0 ? 'text-blue-400/70' : 'text-white/20'}`}>
-                todos
-              </span>
-            </div>
+          <div className="flex items-center gap-2">
+            {isLoggedIn && (
+              <div className="flex items-center gap-1.5 text-[10px] text-white/30">
+                {syncStatus === 'syncing' ? (
+                  <>
+                    <Loader2 size={11} className="animate-spin" />
+                    <span>Syncing</span>
+                  </>
+                ) : syncStatus === 'error' ? (
+                  <CloudOff size={12} className="text-red-400" />
+                ) : lastSyncedAt ? (
+                  <>
+                    <Cloud size={11} />
+                    <span>{formatLastSynced(lastSyncedAt)}</span>
+                  </>
+                ) : null}
+              </div>
+            )}
+            <button
+              onClick={() => navigate('/settings')}
+              className="w-7 h-7 flex items-center justify-center rounded text-white/30 hover:text-white/80 hover:bg-white/[0.08] transition-all"
+              title="Settings (Ctrl+,)"
+            >
+              <Settings size={14} />
+            </button>
           </div>
         </div>
 
-        {/* Search — centered */}
-        <div className="flex-1 flex justify-center">
-          <SearchBar ref={searchRef} />
-        </div>
-
-        {/* Right: sync + settings */}
-        <div className="flex items-center gap-2 shrink-0">
-          {isLoggedIn && (
-            <div className="hidden md:flex items-center gap-1.5 text-[10px] text-white/30">
-              {syncStatus === 'syncing' ? (
-                <>
-                  <Loader2 size={11} className="animate-spin" />
-                  <span>Syncing</span>
-                </>
-              ) : syncStatus === 'error' ? (
-                <CloudOff size={12} className="text-red-400" />
-              ) : lastSyncedAt ? (
-                <>
-                  <Cloud size={11} />
-                  <span>{formatLastSynced(lastSyncedAt)}</span>
-                </>
-              ) : null}
+        {/* Row 2: stats + search */}
+        <div className="flex items-center gap-3 px-4 h-11">
+          <div className="hidden md:flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-1.5">
+              <span className={`text-[11px] font-bold tabular-nums ${overdueCount > 0 ? 'text-red-400' : 'text-white/25'}`}>{overdueCount}</span>
+              <span className={`text-[11px] ${overdueCount > 0 ? 'text-red-400/70' : 'text-white/20'}`}>overdue</span>
             </div>
-          )}
-          <button
-            onClick={() => navigate('/settings')}
-            className="w-7 h-7 flex items-center justify-center rounded text-white/30 hover:text-white/80 hover:bg-white/[0.08] transition-all"
-            title="Settings (Ctrl+,)"
-          >
-            <Settings size={14} />
-          </button>
+            <div className="flex items-center gap-1.5">
+              <span className={`text-[11px] font-bold tabular-nums ${upcomingCount > 0 ? 'text-white/80' : 'text-white/25'}`}>{upcomingCount}</span>
+              <span className={`text-[11px] ${upcomingCount > 0 ? 'text-white/40' : 'text-white/20'}`}>upcoming</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className={`text-[11px] font-bold tabular-nums ${todoCount > 0 ? 'text-blue-400' : 'text-white/25'}`}>{todoCount}</span>
+              <span className={`text-[11px] ${todoCount > 0 ? 'text-blue-400/70' : 'text-white/20'}`}>todos</span>
+            </div>
+          </div>
+          <div className="flex-1 flex justify-center">
+            <SearchBar ref={searchRef} />
+          </div>
         </div>
       </header>
 

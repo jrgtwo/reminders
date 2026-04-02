@@ -63,7 +63,7 @@ export default function CalendarDay({
     <button
       onClick={onClick}
       className={[
-        'relative flex flex-col items-start w-full text-left cursor-pointer',
+        'relative flex flex-col items-start w-full text-left cursor-pointer rounded-xl overflow-hidden',
         'transition-all duration-150',
         'z-0 hover:z-10',
         tall ? 'p-3.5 gap-2 min-h-[110px]' : 'p-2.5 gap-1.5 min-h-[76px]',

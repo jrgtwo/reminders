@@ -12,7 +12,7 @@ export default function BottomNav() {
   const location = useLocation()
 
   return (
-    <nav className="md:hidden flex border-t border-gray-200 dark:border-gray-700 bg-[var(--bg-surface)]">
+    <nav className="md:hidden flex border-t border-gray-200 dark:border-[var(--border)] bg-[var(--bg-surface)]">
       {tabs.map(({ label, icon: Icon, path }) => {
         const active = location.pathname === path
         return (

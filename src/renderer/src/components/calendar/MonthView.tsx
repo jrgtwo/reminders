@@ -46,7 +46,7 @@ export default function MonthView({ displayDate }: Props) {
   }
 
   return (
-    <div className="flex flex-col flex-1 overflow-hidden">
+    <div className="flex flex-col flex-1 overflow-auto">
       {/* Day names */}
       <div className="grid grid-cols-7 border-b border-slate-200/60 dark:border-white/[0.06] bg-[var(--bg-app)]">
         {DAY_NAMES.map((name) => (
@@ -59,7 +59,7 @@ export default function MonthView({ displayDate }: Props) {
         ))}
       </div>
       {/* Grid */}
-      <div className="grid grid-cols-7 auto-rows-[1fr] flex-1 gap-[1px] bg-slate-200 dark:bg-[var(--bg-grid)]">
+      <div className="grid grid-cols-7 auto-rows-[minmax(90px,120px)] gap-2 bg-[var(--bg-app)] p-2">
         {days.map((day) => (
           <CalendarDay
             key={day.toString()}

@@ -106,7 +106,7 @@ function TBtn({ icon, label, onClick }: { icon: ReactNode; label: string; onClic
       title={label}
       onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
-      className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+      className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[var(--bg-elevated)] hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
     >
       {icon}
     </button>
@@ -194,11 +194,11 @@ function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
   return (
     <>
       {/* Toolbar */}
-      <div className="border-b border-gray-200 dark:border-gray-700">
+      <div className="border-b border-gray-200 dark:border-[var(--border)]">
         <div ref={containerRef} className="flex items-center gap-0.5 px-2 py-1">
           {visibleDefs.map((def) =>
             def.type === 'divider' ? (
-              <div key={def.key} className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1 flex-shrink-0" />
+              <div key={def.key} className="w-px h-5 bg-gray-200 dark:bg-[var(--bg-elevated)] mx-1 flex-shrink-0" />
             ) : (
               <TBtn key={def.key} icon={def.icon} label={def.label} onClick={() => handleDef(def)} />
             ),
@@ -211,14 +211,14 @@ function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
                 onClick={() => setDropdownOpen((o) => !o)}
               />
               {dropdownOpen && (
-                <div className="absolute right-0 top-full mt-1 z-50 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1 min-w-[168px]">
+                <div className="absolute right-0 top-full mt-1 z-50 bg-white dark:bg-[var(--bg-card)] border border-gray-200 dark:border-[var(--border)] rounded-lg shadow-lg py-1 min-w-[168px]">
                   {overflowDefs.map((def) => (
                     <button
                       key={def.key}
                       type="button"
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => handleDef(def)}
-                      className="w-full flex items-center gap-3 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      className="w-full flex items-center gap-3 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[var(--bg-elevated)] transition-colors"
                     >
                       <span className="text-gray-500 dark:text-gray-400">{def.icon}</span>
                       {def.label}
@@ -242,7 +242,7 @@ function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
                 if (e.key === 'Escape') { setLinkOpen(false); setLinkUrl('') }
               }}
               placeholder="https://..."
-              className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 rounded-lg border border-gray-300 dark:border-[var(--border)] bg-white dark:bg-[var(--bg-card)] text-gray-900 dark:text-gray-100 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <button
               type="button"
@@ -254,7 +254,7 @@ function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
             <button
               type="button"
               onClick={() => { setLinkOpen(false); setLinkUrl('') }}
-              className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+              className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[var(--bg-elevated)] rounded-lg transition-colors"
             >
               Cancel
             </button>
@@ -278,14 +278,14 @@ function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
           [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-5 [&_.ProseMirror_ul]:mb-2
           [&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-5 [&_.ProseMirror_ol]:mb-2
           [&_.ProseMirror_li]:mb-0.5
-          [&_.ProseMirror_blockquote]:border-l-4 [&_.ProseMirror_blockquote]:border-gray-300 [&_.ProseMirror_blockquote]:dark:border-gray-600 [&_.ProseMirror_blockquote]:pl-3 [&_.ProseMirror_blockquote]:text-gray-500 [&_.ProseMirror_blockquote]:italic
-          [&_.ProseMirror_code]:bg-gray-200 [&_.ProseMirror_code]:dark:bg-gray-700 [&_.ProseMirror_code]:px-1 [&_.ProseMirror_code]:rounded [&_.ProseMirror_code]:text-xs [&_.ProseMirror_code]:font-mono
-          [&_.ProseMirror_pre]:bg-gray-200 [&_.ProseMirror_pre]:dark:bg-gray-700 [&_.ProseMirror_pre]:p-3 [&_.ProseMirror_pre]:rounded-lg [&_.ProseMirror_pre]:mb-2 [&_.ProseMirror_pre]:overflow-x-auto
+          [&_.ProseMirror_blockquote]:border-l-4 [&_.ProseMirror_blockquote]:border-gray-300 [&_.ProseMirror_blockquote]:dark:border-[var(--border)] [&_.ProseMirror_blockquote]:pl-3 [&_.ProseMirror_blockquote]:text-gray-500 [&_.ProseMirror_blockquote]:italic
+          [&_.ProseMirror_code]:bg-gray-200 [&_.ProseMirror_code]:dark:bg-[var(--bg-elevated)] [&_.ProseMirror_code]:px-1 [&_.ProseMirror_code]:rounded [&_.ProseMirror_code]:text-xs [&_.ProseMirror_code]:font-mono
+          [&_.ProseMirror_pre]:bg-gray-200 [&_.ProseMirror_pre]:dark:bg-[var(--bg-elevated)] [&_.ProseMirror_pre]:p-3 [&_.ProseMirror_pre]:rounded-lg [&_.ProseMirror_pre]:mb-2 [&_.ProseMirror_pre]:overflow-x-auto
           [&_.ProseMirror_a]:text-blue-600 [&_.ProseMirror_a]:underline
           [&_.ProseMirror_strong]:font-semibold
           [&_.ProseMirror_em]:italic
           [&_.ProseMirror_s]:line-through
-          [&_.ProseMirror_hr]:border-gray-300 [&_.ProseMirror_hr]:dark:border-gray-600 [&_.ProseMirror_hr]:my-3
+          [&_.ProseMirror_hr]:border-gray-300 [&_.ProseMirror_hr]:dark:border-[var(--border)] [&_.ProseMirror_hr]:my-3
         "
       >
         <Milkdown />
@@ -331,7 +331,7 @@ export default function NoteEditor({ date }: Props) {
   if (!loaded) return <div className="mb-8 min-h-[200px]" />
 
   return (
-    <div className="mb-8 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40 resize-y overflow-auto min-h-[200px]">
+    <div className="mb-8 rounded-lg border border-gray-200 dark:border-[var(--border)] bg-gray-50 dark:bg-[var(--bg-card)] resize-y overflow-auto min-h-[200px]">
       <MilkdownProvider key={date}>
         <EditorWithToolbar initialContent={initialContent} onChange={handleChange} />
       </MilkdownProvider>
