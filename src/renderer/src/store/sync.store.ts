@@ -28,6 +28,9 @@ const supabaseConfig = {
 
 const isElectron = () => !!(window as any).electronAPI
 
+const SYNC_INTERVAL_MS = 30_000  // poll every 30s while tab is visible
+const SYNC_COOLDOWN_MS = 15_000  // skip visibility trigger if last sync was recent
+
 export const useSyncStore = create<SyncState>((set, get) => ({
   status: 'idle',
   lastSyncedAt: null,
@@ -36,6 +39,7 @@ export const useSyncStore = create<SyncState>((set, get) => ({
 
   trigger: async () => {
     if (get().checkingFirstLogin) return
+    if (get().status === 'syncing') return
 
     const session = useAuthStore.getState().session
     if (!session) return
@@ -126,9 +130,21 @@ export const useSyncStore = create<SyncState>((set, get) => ({
   },
 
   init: () => {
-    // Covers tab switching (same browser window) and returning from other apps
+    // Periodic sync while tab is visible
+    setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        useSyncStore.getState().trigger()
+      }
+    }, SYNC_INTERVAL_MS)
+
+    // Immediate sync on tab focus — skip if last sync was recent
     document.addEventListener('visibilitychange', () => {
-      useSyncStore.getState().trigger()
+      if (document.visibilityState !== 'visible') return
+      const last = useSyncStore.getState().lastSyncedAt
+      const elapsed = last ? Date.now() - new Date(last).getTime() : Infinity
+      if (elapsed >= SYNC_COOLDOWN_MS) {
+        useSyncStore.getState().trigger()
+      }
     })
 
     useAuthStore.subscribe((state, prev) => {
