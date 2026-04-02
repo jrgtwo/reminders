@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNotifications } from './hooks/useNotifications'
 import { useAuthStore } from './store/auth.store'
 import { identifyUser, resetUser } from './lib/analytics'
+import { Analytics } from '@vercel/analytics/react'
 import { useSyncStore } from './store/sync.store'
 import FirstLoginDialog from './components/sync/FirstLoginDialog'
 import { RouterProvider, createMemoryRouter, createBrowserRouter } from 'react-router-dom'
@@ -146,6 +147,7 @@ export default function App() {
     <>
       <RouterProvider router={router} />
       <FirstLoginDialog />
+      <Analytics />
     </>
   )
 }
