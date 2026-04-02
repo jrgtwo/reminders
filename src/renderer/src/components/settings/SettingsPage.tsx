@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { ArrowLeft, Moon, Sun, Download, Upload, Check, AlertCircle, LogOut, Mail, RefreshCw, Cloud, CloudOff } from 'lucide-react'
+import { ArrowLeft, Download, Upload, Check, AlertCircle, LogOut, Mail, RefreshCw, Cloud, CloudOff } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { useUIStore } from '../../store/ui.store'
+import { useUIStore, type Theme } from '../../store/ui.store'
 import { useAuthStore } from '../../store/auth.store'
 import { useSyncStore } from '../../store/sync.store'
 import Button from '../ui/Button'
@@ -17,8 +17,8 @@ function formatLastSynced(isoStr: string): string {
 
 export default function SettingsPage() {
   const navigate = useNavigate()
-  const darkMode = useUIStore((s) => s.darkMode)
-  const toggleDarkMode = useUIStore((s) => s.toggleDarkMode)
+  const theme = useUIStore((s) => s.theme)
+  const setTheme = useUIStore((s) => s.setTheme)
   const { user, isLoggedIn, sendMagicLink, signOut } = useAuthStore()
   const syncStatus = useSyncStore((s) => s.status)
   const lastSyncedAt = useSyncStore((s) => s.lastSyncedAt)
@@ -175,23 +175,43 @@ export default function SettingsPage() {
         <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
           Appearance
         </h2>
-        <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800">
-          <div className="flex items-center gap-3">
-            {darkMode ? (
-              <Moon size={16} className="text-gray-600 dark:text-gray-300" />
-            ) : (
-              <Sun size={16} className="text-gray-600 dark:text-gray-300" />
-            )}
-            <span className="text-sm font-medium">Dark mode</span>
+        <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800 space-y-3">
+          <p className="text-sm font-medium">Theme</p>
+          <div className="grid grid-cols-4 gap-3">
+            {(
+              [
+                { id: 'light',    label: 'Light',    header: '#1c1f26', body: '#F3F4F6' },
+                { id: 'dark',     label: 'Dark',     header: '#010409', body: '#0d1117' },
+                { id: 'dim',      label: 'Dim',      header: '#1c2128', body: '#22272e' },
+                { id: 'warm',     label: 'Warm',     header: '#100e0a', body: '#18150f' },
+                { id: 'midnight', label: 'Midnight', header: '#060606', body: '#000000' },
+                { id: 'nord',     label: 'Nord',     header: '#242933', body: '#2e3440' },
+                { id: 'forest',   label: 'Forest',   header: '#0d150d', body: '#141f14' },
+                { id: 'dusk',     label: 'Dusk',     header: '#0f0a16', body: '#16101e' },
+                { id: 'grey',     label: 'Grey',     header: '#111111', body: '#1a1a1a' },
+              ] as { id: Theme; label: string; header: string; body: string }[]
+            ).map(({ id, label, header, body }) => (
+              <button
+                key={id}
+                onClick={() => setTheme(id)}
+                className={`flex flex-col items-center gap-2 group`}
+              >
+                <div
+                  className={`w-full aspect-[4/3] rounded-lg overflow-hidden border-2 transition-all ${
+                    theme === id
+                      ? 'border-blue-500 shadow-md shadow-blue-500/20'
+                      : 'border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20'
+                  }`}
+                >
+                  <div className="h-[30%]" style={{ background: header }} />
+                  <div className="h-[70%]" style={{ background: body }} />
+                </div>
+                <span className={`text-xs font-medium ${theme === id ? 'text-blue-500' : 'text-gray-400 dark:text-gray-500'}`}>
+                  {label}
+                </span>
+              </button>
+            ))}
           </div>
-          <button
-            onClick={toggleDarkMode}
-            className={`relative w-10 h-6 rounded-full transition-colors ${darkMode ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`}
-          >
-            <span
-              className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${darkMode ? 'translate-x-4' : 'translate-x-0'}`}
-            />
-          </button>
         </div>
       </section>
 

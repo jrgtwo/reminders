@@ -46,7 +46,7 @@ export default function WeekView({ displayDate }: Props) {
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
       {/* Day names */}
-      <div className="grid grid-cols-7 border-b border-slate-200/60 dark:border-white/[0.06] bg-[#F3F4F6] dark:bg-[#0d1117]">
+      <div className="grid grid-cols-7 border-b border-slate-200/60 dark:border-white/[0.06] bg-[var(--bg-app)]">
         {DAY_NAMES.map((name) => (
           <div
             key={name}
@@ -57,7 +57,7 @@ export default function WeekView({ displayDate }: Props) {
         ))}
       </div>
       {/* Grid */}
-      <div className="grid grid-cols-7 flex-1 gap-[2px] bg-slate-200/60 dark:bg-white/[0.04]">
+      <div className="grid grid-cols-7 flex-1 gap-[2px] bg-slate-200/60 dark:bg-[var(--bg-grid)]">
         {days.map((day) => (
           <CalendarDay
             key={day.toString()}

@@ -110,15 +110,17 @@ const router = isElectronOrCapacitor
 export default function App() {
   const [ready, setReady] = useState(false)
   const [authReady, setAuthReady] = useState(false)
-  const darkMode = useUIStore((s) => s.darkMode)
+  const theme = useUIStore((s) => s.theme)
+  const setTheme = useUIStore((s) => s.setTheme)
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn)
   const initAuth = useAuthStore((s) => s.init)
   const initSync = useSyncStore((s) => s.init)
   useNotifications()
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', darkMode)
-  }, [darkMode])
+    setTheme(theme)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     initStorage().then(() => setReady(true))

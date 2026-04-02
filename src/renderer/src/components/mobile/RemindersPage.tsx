@@ -45,7 +45,7 @@ export default function RemindersPage() {
   }, [reminders])
 
   return (
-    <div className="flex flex-col h-full bg-[#F3F4F6] dark:bg-[#0d1117]">
+    <div className="flex flex-col h-full bg-[var(--bg-app)]">
       <div className="flex items-center justify-between px-4 py-3 border-b border-black/10 dark:border-white/[0.07]">
         <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-white/40">Schedule</span>
         <button

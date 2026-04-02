@@ -75,9 +75,9 @@ export default function AppShell() {
   usePageTracking()
 
   return (
-    <div className="flex flex-col h-screen bg-[#F3F4F6] dark:bg-[#0d1117] text-slate-900 dark:text-slate-100 relative overflow-hidden">
+    <div className="flex flex-col h-screen bg-[var(--bg-app)] text-slate-900 dark:text-slate-100 relative overflow-hidden">
       {/* Top header */}
-      <header className="relative flex items-center gap-3 px-4 py-0 border-b border-black/30 dark:border-black/60 shrink-0 bg-[#1c1f26] dark:bg-[#010409] h-11">
+      <header className="relative flex items-center gap-3 px-4 py-0 border-b border-black/30 dark:border-black/60 shrink-0 bg-[var(--bg-header)] h-11">
         {/* Brand + stats */}
         <div className="hidden md:flex items-center gap-4 shrink-0">
           <span className="text-[13px] font-semibold text-white/90">
@@ -172,7 +172,7 @@ export default function AppShell() {
         <div className="hidden md:flex">
           <LeftSidebar />
         </div>
-        <main className="flex-1 overflow-auto bg-[#F3F4F6] dark:bg-[#0d1117]">
+        <main className="flex-1 overflow-auto bg-[var(--bg-app)]">
           <Outlet />
         </main>
         <div className="hidden md:flex">

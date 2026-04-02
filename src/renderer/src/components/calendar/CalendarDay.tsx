@@ -8,18 +8,18 @@ function getEventColor(date: Temporal.PlainDate): { dot: string; text: string; c
     return {
       dot: 'bg-red-400',
       text: 'text-red-600 dark:text-red-400',
-      chip: 'bg-red-50 text-red-700 dark:bg-red-500/[0.15] dark:text-red-300',
+      chip: 'bg-red-50 text-red-700 dark:bg-red-500/[0.07] dark:text-red-300',
     }
   if (cmp === 0)
     return {
       dot: 'bg-amber-400',
       text: 'text-amber-700 dark:text-amber-400',
-      chip: 'bg-amber-50 text-amber-800 dark:bg-amber-400/[0.15] dark:text-amber-300',
+      chip: 'bg-amber-50 text-amber-800 dark:bg-amber-400/[0.07] dark:text-amber-300',
     }
   return {
     dot: 'bg-indigo-400',
     text: 'text-indigo-600 dark:text-indigo-400',
-    chip: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/[0.12] dark:text-indigo-300',
+    chip: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/[0.07] dark:text-indigo-300',
   }
 }
 
@@ -50,13 +50,13 @@ export default function CalendarDay({
 
   let bg: string
   if (isSelected) {
-    bg = 'bg-white dark:bg-[#1a2540]'
+    bg = 'bg-[var(--bg-surface-selected)]'
   } else if (todayDate) {
-    bg = 'bg-blue-50 dark:bg-blue-950/60'
+    bg = 'bg-blue-50 dark:bg-[var(--bg-surface)]'
   } else if (!inMonth) {
-    bg = 'bg-slate-50 dark:bg-[#0b0e14]'
+    bg = 'bg-[var(--bg-surface-muted)]'
   } else {
-    bg = 'bg-white dark:bg-[#13171f]'
+    bg = 'bg-[var(--bg-surface)]'
   }
 
   return (

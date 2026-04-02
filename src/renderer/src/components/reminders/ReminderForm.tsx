@@ -115,7 +115,7 @@ export default function ReminderForm({ date, reminder, onSave, onClose }: Props)
           </div>
         )}
 
-        <div className="flex justify-end gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex justify-end gap-2 pt-2 border-t border-gray-200 dark:border-[var(--border)]">
           <Button type="button" variant="ghost" onClick={onClose}>
             Cancel
           </Button>

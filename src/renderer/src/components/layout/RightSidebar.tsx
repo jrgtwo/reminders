@@ -60,12 +60,12 @@ export default function RightSidebar() {
   return (
     <>
       <aside
-        className={`flex flex-col border-l border-slate-300/60 dark:border-white/[0.07] transition-[width] duration-200 overflow-hidden bg-[#F3F4F6] dark:bg-[#0d1117] ${
+        className={`flex flex-col border-l border-slate-300/60 dark:border-white/[0.07] transition-[width] duration-200 overflow-hidden bg-[var(--bg-app)] ${
           rightOpen ? 'w-64' : 'w-11'
         }`}
       >
         {/* Header */}
-        <div className="flex items-center px-3 py-2.5 border-b border-black/30 dark:border-black/60 bg-[#1c1f26] dark:bg-[#010409] shrink-0 h-11">
+        <div className="flex items-center px-3 py-2.5 border-b border-black/30 dark:border-black/60 bg-[var(--bg-header)] shrink-0 h-11">
           <button
             onClick={() => setRightOpen(!rightOpen)}
             className={`w-6 h-6 flex items-center justify-center rounded text-white/25 hover:text-white/70 hover:bg-white/[0.08] transition-all ${rightOpen ? '' : 'mx-auto'}`}

@@ -3,13 +3,14 @@ import { persist } from 'zustand/middleware'
 import { capture } from '../lib/analytics'
 
 type View = 'month' | 'week' | 'day'
+export type Theme = 'light' | 'dark' | 'warm' | 'midnight' | 'dim' | 'nord' | 'forest' | 'dusk' | 'grey'
 
 interface UIState {
   leftOpen: boolean
   rightOpen: boolean
   currentView: View
   selectedDate: string   // 'YYYY-MM-DD'
-  darkMode: boolean
+  theme: Theme
   triggerNewTodo: boolean
   triggerNewReminder: boolean
   newReminderDate: string | null
@@ -17,10 +18,19 @@ interface UIState {
   setRightOpen: (v: boolean) => void
   setView: (v: View) => void
   setSelectedDate: (d: string) => void
-  toggleDarkMode: () => void
+  setTheme: (theme: Theme) => void
   setTriggerNewTodo: (v: boolean) => void
   setTriggerNewReminder: (v: boolean) => void
   setNewReminderDate: (date: string | null) => void
+}
+
+const THEME_CLASSES = ['theme-warm', 'theme-midnight', 'theme-dim', 'theme-nord', 'theme-forest', 'theme-dusk', 'theme-grey']
+
+function applyTheme(theme: Theme) {
+  const root = document.documentElement
+  root.classList.remove('dark', ...THEME_CLASSES)
+  if (theme !== 'light') root.classList.add('dark')
+  if (theme !== 'light' && theme !== 'dark') root.classList.add(`theme-${theme}`)
 }
 
 const today = () => new Date().toISOString().slice(0, 10)
@@ -32,7 +42,7 @@ export const useUIStore = create<UIState>()(
       rightOpen: true,
       currentView: 'week',
       selectedDate: today(),
-      darkMode: true,
+      theme: 'dark',
       triggerNewTodo: false,
       triggerNewReminder: false,
       newReminderDate: null,
@@ -43,21 +53,19 @@ export const useUIStore = create<UIState>()(
       setTriggerNewTodo: (v) => set({ triggerNewTodo: v }),
       setTriggerNewReminder: (v) => set({ triggerNewReminder: v }),
       setNewReminderDate: (date) => set({ newReminderDate: date }),
-      toggleDarkMode: () =>
-        set((s) => {
-          const next = !s.darkMode
-          document.documentElement.classList.toggle('dark', next)
-          capture('ui_dark_mode_toggled', { dark_mode: next })
-          return { darkMode: next }
-        }),
+      setTheme: (theme) => {
+        applyTheme(theme)
+        capture('ui_theme_changed', { theme })
+        set({ theme })
+      },
     }),
     {
-      name: 'reminders-ui-v2',
+      name: 'reminders-ui-v3',
       partialize: (s) => ({
         leftOpen: s.leftOpen,
         rightOpen: s.rightOpen,
         currentView: s.currentView,
-        darkMode: s.darkMode,
+        theme: s.theme,
       }),
     }
   )

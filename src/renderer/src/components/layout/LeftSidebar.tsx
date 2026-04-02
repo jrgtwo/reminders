@@ -60,12 +60,12 @@ export default function LeftSidebar() {
 
   return (
     <aside
-      className={`flex flex-col border-r border-slate-300/60 dark:border-white/[0.07] transition-[width] duration-200 overflow-hidden bg-[#F3F4F6] dark:bg-[#0d1117] ${
+      className={`flex flex-col border-r border-slate-300/60 dark:border-white/[0.07] transition-[width] duration-200 overflow-hidden bg-[var(--bg-app)] ${
         leftOpen ? 'w-60' : 'w-11'
       }`}
     >
       {/* Header */}
-      <div className="flex items-center px-3 py-2.5 border-b border-black/30 dark:border-black/60 bg-[#1c1f26] dark:bg-[#010409] shrink-0 h-11">
+      <div className="flex items-center px-3 py-2.5 border-b border-black/30 dark:border-black/60 bg-[var(--bg-header)] shrink-0 h-11">
         {leftOpen && (
           <span className="text-[11px] font-semibold text-white/50 flex-1">
             Schedule
@@ -90,7 +90,7 @@ export default function LeftSidebar() {
                   <span className="text-[11px] font-semibold uppercase tracking-wide text-red-500 dark:text-red-400">
                     Overdue
                   </span>
-                  <span className="ml-auto text-[10px] font-bold text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-500/15 px-1.5 py-0.5 rounded-full">
+                  <span className="ml-auto text-[10px] font-bold text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-500/[0.08] px-1.5 py-0.5 rounded-full">
                     {overdue.length}
                   </span>
                 </div>
