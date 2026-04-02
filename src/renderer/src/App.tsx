@@ -18,6 +18,8 @@ import MonthView from './components/calendar/MonthView'
 import WeekView from './components/calendar/WeekView'
 import DayView from './components/DayView'
 import SettingsPage from './components/settings/SettingsPage'
+import RemindersPage from './components/mobile/RemindersPage'
+import TodosPage from './components/mobile/TodosPage'
 import {
   addMonths,
   subMonths,
@@ -90,6 +92,8 @@ const routes = [
     children: [
       { index: true, element: <CalendarPage /> },
       { path: 'day/:date', element: <DayPage /> },
+      { path: 'reminders', element: <RemindersPage /> },
+      { path: 'todos', element: <TodosPage /> },
       { path: 'settings', element: <SettingsPage /> },
     ],
   },

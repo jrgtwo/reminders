@@ -653,15 +653,31 @@ sync(session, config):
 
 ---
 
-### Phase 12 — Packaging & CI — DEFERRED
-> After web launch.
-38. electron-builder configs: Windows NSIS installer, macOS DMG
-39. Playwright e2e tests (renderer in browser)
-40. GitHub Actions CI: lint → typecheck → test → build matrix (Windows + macOS)
+### Phase 12 — Mobile / Responsive Layout
+> The responsive infrastructure exists (BottomNav, hidden sidebars) but the mobile experience is broken and incomplete.
+
+**Broken:**
+44. ✅ Fix BottomNav routing — `/reminders` and `/todos` routes added to router
+45. ✅ Add `/reminders` route — `RemindersPage` (upcoming + overdue list, add button)
+46. ✅ Add `/todos` route — `TodosPage` (full todo list with drag-to-reorder)
+
+**Missing:**
+47. ✅ Viewport meta tag — added to `index.html`
+48. ✅ Make dialogs full-screen on mobile — `Dialog.tsx` updated to full-screen below `sm` breakpoint
+49. ✅ Fix `DayView` padding — changed to `px-4 sm:px-8`
+50. Audit calendar on small screens — `MonthView` and `WeekView` event dots/cells may be too small to tap
 
 ---
 
-### Phase 13 — Mobile (Capacitor) — DEFERRED
+### Phase 13 — Packaging & CI — DEFERRED
+> After web launch.
+51. electron-builder configs: Windows NSIS installer, macOS DMG
+52. Playwright e2e tests (renderer in browser)
+53. GitHub Actions CI: lint → typecheck → test → build matrix (Windows + macOS)
+
+---
+
+### Phase 14 — Mobile (Capacitor) — DEFERRED
 > Complete once the app is functionally stable. No work needed until then.
 38. `npx cap add ios` + `npx cap add android` (creates native projects)
 39. Implement `CapacitorAdapter` using `@capacitor-community/sqlite` (same schema as Electron)

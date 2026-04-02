@@ -61,7 +61,7 @@ export default function DayView() {
   const status = getDayStatus(plainDate)
 
   return (
-    <div className="max-w-2xl mx-auto px-8 py-7">
+    <div className="max-w-2xl mx-auto px-4 sm:px-8 py-7">
       {/* Back */}
       <button
         onClick={() => navigate(-1)}
