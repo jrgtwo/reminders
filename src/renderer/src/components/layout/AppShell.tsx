@@ -80,7 +80,7 @@ export default function AppShell() {
       <header className="relative flex items-center gap-3 px-4 py-0 border-b border-black/30 dark:border-black/60 shrink-0 bg-[#1c1f26] dark:bg-[#010409] h-11">
         {/* Brand + stats */}
         <div className="hidden md:flex items-center gap-4 shrink-0">
-          <span className="text-[11px] font-black text-white/90 tracking-[0.2em] uppercase">
+          <span className="text-[13px] font-semibold text-white/90">
             Reminders
           </span>
           <div className="h-3.5 w-px bg-white/10" />
@@ -91,7 +91,7 @@ export default function AppShell() {
               >
                 {overdueCount}
               </span>
-              <span className={`text-[10px] ${overdueCount > 0 ? 'text-red-400/70' : 'text-white/20'}`}>
+              <span className={`text-[11px] ${overdueCount > 0 ? 'text-red-400/70' : 'text-white/20'}`}>
                 overdue
               </span>
             </div>
@@ -101,7 +101,7 @@ export default function AppShell() {
               >
                 {upcomingCount}
               </span>
-              <span className={`text-[10px] ${upcomingCount > 0 ? 'text-white/40' : 'text-white/20'}`}>
+              <span className={`text-[11px] ${upcomingCount > 0 ? 'text-white/40' : 'text-white/20'}`}>
                 upcoming
               </span>
             </div>
@@ -111,7 +111,7 @@ export default function AppShell() {
               >
                 {todoCount}
               </span>
-              <span className={`text-[10px] ${todoCount > 0 ? 'text-blue-400/70' : 'text-white/20'}`}>
+              <span className={`text-[11px] ${todoCount > 0 ? 'text-blue-400/70' : 'text-white/20'}`}>
                 todos
               </span>
             </div>

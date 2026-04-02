@@ -50,13 +50,13 @@ export default function CalendarDay({
 
   let bg: string
   if (isSelected) {
-    bg = 'bg-white dark:bg-[#131c2e]'
+    bg = 'bg-white dark:bg-[#1a2540]'
   } else if (todayDate) {
-    bg = 'bg-blue-50/70 dark:bg-blue-950/40'
+    bg = 'bg-blue-50 dark:bg-blue-950/60'
   } else if (!inMonth) {
-    bg = 'bg-slate-50 dark:bg-black/20'
+    bg = 'bg-slate-50 dark:bg-[#0b0e14]'
   } else {
-    bg = 'bg-white dark:bg-transparent'
+    bg = 'bg-white dark:bg-[#13171f]'
   }
 
   return (
@@ -81,12 +81,12 @@ export default function CalendarDay({
       <span
         className={[
           'flex items-center justify-center rounded-full shrink-0 font-bold leading-none',
-          tall ? 'w-8 h-8 text-[15px]' : 'w-6 h-6 text-[13px]',
+          tall ? 'w-8 h-8 text-[15px]' : 'w-7 h-7 text-[14px]',
           todayDate
             ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/30'
             : inMonth
-            ? 'text-slate-700 dark:text-white/65'
-            : 'text-slate-300 dark:text-white/15',
+            ? 'text-slate-700 dark:text-white/80'
+            : 'text-slate-300 dark:text-white/20',
         ]
           .filter(Boolean)
           .join(' ')}

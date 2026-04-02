@@ -7,6 +7,15 @@ import { useRemindersStore } from '../../store/reminders.store'
 import { getOccurrencesInRange } from '../../utils/recurrence'
 import { today, parseDateStr } from '../../utils/dates'
 
+function formatOverdueDate(dateStr: string): string {
+  const d = parseDateStr(dateStr)
+  const t = today()
+  const diff = d.until(t, { largestUnit: 'days' }).days
+  if (diff === 1) return 'Yesterday'
+  if (diff < 7) return `${diff} days ago`
+  return d.toLocaleString('en-US', { month: 'short', day: 'numeric' })
+}
+
 function formatUpcomingDate(dateStr: string): string {
   const t = today()
   const d = parseDateStr(dateStr)
@@ -58,7 +67,7 @@ export default function LeftSidebar() {
       {/* Header */}
       <div className="flex items-center px-3 py-2.5 border-b border-black/30 dark:border-black/60 bg-[#1c1f26] dark:bg-[#010409] shrink-0 h-11">
         {leftOpen && (
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 flex-1">
+          <span className="text-[11px] font-semibold text-white/50 flex-1">
             Schedule
           </span>
         )}
@@ -78,7 +87,7 @@ export default function LeftSidebar() {
             {overdue.length > 0 && (
               <div className="border-b border-slate-200 dark:border-white/[0.07]">
                 <div className="flex items-center gap-2 px-4 pt-5 pb-2">
-                  <span className="text-[10px] font-black uppercase tracking-[0.15em] text-red-500 dark:text-red-400">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-red-500 dark:text-red-400">
                     Overdue
                   </span>
                   <span className="ml-auto text-[10px] font-bold text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-500/15 px-1.5 py-0.5 rounded-full">
@@ -92,8 +101,8 @@ export default function LeftSidebar() {
                         onClick={() => navigate(`/day/${item.dateStr}`)}
                         className="w-full text-left px-3 py-2.5 rounded-xl bg-white dark:bg-white/[0.04] hover:bg-red-50 dark:hover:bg-red-500/[0.08] hover:shadow-sm dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.3)] transition-all group"
                       >
-                        <div className="text-[10px] font-semibold text-red-400 dark:text-red-400/70 mb-0.5 uppercase tracking-wide">
-                          {item.dateStr}
+                        <div className="text-[11px] font-semibold text-red-400 dark:text-red-400/80 mb-0.5">
+                          {formatOverdueDate(item.dateStr)}
                         </div>
                         <div className="text-[13px] font-medium text-slate-700 dark:text-white/75 truncate group-hover:text-slate-900 dark:group-hover:text-white">
                           {item.title}
@@ -113,7 +122,7 @@ export default function LeftSidebar() {
             ) : upcoming.length > 0 ? (
               <div>
                 <div className="px-4 pt-5 pb-2">
-                  <span className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 dark:text-white/25">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-white/25">
                     Upcoming
                   </span>
                 </div>

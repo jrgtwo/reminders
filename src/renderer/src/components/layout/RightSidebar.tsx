@@ -74,7 +74,7 @@ export default function RightSidebar() {
           </button>
           {rightOpen && (
             <>
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 ml-2 flex-1">
+              <span className="text-[11px] font-semibold text-white/50 ml-2 flex-1">
                 Todos
               </span>
               {incomplete.length > 0 && (
@@ -106,7 +106,7 @@ export default function RightSidebar() {
                 </div>
                 {complete.length > 0 && (
                   <div className="mt-1 border-t border-slate-100 dark:border-white/[0.05] pt-2 pb-1">
-                    <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-300 dark:text-white/20 px-4 mb-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 dark:text-white/30 px-4 mb-1">
                       Done
                     </p>
                     <TodoList

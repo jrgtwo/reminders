@@ -52,14 +52,14 @@ export default function MonthView({ displayDate }: Props) {
         {DAY_NAMES.map((name) => (
           <div
             key={name}
-            className="py-2 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-slate-300 dark:text-white/18"
+            className="py-2.5 text-center text-[12px] font-semibold text-slate-400 dark:text-white/35"
           >
             {name}
           </div>
         ))}
       </div>
       {/* Grid */}
-      <div className="grid grid-cols-7 auto-rows-[1fr] flex-1 gap-[2px] bg-slate-200/60 dark:bg-white/[0.04]">
+      <div className="grid grid-cols-7 auto-rows-[1fr] flex-1 gap-[1px] bg-slate-200 dark:bg-white/[0.08]">
         {days.map((day) => (
           <CalendarDay
             key={day.toString()}

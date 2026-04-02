@@ -126,7 +126,8 @@ export const useSyncStore = create<SyncState>((set, get) => ({
   },
 
   init: () => {
-    window.addEventListener('focus', () => {
+    // Covers tab switching (same browser window) and returning from other apps
+    document.addEventListener('visibilitychange', () => {
       useSyncStore.getState().trigger()
     })
 
