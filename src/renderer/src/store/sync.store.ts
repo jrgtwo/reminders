@@ -1,5 +1,8 @@
 import { create } from 'zustand'
 import { useAuthStore } from './auth.store'
+import { useRemindersStore } from './reminders.store'
+import { useNotesStore } from './notes.store'
+import { useTodosStore } from './todos.store'
 import { webSync, webCheckFirstLogin, webMarkFirstLoginDone } from '../lib/webSync'
 
 type SyncStatus = 'idle' | 'syncing' | 'error'
@@ -46,6 +49,11 @@ export const useSyncStore = create<SyncState>((set, get) => ({
         result = await webSync(session)
       }
       set({ status: 'idle', lastSyncedAt: result.lastSyncedAt })
+      await Promise.all([
+        useRemindersStore.getState().load(),
+        useNotesStore.getState().loadNoteDates(),
+        useTodosStore.getState().load(),
+      ])
     } catch (err) {
       console.error('[sync] trigger failed:', err)
       const isNetworkError =
