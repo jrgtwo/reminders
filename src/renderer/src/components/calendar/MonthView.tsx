@@ -59,7 +59,7 @@ export default function MonthView({ displayDate }: Props) {
         ))}
       </div>
       {/* Grid */}
-      <div className="grid grid-cols-7 auto-rows-[minmax(90px,120px)] gap-2 bg-[var(--bg-app)] p-2">
+      <div className="grid grid-cols-7 auto-rows-[80px] md:auto-rows-[110px] lg:auto-rows-[160px] gap-1 bg-[var(--bg-app)] p-1.5">
         {days.map((day) => (
           <CalendarDay
             key={day.toString()}

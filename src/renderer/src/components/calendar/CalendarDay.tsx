@@ -1,4 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill'
+import { Bell, Clock, Repeat, FileText } from 'lucide-react'
 import { formatDayNum, isToday, isSameMonth } from '../../utils/dates'
 import type { Reminder } from '../../types/models'
 
@@ -115,27 +116,30 @@ export default function CalendarDay({
             </>
           ) : (
             <>
-              {reminders.slice(0, 3).map((r) => (
-                <div key={r.id} className="flex items-center gap-1.5 w-full overflow-hidden">
-                  <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${colors.dot}`} />
-                  <span className={`text-[11px] font-medium leading-none truncate ${colors.text}`}>
-                    {r.title}
+              <div className="flex items-center gap-1 flex-wrap">
+                {reminders.slice(0, 5).map((r) => (
+                  <span key={r.id} className={colors.text}>
+                    {r.time
+                      ? <Clock size={10} />
+                      : r.recurrence
+                      ? <Repeat size={10} />
+                      : <Bell size={10} />}
                   </span>
-                </div>
-              ))}
-              {reminders.length > 3 && (
-                <span className="text-[10px] text-slate-400 dark:text-white/25 pl-3 leading-none">
-                  +{reminders.length - 3}
-                </span>
-              )}
+                ))}
+                {reminders.length > 5 && (
+                  <span className="text-[9px] text-slate-400 dark:text-white/25 leading-none">
+                    +{reminders.length - 5}
+                  </span>
+                )}
+              </div>
             </>
           )}
         </div>
       )}
 
-      {/* Note dot */}
+      {/* Note icon */}
       {hasNote && (
-        <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-white/20" />
+        <FileText size={10} className="text-slate-300 dark:text-white/20" />
       )}
     </button>
   )

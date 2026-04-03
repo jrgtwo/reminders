@@ -113,7 +113,7 @@ export default function AppShell() {
 
         {/* Row 2: stats + search */}
         <div className="flex items-center gap-3 px-4 h-11">
-          <div className="hidden md:flex items-center gap-3 shrink-0">
+          <div className="hidden lg:flex items-center gap-3 shrink-0">
             <div className="flex items-center gap-1.5">
               <span className={`text-[11px] font-bold tabular-nums ${overdueCount > 0 ? 'text-[#e8a045]' : 'text-white/25'}`}>{overdueCount}</span>
               <span className={`text-[11px] ${overdueCount > 0 ? 'text-[#e8a045]/70' : 'text-white/20'}`}>overdue</span>
@@ -150,13 +150,13 @@ export default function AppShell() {
       )}
 
       <div className="relative flex flex-1 overflow-hidden">
-        <div className="hidden md:flex">
+        <div className="hidden lg:flex">
           <LeftSidebar />
         </div>
         <main className="flex-1 overflow-auto bg-[var(--bg-app)]">
           <Outlet />
         </main>
-        <div className="hidden md:flex">
+        <div className="hidden lg:flex">
           <RightSidebar />
         </div>
       </div>
