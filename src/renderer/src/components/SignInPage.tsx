@@ -76,7 +76,7 @@ export default function SignInPage() {
               {status === 'sending' ? 'Sending…' : 'Send sign-in link'}
             </Button>
             {status === 'error' && (
-              <p className="flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400">
+              <p className="flex items-center gap-1.5 text-xs text-red-600 dark:text-[#e8a045]">
                 <AlertCircle size={12} />
                 Failed to send — check your email and try again.
               </p>

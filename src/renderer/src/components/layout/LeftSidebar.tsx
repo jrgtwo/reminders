@@ -29,8 +29,8 @@ function formatUpcomingDate(dateStr: string): string {
 type Accent = 'red' | 'blue' | 'slate'
 
 const accentStyles: Record<Accent, { label: string; count: string; chevron: string }> = {
-  red:   { label: 'text-red-500 dark:text-red-400',   count: 'text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-500/[0.08]',     chevron: 'text-red-400/60' },
-  blue:  { label: 'text-blue-500 dark:text-blue-400', count: 'text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/[0.08]', chevron: 'text-blue-400/60' },
+  red:   { label: 'text-red-500 dark:text-[#e8a045]',   count: 'text-red-500 dark:text-[#e8a045] bg-red-50 dark:bg-[#e8a045]/[0.08]',     chevron: 'text-[#e8a045]/60' },
+  blue:  { label: 'text-blue-500 dark:text-[#6498c8]', count: 'text-blue-500 dark:text-[#6498c8] bg-blue-50 dark:bg-[#6498c8]/[0.08]', chevron: 'text-[#6498c8]/60' },
   slate: { label: 'text-slate-400 dark:text-white/25', count: 'text-slate-500 dark:text-white/30 bg-slate-100 dark:bg-white/[0.06]', chevron: 'text-slate-300 dark:text-white/20' },
 }
 
@@ -127,11 +127,11 @@ export default function LeftSidebar() {
           onClick={() => navigate(`/day/${dateStr}`)}
           className={`w-full text-left px-3 py-2.5 rounded-xl transition-all group ${
             variant === 'overdue'
-              ? 'bg-white dark:bg-white/[0.04] hover:bg-red-50 dark:hover:bg-red-500/[0.08] hover:shadow-sm dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
+              ? 'bg-white dark:bg-white/[0.04] hover:bg-red-50 dark:hover:bg-[#e8a045]/[0.08] hover:shadow-sm dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
               : 'bg-white dark:bg-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.07] hover:shadow-sm dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
           }`}
         >
-          <div className={`text-[11px] font-semibold mb-0.5 ${variant === 'overdue' ? 'text-red-400 dark:text-red-400/80' : 'text-blue-500 dark:text-blue-400/80'}`}>
+          <div className={`text-[11px] font-semibold mb-0.5 ${variant === 'overdue' ? 'text-red-400 dark:text-[#e8a045]/80' : 'text-blue-500 dark:text-[#6498c8]/80'}`}>
             {variant === 'overdue' ? formatOverdueDate(dateStr) : formatUpcomingDate(dateStr)}
           </div>
           <div className="text-[13px] font-medium text-slate-700 dark:text-white/75 truncate group-hover:text-slate-900 dark:group-hover:text-white">

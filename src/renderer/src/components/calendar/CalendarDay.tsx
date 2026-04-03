@@ -6,20 +6,20 @@ function getEventColor(date: Temporal.PlainDate): { dot: string; text: string; c
   const cmp = Temporal.PlainDate.compare(date, Temporal.Now.plainDateISO())
   if (cmp < 0)
     return {
-      dot: 'bg-red-400',
-      text: 'text-red-600 dark:text-red-400',
-      chip: 'bg-red-50 text-red-700 dark:bg-red-500/[0.07] dark:text-red-300',
+      dot: 'bg-[#e8a045]',
+      text: 'text-red-600 dark:text-[#e8a045]',
+      chip: 'bg-red-50 text-red-700 dark:bg-[#e8a045]/[0.08] dark:text-[#e8a045]',
     }
   if (cmp === 0)
     return {
-      dot: 'bg-amber-400',
-      text: 'text-amber-700 dark:text-amber-400',
-      chip: 'bg-amber-50 text-amber-800 dark:bg-amber-400/[0.07] dark:text-amber-300',
+      dot: 'bg-[#e8a045]',
+      text: 'text-amber-700 dark:text-[#e8a045]',
+      chip: 'bg-amber-50 text-amber-800 dark:bg-[#e8a045]/[0.07] dark:text-[#e8a045]',
     }
   return {
-    dot: 'bg-indigo-400',
-    text: 'text-indigo-600 dark:text-indigo-400',
-    chip: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/[0.07] dark:text-indigo-300',
+    dot: 'bg-[#6498c8]',
+    text: 'text-indigo-600 dark:text-[#6498c8]',
+    chip: 'bg-indigo-50 text-indigo-700 dark:bg-[#6498c8]/[0.08] dark:text-[#6498c8]',
   }
 }
 

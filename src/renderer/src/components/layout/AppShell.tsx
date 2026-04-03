@@ -92,7 +92,7 @@ export default function AppShell() {
                     <span>Syncing</span>
                   </>
                 ) : syncStatus === 'error' ? (
-                  <CloudOff size={12} className="text-red-400" />
+                  <CloudOff size={12} className="text-[#e8a045]" />
                 ) : lastSyncedAt ? (
                   <>
                     <Cloud size={11} />
@@ -115,12 +115,12 @@ export default function AppShell() {
         <div className="flex items-center gap-3 px-4 h-11">
           <div className="hidden md:flex items-center gap-3 shrink-0">
             <div className="flex items-center gap-1.5">
-              <span className={`text-[11px] font-bold tabular-nums ${overdueCount > 0 ? 'text-red-400' : 'text-white/25'}`}>{overdueCount}</span>
-              <span className={`text-[11px] ${overdueCount > 0 ? 'text-red-400/70' : 'text-white/20'}`}>overdue</span>
+              <span className={`text-[11px] font-bold tabular-nums ${overdueCount > 0 ? 'text-[#e8a045]' : 'text-white/25'}`}>{overdueCount}</span>
+              <span className={`text-[11px] ${overdueCount > 0 ? 'text-[#e8a045]/70' : 'text-white/20'}`}>overdue</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className={`text-[11px] font-bold tabular-nums ${upcomingCount > 0 ? 'text-white/80' : 'text-white/25'}`}>{upcomingCount}</span>
-              <span className={`text-[11px] ${upcomingCount > 0 ? 'text-white/40' : 'text-white/20'}`}>upcoming</span>
+              <span className={`text-[11px] font-bold tabular-nums ${upcomingCount > 0 ? 'text-[#6498c8]' : 'text-white/25'}`}>{upcomingCount}</span>
+              <span className={`text-[11px] ${upcomingCount > 0 ? 'text-[#6498c8]/70' : 'text-white/20'}`}>upcoming</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className={`text-[11px] font-bold tabular-nums ${todoCount > 0 ? 'text-blue-400' : 'text-white/25'}`}>{todoCount}</span>
@@ -135,7 +135,7 @@ export default function AppShell() {
 
       {/* Sync error banner */}
       {showErrorBanner && (
-        <div className="relative flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-500/[0.08] border-b border-red-200 dark:border-red-500/20 text-red-700 dark:text-red-400 text-xs shrink-0">
+        <div className="relative flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-[#e8a045]/[0.08] border-b border-red-200 dark:border-[#e8a045]/20 text-red-700 dark:text-[#e8a045] text-xs shrink-0">
           <CloudOff size={13} />
           <span className="flex-1">
             Sync failed — changes are saved locally and will sync when resolved.

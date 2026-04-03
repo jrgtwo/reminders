@@ -120,7 +120,7 @@ export default function SettingsPage() {
               </Button>
             </div>
             {magicLinkStatus === 'error' && (
-              <p className="flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400">
+              <p className="flex items-center gap-1.5 text-xs text-red-600 dark:text-[#e8a045]">
                 <AlertCircle size={12} />
                 Failed to send — check your email and try again.
               </p>
@@ -250,7 +250,7 @@ export default function SettingsPage() {
               className={`flex items-center gap-2 p-3 rounded-lg text-sm ${
                 importStatus.ok
                   ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
-                  : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
+                  : 'bg-red-50 dark:bg-[#e8a045]/[0.08] text-red-700 dark:text-[#e8a045]'
               }`}
             >
               {importStatus.ok ? <Check size={14} /> : <AlertCircle size={14} />}
