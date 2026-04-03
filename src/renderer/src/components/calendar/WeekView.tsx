@@ -130,7 +130,7 @@ export default function WeekView({ displayDate }: Props) {
             const dateStr = day.toString()
             const dayReminders = allDayByDate[dateStr] ?? []
             return (
-              <div key={dateStr} className="flex flex-col gap-[2px] px-1 py-1 min-h-[28px]">
+              <div key={dateStr} className="flex flex-col gap-[2px] px-1 py-1 min-h-[28px] overflow-hidden min-w-0">
                 {dayReminders.slice(0, 3).map((r) => (
                   <div
                     key={r.id}
@@ -201,7 +201,7 @@ export default function WeekView({ displayDate }: Props) {
                   <div
                     key={`${dateStr}-${hour}`}
                     className={[
-                      'relative border-t border-l border-slate-200/50 dark:border-white/[0.04]',
+                      'relative border-t border-l border-slate-200/50 dark:border-white/[0.04] overflow-hidden min-w-0',
                       isToday ? 'bg-blue-50/30 dark:bg-blue-500/[0.03]' : '',
                     ]
                       .filter(Boolean)
