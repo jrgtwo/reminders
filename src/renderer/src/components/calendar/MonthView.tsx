@@ -6,8 +6,9 @@ import { getOccurrencesInRange } from '../../utils/recurrence'
 import CalendarDay from './CalendarDay'
 import { useRemindersStore } from '../../store/reminders.store'
 import { useNotesStore } from '../../store/notes.store'
+import { useTodosStore } from '../../store/todos.store'
 import { useUIStore } from '../../store/ui.store'
-import type { Reminder } from '../../types/models'
+import type { Reminder, Todo } from '../../types/models'
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -19,6 +20,7 @@ export default function MonthView({ displayDate }: Props) {
   const navigate = useNavigate()
   const reminders = useRemindersStore((s) => s.reminders)
   const noteDates = useNotesStore((s) => s.noteDates)
+  const todos = useTodosStore((s) => s.todos)
   const selectedDate = useUIStore((s) => s.selectedDate)
   const setSelectedDate = useUIStore((s) => s.setSelectedDate)
 
@@ -36,6 +38,19 @@ export default function MonthView({ displayDate }: Props) {
     }
     return map
   }, [reminders, days])
+
+  const todosByDate = useMemo(() => {
+    const gridStart = days[0].toString()
+    const gridEnd = days[days.length - 1].toString()
+    const map: Record<string, Todo[]> = {}
+    for (const t of todos) {
+      if (!t.dueDate || t.completed) continue
+      if (t.dueDate < gridStart || t.dueDate > gridEnd) continue
+      if (!map[t.dueDate]) map[t.dueDate] = []
+      map[t.dueDate].push(t)
+    }
+    return map
+  }, [todos, days])
 
   const selectedPlainDate = useMemo(() => parseDateStr(selectedDate), [selectedDate])
 
@@ -55,6 +70,12 @@ export default function MonthView({ displayDate }: Props) {
     const dateStr = date.toString()
     setSelectedDate(dateStr)
     navigate(`/day/${dateStr}`, { state: { tab: 'notes' } })
+  }
+
+  function handleTodoClick(date: Temporal.PlainDate) {
+    const dateStr = date.toString()
+    setSelectedDate(dateStr)
+    navigate(`/day/${dateStr}`, { state: { tab: 'todos' } })
   }
 
   return (
@@ -78,12 +99,14 @@ export default function MonthView({ displayDate }: Props) {
             date={day}
             displayMonth={displayDate}
             reminders={remindersByDate[day.toString()] ?? []}
+            todos={todosByDate[day.toString()] ?? []}
             hasNote={noteDates.includes(day.toString())}
             isSelected={isSameDay(day, selectedPlainDate)}
             isWeekend={day.dayOfWeek === 6 || day.dayOfWeek === 7}
             onClick={() => handleDayClick(day)}
             onReminderClick={() => handleReminderClick(day)}
             onNoteClick={() => handleNoteClick(day)}
+            onTodoClick={() => handleTodoClick(day)}
           />
         ))}
       </div>
