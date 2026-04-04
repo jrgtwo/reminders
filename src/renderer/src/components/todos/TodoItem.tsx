@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { ChevronDown, ChevronRight, GripVertical, Pencil, Trash2 } from 'lucide-react'
+import { Check, ChevronDown, ChevronRight, GripVertical, Pencil, Trash2 } from 'lucide-react'
 import type { Todo } from '../../types/models'
 import MarkdownView from '../ui/MarkdownView'
 
@@ -34,28 +34,33 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete }: Props) {
       className="group mx-2 rounded-xl bg-white dark:bg-white/[0.04] hover:shadow-sm dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.3)] transition-all"
     >
       {/* Main row */}
-      <div className="flex items-start gap-2 px-3 py-2.5">
+      <div className="flex items-center gap-1.5 px-3 py-1.5">
         {/* Drag handle */}
         <button
           {...attributes}
           {...listeners}
-          className="mt-0.5 cursor-grab active:cursor-grabbing text-slate-300 dark:text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+          className="cursor-grab active:cursor-grabbing text-slate-300 dark:text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
           tabIndex={-1}
           aria-label="Drag to reorder"
         >
-          <GripVertical size={14} />
+          <GripVertical size={12} />
         </button>
 
         {/* Checkbox */}
-        <input
-          type="checkbox"
-          checked={todo.completed}
-          onChange={() => onToggle(todo)}
-          className="mt-0.5 w-4 h-4 rounded accent-blue-600 shrink-0 cursor-pointer"
-        />
+        <button
+          onClick={() => onToggle(todo)}
+          className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
+            todo.completed
+              ? 'bg-blue-500 border-blue-500 dark:bg-[#6498c8] dark:border-[#6498c8]'
+              : 'border-slate-300 dark:border-white/20 hover:border-blue-400 dark:hover:border-[#6498c8]/60'
+          }`}
+          aria-label="Toggle complete"
+        >
+          {todo.completed && <Check size={8} className="text-white" strokeWidth={3} />}
+        </button>
 
         {/* Title + expand toggle */}
-        <div className="flex-1 min-w-0 flex items-start gap-1">
+        <div className="flex-1 min-w-0 flex items-center gap-1">
           <span
             className={`flex-1 text-[13px] leading-5 break-words min-w-0 ${
               todo.completed
@@ -68,10 +73,10 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete }: Props) {
           {hasDescription && (
             <button
               onClick={() => setExpanded((v) => !v)}
-              className="mt-0.5 shrink-0 text-slate-300 hover:text-slate-500 dark:hover:text-slate-300 transition-colors"
+              className="shrink-0 text-slate-300 hover:text-slate-500 dark:hover:text-slate-300 transition-colors"
               aria-label={expanded ? 'Collapse' : 'Expand'}
             >
-              {expanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+              {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
             </button>
           )}
         </div>
@@ -97,7 +102,7 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete }: Props) {
 
       {/* Expanded description */}
       {expanded && hasDescription && (
-        <div className="pl-10 pr-3 pb-2.5">
+        <div className="pl-9 pr-3 pb-2">
           <MarkdownView content={todo.description!} />
         </div>
       )}
