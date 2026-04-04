@@ -27,18 +27,28 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ session, user: session?.user ?? null, isLoggedIn: !!session })
     })
 
-    // Keep store in sync with Supabase auth state changes.
-    // Key must be loaded before isLoggedIn is set so the sync store never
-    // attempts decryption before the key is available.
-    // Skip INITIAL_SESSION: it fires while _initialize still holds the auth lock,
-    // so calling supabase.from() inside the handler causes lock contention.
-    // The getSession().then() path above already handles the initial session.
-    supabase.auth.onAuthStateChange(async (event, session) => {
+    // Keep store in sync with future auth state changes (sign-in, sign-out, token refresh).
+    //
+    // IMPORTANT: this callback must NOT be async and must not await network calls.
+    // Supabase fires it from within _notifyAllSubscribers, which runs inside the
+    // navigator.locks auth lock. Awaiting a network call (like initEncryptionKey)
+    // holds the lock for the full round-trip duration. Any other tab or concurrent
+    // operation waiting for the same lock will time out after 5 s and steal it,
+    // causing "lock was released because another request stole it" errors.
+    //
+    // Solution: schedule the async work via setTimeout so it runs after the lock
+    // is released. isLoggedIn is only set after the key is ready, preserving the
+    // invariant that the sync store never decrypts before the key is available.
+    supabase.auth.onAuthStateChange((event, session) => {
+      // INITIAL_SESSION fires during initialization — already handled by getSession().then() above.
       if (event === 'INITIAL_SESSION') return
-      if (session?.user) {
-        await initEncryptionKey(session.user.id).catch(console.error)
-      }
-      set({ session, user: session?.user ?? null, isLoggedIn: !!session })
+
+      setTimeout(async () => {
+        if (session?.user) {
+          await initEncryptionKey(session.user.id).catch(console.error)
+        }
+        set({ session, user: session?.user ?? null, isLoggedIn: !!session })
+      }, 0)
     })
 
     // Electron: receive deep-link OAuth callback from main process

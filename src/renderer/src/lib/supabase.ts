@@ -8,11 +8,6 @@ export const supabase = createClient(
       flowType: 'pkce',
       detectSessionInUrl: true,
       persistSession: true,
-      // Prevent the constructor from auto-initializing in parallel with our own
-      // getSession() call in auth.store.ts. Without this, both compete for the
-      // same navigator.locks entry, and the constructor's rejected initializePromise
-      // poisons all subsequent getSession() calls.
-      skipAutoInitialize: true,
     },
   }
 )
