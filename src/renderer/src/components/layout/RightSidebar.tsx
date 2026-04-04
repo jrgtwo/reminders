@@ -307,7 +307,7 @@ export default function RightSidebar() {
 
               {/* Lists */}
               {(lists.length > 0 || folders.length > 0) && (
-                <div className="border-t border-slate-200 dark:border-white/[0.07] pt-1 pb-2">
+                <div className="border-t-4 border-slate-100 dark:border-white/[0.05] mt-1 pt-2 pb-2">
                   <CollapsibleSection
                     label="Lists"
                     count={lists.length}

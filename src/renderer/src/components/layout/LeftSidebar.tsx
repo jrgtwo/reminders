@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Bell, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Plus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useUIStore } from '../../store/ui.store'
@@ -39,18 +39,28 @@ interface CollapsibleSectionProps {
   count: number
   accent: Accent
   defaultOpen?: boolean
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
   indent?: boolean
   children: ReactNode
 }
 
-function CollapsibleSection({ label, count, accent, defaultOpen = false, indent = false, children }: CollapsibleSectionProps) {
-  const [open, setOpen] = useState(defaultOpen)
+function CollapsibleSection({ label, count, accent, defaultOpen = false, open: controlledOpen, onOpenChange, indent = false, children }: CollapsibleSectionProps) {
+  const [localOpen, setLocalOpen] = useState(defaultOpen)
+  const isControlled = controlledOpen !== undefined
+  const open = isControlled ? controlledOpen : localOpen
+
+  function handleToggle() {
+    if (isControlled) onOpenChange?.(!open)
+    else setLocalOpen((o) => !o)
+  }
+
   const s = accentStyles[accent]
 
   return (
     <div>
       <button
-        onClick={() => setOpen((o) => !o)}
+        onClick={handleToggle}
         className={`flex items-center gap-2 w-full text-left transition-colors hover:bg-slate-50 dark:hover:bg-white/[0.03] rounded-lg ${indent ? 'px-3 py-1.5' : 'px-4 py-2'}`}
       >
         <span className={`text-[10px] font-bold uppercase tracking-wide flex-1 ${s.label}`}>
@@ -98,6 +108,8 @@ export default function LeftSidebar() {
     window.addEventListener('mouseup', onMouseUp)
   }
   const setNewReminderDate = useUIStore((s) => s.setNewReminderDate)
+  const reminderSections = useUIStore((s) => s.reminderSections)
+  const setReminderSection = useUIStore((s) => s.setReminderSection)
   const navigate = useNavigate()
   const reminders = useRemindersStore((s) => s.reminders)
 
@@ -142,6 +154,25 @@ export default function LeftSidebar() {
   const upcomingToday    = upcoming.filter((i) => i.dateStr === t.toString())
   const upcomingThisWeek = upcoming.filter((i) => i.dateStr > t.toString() && i.dateStr <= weekEnd.toString())
   const upcomingLater    = upcoming.filter((i) => i.dateStr > weekEnd.toString())
+
+  type OverdueSub = 'yesterday' | 'thisweek' | 'older'
+  type UpcomingSub = 'today' | 'thisweek' | 'later'
+  const [overdueSubOpen, setOverdueSubOpen] = useState<OverdueSub | null>(null)
+  const [upcomingSubOpen, setUpcomingSubOpen] = useState<UpcomingSub | null>(null)
+
+  useEffect(() => {
+    if (!reminderSections.overdue) return
+    if (overdueYesterday.length > 0) setOverdueSubOpen('yesterday')
+    else if (overdueThisWeek.length > 0) setOverdueSubOpen('thisweek')
+    else if (overdueOlder.length > 0) setOverdueSubOpen('older')
+  }, [reminderSections.overdue])
+
+  useEffect(() => {
+    if (!reminderSections.upcoming) return
+    if (upcomingToday.length > 0) setUpcomingSubOpen('today')
+    else if (upcomingThisWeek.length > 0) setUpcomingSubOpen('thisweek')
+    else if (upcomingLater.length > 0) setUpcomingSubOpen('later')
+  }, [reminderSections.upcoming])
 
   function ReminderItem({ id, dateStr, title, time, variant }: {
     id: string; dateStr: string; title: string; time?: string; variant: 'overdue' | 'upcoming'
@@ -197,10 +228,10 @@ export default function LeftSidebar() {
             {/* Overdue */}
             {overdue.length > 0 && (
               <div className="border-b border-slate-200 dark:border-white/[0.07] pt-3 pb-2">
-                <CollapsibleSection label="Overdue" count={overdue.length} accent="red">
+                <CollapsibleSection label="Overdue" count={overdue.length} accent="red" open={reminderSections.overdue} onOpenChange={(v) => setReminderSection('overdue', v)}>
                   <div className="flex flex-col gap-1 pl-2">
                     {overdueYesterday.length > 0 && (
-                      <CollapsibleSection label="Yesterday" count={overdueYesterday.length} accent="red" indent defaultOpen={false}>
+                      <CollapsibleSection label="Yesterday" count={overdueYesterday.length} accent="red" indent open={overdueSubOpen === 'yesterday'} onOpenChange={(v) => setOverdueSubOpen(v ? 'yesterday' : null)}>
                         <ul className="flex flex-col gap-1 px-2 pb-1">
                           {overdueYesterday.map((item, i) => (
                             <ReminderItem key={`${item.id}-${item.dateStr}-${i}`} {...item} variant="overdue" />
@@ -209,7 +240,7 @@ export default function LeftSidebar() {
                       </CollapsibleSection>
                     )}
                     {overdueThisWeek.length > 0 && (
-                      <CollapsibleSection label="This Week" count={overdueThisWeek.length} accent="slate" indent defaultOpen={false}>
+                      <CollapsibleSection label="This Week" count={overdueThisWeek.length} accent="slate" indent open={overdueSubOpen === 'thisweek'} onOpenChange={(v) => setOverdueSubOpen(v ? 'thisweek' : null)}>
                         <ul className="flex flex-col gap-1 px-2 pb-1">
                           {overdueThisWeek.map((item, i) => (
                             <ReminderItem key={`${item.id}-${item.dateStr}-${i}`} {...item} variant="overdue" />
@@ -218,7 +249,7 @@ export default function LeftSidebar() {
                       </CollapsibleSection>
                     )}
                     {overdueOlder.length > 0 && (
-                      <CollapsibleSection label="Older" count={overdueOlder.length} accent="slate" indent defaultOpen={false}>
+                      <CollapsibleSection label="Older" count={overdueOlder.length} accent="slate" indent open={overdueSubOpen === 'older'} onOpenChange={(v) => setOverdueSubOpen(v ? 'older' : null)}>
                         <ul className="flex flex-col gap-1 px-2 pb-1">
                           {overdueOlder.map((item, i) => (
                             <ReminderItem key={`${item.id}-${item.dateStr}-${i}`} {...item} variant="overdue" />
@@ -238,10 +269,10 @@ export default function LeftSidebar() {
               </p>
             ) : upcoming.length > 0 ? (
               <div className="pt-3 pb-2">
-                <CollapsibleSection label="Upcoming" count={upcoming.length} accent="blue">
+                <CollapsibleSection label="Upcoming" count={upcoming.length} accent="blue" open={reminderSections.upcoming} onOpenChange={(v) => setReminderSection('upcoming', v)}>
                   <div className="flex flex-col gap-1 pl-2">
                     {upcomingToday.length > 0 && (
-                      <CollapsibleSection label="Today" count={upcomingToday.length} accent="blue" indent defaultOpen={false}>
+                      <CollapsibleSection label="Today" count={upcomingToday.length} accent="blue" indent open={upcomingSubOpen === 'today'} onOpenChange={(v) => setUpcomingSubOpen(v ? 'today' : null)}>
                         <ul className="flex flex-col gap-1 px-2 pb-1">
                           {upcomingToday.map((item, i) => (
                             <ReminderItem key={`${item.id}-${item.dateStr}-${i}`} {...item} variant="upcoming" />
@@ -250,7 +281,7 @@ export default function LeftSidebar() {
                       </CollapsibleSection>
                     )}
                     {upcomingThisWeek.length > 0 && (
-                      <CollapsibleSection label="This Week" count={upcomingThisWeek.length} accent="slate" indent defaultOpen={false}>
+                      <CollapsibleSection label="This Week" count={upcomingThisWeek.length} accent="slate" indent open={upcomingSubOpen === 'thisweek'} onOpenChange={(v) => setUpcomingSubOpen(v ? 'thisweek' : null)}>
                         <ul className="flex flex-col gap-1 px-2 pb-1">
                           {upcomingThisWeek.map((item, i) => (
                             <ReminderItem key={`${item.id}-${item.dateStr}-${i}`} {...item} variant="upcoming" />
@@ -259,7 +290,7 @@ export default function LeftSidebar() {
                       </CollapsibleSection>
                     )}
                     {upcomingLater.length > 0 && (
-                      <CollapsibleSection label="Later" count={upcomingLater.length} accent="slate" indent defaultOpen={false}>
+                      <CollapsibleSection label="Later" count={upcomingLater.length} accent="slate" indent open={upcomingSubOpen === 'later'} onOpenChange={(v) => setUpcomingSubOpen(v ? 'later' : null)}>
                         <ul className="flex flex-col gap-1 px-2 pb-1">
                           {upcomingLater.map((item, i) => (
                             <ReminderItem key={`${item.id}-${item.dateStr}-${i}`} {...item} variant="upcoming" />
