@@ -1,6 +1,7 @@
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 import { initStorage, getRawStorage } from '../platform'
+import { wasEncryptionKeyChanged, clearEncryptionKeyChangedFlag } from './keyManager'
 import type { IStorageAdapter } from '../platform/types'
 import type { Reminder, Note, Todo, TodoFolder, TodoList } from '../types/models'
 
@@ -170,6 +171,17 @@ export async function webSync(session: Session): Promise<{ lastSyncedAt: string 
   const userId = session.user.id
   await initStorage()
   const adapter = getRawStorage()
+
+  // If the encryption key changed since last session, wipe stale local ciphertext
+  // so the subsequent full pull from Supabase lands cleanly.
+  if (wasEncryptionKeyChanged(userId)) {
+    console.log('[sync] encryption key changed — clearing local data for fresh pull')
+    if (typeof adapter.clearAll === 'function') await adapter.clearAll()
+    localStorage.removeItem(LAST_PULL_KEY(userId))
+    localStorage.removeItem(FIRST_LOGIN_KEY(userId))
+    clearEncryptionKeyChangedFlag(userId)
+  }
+
   const lastPullAt = localStorage.getItem(LAST_PULL_KEY(userId))
 
   await pull(userId, lastPullAt, adapter)

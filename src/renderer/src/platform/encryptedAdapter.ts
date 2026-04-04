@@ -25,7 +25,12 @@ export class EncryptedAdapter implements IStorageAdapter {
     if (text === undefined) return undefined
     const key = this.getKey()
     if (!key) return text
-    return decrypt(key, text)
+    try {
+      return await decrypt(key, text)
+    } catch (err) {
+      console.error('[encryption] decrypt failed — data may be encrypted with a stale key:', err)
+      return ''
+    }
   }
 
   // --- Reminders ---

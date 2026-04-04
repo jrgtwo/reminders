@@ -27,4 +27,7 @@ export interface IStorageAdapter {
   getTodoLists(): Promise<TodoList[]>
   saveTodoList(l: TodoList): Promise<TodoList>
   deleteTodoList(id: string): Promise<void>
+
+  // Utility
+  clearAll?(): Promise<void>
 }

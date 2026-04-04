@@ -20,19 +20,21 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   init: () => {
     // Restore existing session on app launch
-    const sessionReady = supabase.auth.getSession().then(({ data: { session } }) => {
-      set({ session, user: session?.user ?? null, isLoggedIn: !!session })
+    const sessionReady = supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
-        initEncryptionKey(session.user.id).catch(console.error)
+        await initEncryptionKey(session.user.id).catch(console.error)
       }
+      set({ session, user: session?.user ?? null, isLoggedIn: !!session })
     })
 
-    // Keep store in sync with Supabase auth state changes
-    supabase.auth.onAuthStateChange((_, session) => {
-      set({ session, user: session?.user ?? null, isLoggedIn: !!session })
+    // Keep store in sync with Supabase auth state changes.
+    // Key must be loaded before isLoggedIn is set so the sync store never
+    // attempts decryption before the key is available.
+    supabase.auth.onAuthStateChange(async (_, session) => {
       if (session?.user) {
-        initEncryptionKey(session.user.id).catch(console.error)
+        await initEncryptionKey(session.user.id).catch(console.error)
       }
+      set({ session, user: session?.user ?? null, isLoggedIn: !!session })
     })
 
     // Electron: receive deep-link OAuth callback from main process

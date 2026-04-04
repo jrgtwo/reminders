@@ -131,4 +131,11 @@ export class WebAdapter implements IStorageAdapter {
   async deleteTodoList(id: string): Promise<void> {
     await this.db.delete('todo_lists', id)
   }
+
+  async clearAll(): Promise<void> {
+    const stores = ['reminders', 'notes', 'todos', 'todo_folders', 'todo_lists'] as const
+    const tx = this.db.transaction([...stores], 'readwrite')
+    await Promise.all(stores.map((name) => tx.objectStore(name).clear()))
+    await tx.done
+  }
 }

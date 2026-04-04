@@ -3,6 +3,20 @@ import { generateKey, exportKey, importKey } from './encryption'
 
 let encryptionKey: CryptoKey | null = null
 
+// Tracks whether the Supabase key differs from the locally-cached fingerprint.
+// Consumed (and reset) by webSync to wipe stale local data before a fresh pull.
+const _keyChangedForUser = new Map<string, boolean>()
+
+export function wasEncryptionKeyChanged(userId: string): boolean {
+  return _keyChangedForUser.get(userId) ?? false
+}
+
+export function clearEncryptionKeyChangedFlag(userId: string): void {
+  _keyChangedForUser.delete(userId)
+}
+
+const KEY_FP_KEY = (userId: string) => `enc_key_fp_${userId}`
+
 export function getEncryptionKey(): CryptoKey | null {
   return encryptionKey
 }
@@ -50,32 +64,66 @@ async function clearCachedKey(userId: string): Promise<void> {
 }
 
 export async function initEncryptionKey(userId: string): Promise<void> {
-  // 1. Try local cache first — works offline
-  const cached = await loadCachedKey(userId)
-  if (cached) {
-    encryptionKey = cached
-    return
+  try {
+    // Always fetch from Supabase first — it's the source of truth across devices.
+    const { data, error: fetchError } = await supabase
+      .from('user_keys')
+      .select('key_data')
+      .eq('user_id', userId)
+      .single()
+
+    if (data?.key_data) {
+      const prevFp = localStorage.getItem(KEY_FP_KEY(userId))
+      _keyChangedForUser.set(userId, prevFp !== null && prevFp !== data.key_data)
+      localStorage.setItem(KEY_FP_KEY(userId), data.key_data)
+      encryptionKey = await importKey(data.key_data)
+      await cacheKeyLocally(userId, data.key_data)
+      return
+    }
+
+    // PGRST116 = no rows — safe to generate a new key.
+    // Any other error (schema mismatch, RLS, etc.) is a real problem — bail out.
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error('[encryption] Failed to fetch key from Supabase:', fetchError.message)
+      throw fetchError
+    }
+
+    // No key exists yet — generate one and insert it.
+    const key = await generateKey()
+    const keyData = await exportKey(key)
+
+    const { error: insertError } = await supabase
+      .from('user_keys')
+      .insert({ user_id: userId, key_data: keyData })
+
+    if (insertError) {
+      // Insert failed — most likely a concurrent insert from another device.
+      // Re-fetch the key that was inserted instead.
+      console.warn('[encryption] Insert failed, re-fetching key:', insertError.message)
+      const { data: retryData } = await supabase
+        .from('user_keys')
+        .select('key_data')
+        .eq('user_id', userId)
+        .single()
+
+      if (retryData?.key_data) {
+        encryptionKey = await importKey(retryData.key_data)
+        await cacheKeyLocally(userId, retryData.key_data)
+        return
+      }
+
+      // Still nothing — log and leave key null so app works unencrypted.
+      console.error('[encryption] Could not establish encryption key.')
+      return
+    }
+
+    encryptionKey = key
+    await cacheKeyLocally(userId, keyData)
+  } catch {
+    // Network unavailable — fall back to local cache so offline use still works.
+    const cached = await loadCachedKey(userId)
+    if (cached) encryptionKey = cached
   }
-
-  // 2. Fetch from Supabase
-  const { data } = await supabase
-    .from('user_keys')
-    .select('key_data')
-    .eq('user_id', userId)
-    .single()
-
-  if (data?.key_data) {
-    encryptionKey = await importKey(data.key_data)
-    await cacheKeyLocally(userId, data.key_data)
-    return
-  }
-
-  // 3. First login — generate, store in Supabase, cache locally
-  const key = await generateKey()
-  const keyData = await exportKey(key)
-  await supabase.from('user_keys').insert({ user_id: userId, key_data: keyData })
-  encryptionKey = key
-  await cacheKeyLocally(userId, keyData)
 }
 
 export async function clearEncryptionKey(userId: string): Promise<void> {
