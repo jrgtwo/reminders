@@ -1,24 +1,42 @@
 import { forwardRef, useState } from 'react'
-import { Search, Bell, CheckSquare } from 'lucide-react'
+import { Search, Bell, CheckSquare, FileText } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useSearch } from '../../hooks/useSearch'
-import type { Reminder, Todo } from '../../types/models'
+import type { Reminder, Todo, Note } from '../../types/models'
+import { parseDateStr } from '../../utils/dates'
+
+function formatNoteDate(dateStr: string): string {
+  const d = parseDateStr(dateStr)
+  return d.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+}
 
 const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
   const [query, setQuery] = useState('')
   const results = useSearch(query)
   const navigate = useNavigate()
 
-  const hasResults = results.reminders.length > 0 || results.todos.length > 0
+  const hasResults = results.reminders.length > 0 || results.todos.length > 0 || results.notes.length > 0
   const open = query.trim().length > 0 && hasResults
 
   function handleReminderClick(r: Reminder) {
     setQuery('')
-    navigate(`/day/${r.date}`)
+    navigate(`/day/${r.date}`, { state: { tab: 'reminders' } })
   }
 
-  function handleTodoClick(_t: Todo) {
+  function handleTodoClick(t: Todo) {
     setQuery('')
+    if (t.listId) {
+      navigate(`/lists/${t.listId}`)
+    } else if (t.dueDate) {
+      navigate(`/day/${t.dueDate}`, { state: { tab: 'todos' } })
+    } else {
+      navigate('/anytime')
+    }
+  }
+
+  function handleNoteClick(n: Note) {
+    setQuery('')
+    navigate(`/day/${n.date}`)
   }
 
   return (
@@ -65,6 +83,7 @@ const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
               ))}
             </>
           )}
+
           {results.todos.length > 0 && (
             <>
               <div className="px-3 py-1.5 text-xs font-semibold text-gray-400 dark:text-white/30 uppercase tracking-wide border-b border-gray-100 dark:border-white/[0.07]">
@@ -78,9 +97,35 @@ const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
                 >
                   <CheckSquare
                     size={14}
-                    className={`shrink-0 ${t.completed ? 'text-gray-300' : 'text-green-400'}`}
+                    className={`shrink-0 ${t.completed ? 'text-gray-300 dark:text-white/20' : 'text-[#6498c8]'}`}
                   />
-                  <p className="text-sm text-gray-900 dark:text-white/80 truncate">{t.title}</p>
+                  <div className="min-w-0">
+                    <p className={`text-sm truncate ${t.completed ? 'line-through text-gray-400 dark:text-white/30' : 'text-gray-900 dark:text-white/80'}`}>{t.title}</p>
+                    {t.dueDate && <p className="text-xs text-gray-400 dark:text-white/30">{t.dueDate}</p>}
+                  </div>
+                </button>
+              ))}
+            </>
+          )}
+
+          {results.notes.length > 0 && (
+            <>
+              <div className="px-3 py-1.5 text-xs font-semibold text-gray-400 dark:text-white/30 uppercase tracking-wide border-b border-gray-100 dark:border-white/[0.07]">
+                Notes
+              </div>
+              {results.notes.map((n) => (
+                <button
+                  key={n.date}
+                  onClick={() => handleNoteClick(n)}
+                  className="flex items-center gap-3 w-full px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-white/[0.07] transition-all"
+                >
+                  <FileText size={14} className="text-slate-400 dark:text-white/30 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm text-gray-900 dark:text-white/80 truncate leading-snug">
+                      {n.content.split('\n').find((l) => l.trim()) ?? n.date}
+                    </p>
+                    <p className="text-xs text-gray-400 dark:text-white/30">{formatNoteDate(n.date)}</p>
+                  </div>
                 </button>
               ))}
             </>

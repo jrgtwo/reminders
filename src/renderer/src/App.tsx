@@ -21,6 +21,7 @@ import SettingsPage from './components/settings/SettingsPage'
 import RemindersPage from './components/mobile/RemindersPage'
 import TodosPage from './components/mobile/TodosPage'
 import ListsPage from './components/lists/ListsPage'
+import AnytimePage from './components/todos/AnytimePage'
 import {
   addMonths,
   subMonths,
@@ -98,6 +99,7 @@ const routes = [
       { path: 'reminders', element: <RemindersPage /> },
       { path: 'todos', element: <TodosPage /> },
       { path: 'lists/:listId', element: <ListsPage /> },
+      { path: 'anytime', element: <AnytimePage /> },
       { path: 'settings', element: <SettingsPage /> },
     ],
   },

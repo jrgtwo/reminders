@@ -8,6 +8,7 @@ import { create } from 'zustand'
    noteDates: string[]
    loadNote: (date: string) => Promise<void>
    loadNoteDates: () => Promise<void>
+   loadAllNotes: () => Promise<void>
    saveNote: (n: Note) => Promise<void>
  }
 
@@ -20,6 +21,15 @@ import { create } from 'zustand'
        const { getStorage } = await import('../platform')
        const all = await getStorage().getAllNotes()
        set((s) => { s.noteDates = all.map((n) => n.date) })
+     },
+
+     loadAllNotes: async () => {
+       const { getStorage } = await import('../platform')
+       const all = await getStorage().getAllNotes()
+       set((s) => {
+         for (const n of all) s.notes[n.date] = n
+         s.noteDates = all.map((n) => n.date)
+       })
      },
 
      loadNote: async (date) => {

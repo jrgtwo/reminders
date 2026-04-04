@@ -231,7 +231,9 @@ export default function RightSidebar() {
               {/* Anytime */}
               {(globalIncomplete.length > 0 || globalComplete.length > 0) && (
                 <div className="py-1">
-                  <CollapsibleSection label="Anytime" count={globalIncomplete.length} defaultOpen={true}>
+                  <CollapsibleSection label="Anytime" count={globalIncomplete.length} defaultOpen={true} headerExtra={
+                    <button onClick={() => navigate('/anytime')} className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors" title="Open Anytime"><ArrowRight size={11} /></button>
+                  }>
                     <div className="px-2 pb-1">
                       <SortableTodoList
                         todos={globalIncomplete}

@@ -10,6 +10,7 @@ import { usePageTracking } from '../../hooks/usePageTracking'
 import { useUIStore } from '../../store/ui.store'
 import { useRemindersStore } from '../../store/reminders.store'
 import { useTodosStore } from '../../store/todos.store'
+import { useNotesStore } from '../../store/notes.store'
 import { useAuthStore } from '../../store/auth.store'
 import { useSyncStore } from '../../store/sync.store'
 import { getOccurrencesInRange } from '../../utils/recurrence'
@@ -29,6 +30,10 @@ export default function AppShell() {
   const navigate = useNavigate()
   const focusSearch = useCallback(() => searchRef.current?.focus(), [])
   const [errorDismissed, setErrorDismissed] = useState(false)
+
+  const loadAllNotes = useNotesStore((s) => s.loadAllNotes)
+
+  useEffect(() => { loadAllNotes() }, [loadAllNotes])
 
   const newReminderDate = useUIStore((s) => s.newReminderDate)
   const setNewReminderDate = useUIStore((s) => s.setNewReminderDate)
