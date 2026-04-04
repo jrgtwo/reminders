@@ -5,7 +5,7 @@ import { identifyUser, resetUser } from './lib/analytics'
 import { Analytics } from '@vercel/analytics/react'
 import { useSyncStore } from './store/sync.store'
 import FirstLoginDialog from './components/sync/FirstLoginDialog'
-import { RouterProvider, createMemoryRouter, createBrowserRouter } from 'react-router-dom'
+import { RouterProvider, createMemoryRouter, createBrowserRouter, useNavigate } from 'react-router-dom'
 import { Temporal } from '@js-temporal/polyfill'
 import { initStorage } from './platform'
 import { useUIStore } from './store/ui.store'
@@ -31,6 +31,7 @@ import {
 } from './utils/dates'
 
 function CalendarPage() {
+  const navigate = useNavigate()
   const selectedDateStr = useUIStore((s) => s.selectedDate)
   const setSelectedDate = useUIStore((s) => s.setSelectedDate)
   const currentView = useUIStore((s) => s.currentView)
@@ -70,6 +71,7 @@ function CalendarPage() {
             const t = today()
             setDisplayDate(t)
             setSelectedDate(t.toString())
+            navigate(`/day/${t.toString()}`)
           }}
         onViewChange={(v) => setView(v)}
       />

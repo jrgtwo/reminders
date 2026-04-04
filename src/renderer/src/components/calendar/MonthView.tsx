@@ -45,6 +45,18 @@ export default function MonthView({ displayDate }: Props) {
     navigate(`/day/${dateStr}`)
   }
 
+  function handleReminderClick(date: Temporal.PlainDate) {
+    const dateStr = date.toString()
+    setSelectedDate(dateStr)
+    navigate(`/day/${dateStr}`, { state: { tab: 'reminders' } })
+  }
+
+  function handleNoteClick(date: Temporal.PlainDate) {
+    const dateStr = date.toString()
+    setSelectedDate(dateStr)
+    navigate(`/day/${dateStr}`, { state: { tab: 'notes' } })
+  }
+
   return (
     <div className="flex flex-col flex-1 overflow-auto">
       {/* Day names */}
@@ -70,6 +82,8 @@ export default function MonthView({ displayDate }: Props) {
             isSelected={isSameDay(day, selectedPlainDate)}
             isWeekend={day.dayOfWeek === 6 || day.dayOfWeek === 7}
             onClick={() => handleDayClick(day)}
+            onReminderClick={() => handleReminderClick(day)}
+            onNoteClick={() => handleNoteClick(day)}
           />
         ))}
       </div>

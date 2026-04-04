@@ -32,6 +32,8 @@ interface Props {
   isSelected: boolean
   isWeekend?: boolean
   onClick: () => void
+  onReminderClick?: () => void
+  onNoteClick?: () => void
   tall?: boolean
 }
 
@@ -43,6 +45,8 @@ export default function CalendarDay({
   isSelected,
   isWeekend,
   onClick,
+  onReminderClick,
+  onNoteClick,
   tall,
 }: Props) {
   const todayDate = isToday(date)
@@ -123,8 +127,8 @@ export default function CalendarDay({
                   ? <Repeat size={13} />
                   : <Bell size={13} />
                 return (
-                  <span key={r.id}>
-                    <span className={`hidden lg:flex items-center gap-1 w-full px-1.5 py-[3px] rounded-md text-[10px] font-medium ${colors.chip}`}>
+                  <span key={r.id} className="min-w-0 lg:w-full" onClick={(e) => { e.stopPropagation(); onReminderClick?.() }}>
+                    <span className={`hidden lg:flex items-center gap-1 w-full px-1.5 py-[3px] rounded-md text-[10px] font-medium overflow-hidden ${colors.chip}`}>
                       <span className="shrink-0">{icon}</span>
                       <span className="truncate">{r.title}</span>
                     </span>
@@ -138,7 +142,7 @@ export default function CalendarDay({
                 )
               })}
               {hasNote && (
-                <span>
+                <span className="min-w-0 lg:w-full" onClick={(e) => { e.stopPropagation(); onNoteClick?.() }}>
                   <span className="hidden lg:flex items-center gap-1 w-full px-1.5 py-[3px] rounded-md text-[10px] font-medium bg-slate-100 text-slate-500 dark:bg-white/[0.07] dark:text-white/35">
                     <FileText size={13} />
                   </span>

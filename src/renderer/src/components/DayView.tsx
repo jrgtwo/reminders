@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { Temporal } from '@js-temporal/polyfill'
 import { parseDateStr, today } from '../utils/dates'
@@ -33,6 +33,7 @@ function getDayStatus(date: Temporal.PlainDate) {
 export default function DayView() {
   const { date } = useParams<{ date: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
 
   const dateStr = date ?? today().toString()
   const plainDate = useMemo(() => parseDateStr(dateStr), [dateStr])
@@ -50,7 +51,10 @@ export default function DayView() {
   const triggerNewReminder = useUIStore((s) => s.triggerNewReminder)
   const setTriggerNewReminder = useUIStore((s) => s.setTriggerNewReminder)
 
-  const [tab, setTab] = useState<'notes' | 'reminders' | 'todos'>('notes')
+  const initialTab = (location.state as { tab?: string } | null)?.tab
+  const [tab, setTab] = useState<'notes' | 'reminders' | 'todos'>(
+    initialTab === 'reminders' || initialTab === 'todos' ? initialTab : 'notes'
+  )
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<Reminder | null>(null)
   const [todoFormOpen, setTodoFormOpen] = useState(false)
