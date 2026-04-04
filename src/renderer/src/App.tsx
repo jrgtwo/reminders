@@ -129,8 +129,11 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    initStorage().then(() => setReady(true))
-    initAuth().then(() => setAuthReady(true))
+    initStorage().then(() => setReady(true)).catch(() => setReady(true))
+    initAuth().then(() => setAuthReady(true)).catch((err) => {
+      console.error('[auth] init failed:', err)
+      setAuthReady(true)  // unblock the render — isLoggedIn will be false, showing SignInPage
+    })
     initSync()
   }, [])
 
