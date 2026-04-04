@@ -64,9 +64,9 @@ export default function CalendarDay({
 
   let bg: string
   if (isSelected) {
-    bg = 'bg-[var(--bg-surface-selected)]'
+    bg = 'bg-[var(--bg-surface)]'
   } else if (todayDate) {
-    bg = 'bg-blue-50 dark:bg-[var(--bg-surface)]'
+    bg = 'bg-[var(--bg-surface)]'
   } else if (!inMonth) {
     bg = 'bg-[var(--bg-surface-muted)]'
   } else {
@@ -79,24 +79,31 @@ export default function CalendarDay({
       className={[
         'relative flex flex-col items-start w-full text-left cursor-pointer rounded-lg overflow-hidden',
         'transition-all duration-200',
-        'z-0 hover:z-10 opacity-80 hover:opacity-100 hover:brightness-110',
-        '[transform-origin:top_center] hover:[transform:perspective(600px)_rotateX(2deg)]',
+        isSelected ? 'z-10 opacity-100 brightness-110' : 'z-0 opacity-80 hover:z-10 hover:opacity-100 hover:brightness-110',
+        '[transform-origin:top_center]',
+        isSelected ? '[transform:perspective(600px)_rotateX(2deg)]' : 'hover:[transform:perspective(600px)_rotateX(2deg)]',
         tall ? 'p-3.5 gap-2' : 'p-1.5 gap-1 md:p-2 md:gap-1.5 lg:p-2.5 lg:gap-2',
         bg,
         isSelected
-          ? 'shadow-[0_0_0_2px_rgba(59,130,246,0.5),0_4px_20px_rgba(59,130,246,0.14)] dark:shadow-[0_0_0_2px_rgba(96,165,250,0.45),0_4px_20px_rgba(59,130,246,0.18)]'
+          ? 'shadow-[0_2px_6px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.4),0_1px_3px_rgba(0,0,0,0.25)] outline outline-1 outline-slate-300/60 dark:outline-white/[0.1]'
           : 'shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.4),0_1px_2px_rgba(0,0,0,0.3)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.4),0_1px_3px_rgba(0,0,0,0.25)]',
+        todayDate && !isSelected ? 'bg-blue-50/60 dark:bg-[#6498c8]/[0.07]' : '',
       ]
         .filter(Boolean)
         .join(' ')}
     >
+      {/* Today stripe */}
+      {todayDate && !isSelected && (
+        <div className="absolute top-0 left-0 right-0 h-[5px] bg-blue-500 dark:bg-[#6498c8] rounded-t-lg" />
+      )}
+
       {/* Date number */}
       <span
         className={[
-          'flex items-center justify-center rounded-full shrink-0 font-normal leading-none',
+          'flex items-center justify-center rounded-full shrink-0 leading-none',
           tall ? 'w-8 h-8 text-[15px]' : 'w-7 h-7 text-[14px]',
           todayDate
-            ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/30'
+            ? 'text-blue-500 dark:text-[#6498c8]'
             : inMonth
             ? 'text-slate-700 dark:text-white/80'
             : 'text-slate-300 dark:text-white/20',
