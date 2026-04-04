@@ -30,7 +30,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     // Keep store in sync with Supabase auth state changes.
     // Key must be loaded before isLoggedIn is set so the sync store never
     // attempts decryption before the key is available.
-    supabase.auth.onAuthStateChange(async (_, session) => {
+    // Skip INITIAL_SESSION: it fires while _initialize still holds the auth lock,
+    // so calling supabase.from() inside the handler causes lock contention.
+    // The getSession().then() path above already handles the initial session.
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'INITIAL_SESSION') return
       if (session?.user) {
         await initEncryptionKey(session.user.id).catch(console.error)
       }
