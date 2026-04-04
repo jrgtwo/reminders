@@ -1,4 +1,4 @@
-import { useMemo, useRef, useEffect } from 'react'
+import { useMemo, useRef, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Temporal } from '@js-temporal/polyfill'
 import { getWeekDays, isSameDay, parseDateStr } from '../../utils/dates'
@@ -6,6 +6,8 @@ import { getOccurrencesInRange } from '../../utils/recurrence'
 import { useRemindersStore } from '../../store/reminders.store'
 import { useUIStore } from '../../store/ui.store'
 import type { Reminder } from '../../types/models'
+import ReminderForm from '../reminders/ReminderForm'
+import ReminderDetail from '../reminders/ReminderDetail'
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
 const SLOT_H = 64 // px per hour slot
@@ -32,6 +34,9 @@ export default function WeekView({ displayDate }: Props) {
   const selectedDate = useUIStore((s) => s.selectedDate)
   const setSelectedDate = useUIStore((s) => s.setSelectedDate)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const saveReminder = useRemindersStore((s) => s.save)
+  const [newForm, setNewForm] = useState<{ date: string; time: string } | null>(null)
+  const [detail, setDetail] = useState<{ reminder: Reminder; dateStr: string } | null>(null)
 
   const days = useMemo(() => getWeekDays(displayDate), [displayDate])
 
@@ -132,12 +137,13 @@ export default function WeekView({ displayDate }: Props) {
             return (
               <div key={dateStr} className="flex flex-col gap-[2px] px-1 py-1 min-h-[28px] overflow-hidden min-w-0">
                 {dayReminders.slice(0, 3).map((r) => (
-                  <div
+                  <button
                     key={r.id}
-                    className="w-full px-1.5 py-[2px] rounded text-[10px] font-semibold truncate bg-indigo-50 text-indigo-700 dark:bg-indigo-500/[0.12] dark:text-indigo-300"
+                    onClick={(e) => { e.stopPropagation(); setDetail({ reminder: r, dateStr }) }}
+                    className="w-full text-left px-1.5 py-[2px] rounded text-[10px] font-semibold truncate bg-[#6498c8]/[0.12] text-[#6498c8] hover:bg-[#6498c8]/[0.2] transition-colors"
                   >
                     {r.title}
-                  </div>
+                  </button>
                 ))}
                 {dayReminders.length > 3 && (
                   <span className="text-[9px] text-slate-400 dark:text-white/25 pl-1">
@@ -201,23 +207,23 @@ export default function WeekView({ displayDate }: Props) {
                   <div
                     key={`${dateStr}-${hour}`}
                     className={[
-                      'relative border-t border-l border-slate-200/50 dark:border-white/[0.04] overflow-hidden min-w-0',
+                      'relative border-t border-l border-slate-200/50 dark:border-white/[0.04] overflow-hidden min-w-0 cursor-pointer',
                       isToday ? 'bg-blue-50/30 dark:bg-blue-500/[0.03]' : '',
                     ]
                       .filter(Boolean)
                       .join(' ')}
                     style={{ height: `${SLOT_H}px` }}
-                    onClick={() => handleDayClick(day)}
+                    onClick={() => setNewForm({ date: dateStr, time: `${String(hour).padStart(2, '0')}:00` })}
                   >
                     <div className="flex flex-col gap-[2px] p-1 overflow-hidden h-full">
                       {cellReminders.map((r) => (
-                        <div
+                        <button
                           key={r.id}
-                          className="w-full px-1.5 py-[3px] rounded-md text-[11px] font-semibold truncate bg-indigo-100 text-indigo-700 dark:bg-indigo-500/[0.15] dark:text-indigo-300 cursor-pointer hover:opacity-80 transition-opacity"
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => { e.stopPropagation(); setDetail({ reminder: r, dateStr }) }}
+                          className="w-full text-left px-1.5 py-[3px] rounded-md text-[11px] font-semibold truncate bg-[#6498c8]/[0.15] text-[#6498c8] hover:bg-[#6498c8]/[0.25] transition-colors"
                         >
                           {r.time} {r.title}
-                        </div>
+                        </button>
                       ))}
                     </div>
                   </div>
@@ -227,6 +233,23 @@ export default function WeekView({ displayDate }: Props) {
           ))}
         </div>
       </div>
+      {newForm && (
+        <ReminderForm
+          date={newForm.date}
+          reminder={null}
+          defaultTime={newForm.time}
+          onSave={async (r) => { await saveReminder(r); setNewForm(null) }}
+          onClose={() => setNewForm(null)}
+        />
+      )}
+
+      {detail && (
+        <ReminderDetail
+          reminder={detail.reminder}
+          dateStr={detail.dateStr}
+          onClose={() => setDetail(null)}
+        />
+      )}
     </div>
   )
 }

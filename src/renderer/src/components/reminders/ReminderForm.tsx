@@ -14,16 +14,17 @@ const DEFAULT_RECURRENCE: RecurrenceRule = {
 interface Props {
   date: string
   reminder: Reminder | null
+  defaultTime?: string
   onSave: (r: Reminder) => Promise<void>
   onClose: () => void
 }
 
-export default function ReminderForm({ date, reminder, onSave, onClose }: Props) {
+export default function ReminderForm({ date, reminder, defaultTime, onSave, onClose }: Props) {
   const isNew = !reminder
   const [title, setTitle] = useState(reminder?.title ?? '')
   const [description, setDescription] = useState(reminder?.description ?? '')
   const [reminderDate, setReminderDate] = useState(reminder?.date ?? date)
-  const [time, setTime] = useState(reminder?.time ?? '')
+  const [time, setTime] = useState(reminder?.time ?? defaultTime ?? '')
   const [recurring, setRecurring] = useState(!!reminder?.recurrence)
   const [recurrence, setRecurrence] = useState<RecurrenceRule>(
     reminder?.recurrence ?? DEFAULT_RECURRENCE,
