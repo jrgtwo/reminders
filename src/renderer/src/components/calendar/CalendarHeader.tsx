@@ -31,11 +31,11 @@ export default function CalendarHeader({
     <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-white/[0.07] shrink-0 bg-[var(--bg-surface)]">
       <div className="flex items-end gap-3">
         <div className="flex items-baseline gap-2.5 leading-none">
-          <h2 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">
+          <h2 className="text-4xl tracking-tight text-slate-900 dark:text-white/80" style={{ fontFamily: "'Bree Serif', serif" }}>
             {monthName}
           </h2>
           {yearStr && (
-            <span className="text-xl font-light text-slate-300 dark:text-white/25 tracking-tight">
+            <span className="text-xl font-normal text-slate-300 dark:text-white/25 tracking-tight" style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 400 }}>
               {yearStr}
             </span>
           )}

@@ -115,7 +115,7 @@ export default function DayView() {
       {/* Heading */}
       <div className="mb-8">
         <div className="flex items-baseline gap-3 mb-1">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight leading-none">
+          <h1 className="text-3xl text-slate-900 dark:text-white/80 tracking-tight leading-none" style={{ fontFamily: "'Bree Serif', serif" }}>
             {weekday}
           </h1>
           {status && (
@@ -124,7 +124,7 @@ export default function DayView() {
             </span>
           )}
         </div>
-        <p className="text-sm text-slate-400 dark:text-white/35 font-medium">{rest}</p>
+        <p className="text-sm text-slate-400 dark:text-white/35 font-medium" style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 400 }}>{rest}</p>
       </div>
 
       {/* Tabs */}

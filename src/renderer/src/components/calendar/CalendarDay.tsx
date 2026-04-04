@@ -85,7 +85,7 @@ export default function CalendarDay({
       {/* Date number */}
       <span
         className={[
-          'flex items-center justify-center rounded-full shrink-0 font-bold leading-none',
+          'flex items-center justify-center rounded-full shrink-0 font-normal leading-none',
           tall ? 'w-8 h-8 text-[15px]' : 'w-7 h-7 text-[14px]',
           todayDate
             ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/30'
@@ -95,6 +95,7 @@ export default function CalendarDay({
         ]
           .filter(Boolean)
           .join(' ')}
+        style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 400 }}
       >
         {formatDayNum(date)}
       </span>
