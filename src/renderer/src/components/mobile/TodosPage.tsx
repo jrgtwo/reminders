@@ -1,85 +1,348 @@
-import { useEffect, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
+import {
+  ChevronDown, ChevronUp, ChevronRight,
+  Plus, ArrowRight, List, FolderOpen,
+} from 'lucide-react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useTodosStore } from '../../store/todos.store'
-import type { Todo } from '../../types/models'
+import { useTodoFoldersStore } from '../../store/todo_folders.store'
+import { useTodoListsStore } from '../../store/todo_lists.store'
+import { today, parseDateStr } from '../../utils/dates'
+import type { Todo, TodoFolder, TodoList } from '../../types/models'
 import SortableTodoList from '../todos/TodoList'
 import TodoForm from '../todos/TodoForm'
+import FolderForm from '../lists/FolderForm'
+import ListForm from '../lists/ListForm'
+
+function formatOverdueDate(dateStr: string): string {
+  const t = today()
+  const d = parseDateStr(dateStr)
+  const diff = d.until(t, { largestUnit: 'days' }).days
+  if (diff === 1) return 'Yesterday'
+  if (diff < 7) return `${diff} days ago`
+  return d.toLocaleString('en-US', { month: 'short', day: 'numeric' })
+}
+
+function formatUpcomingDate(dateStr: string): string {
+  const t = today()
+  const d = parseDateStr(dateStr)
+  const diff = t.until(d, { largestUnit: 'days' }).days
+  if (diff === 0) return 'Today'
+  if (diff === 1) return 'Tomorrow'
+  return d.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+}
+
+function CollapsibleSection({ label, count, accent = 'blue', defaultOpen = false, children, headerExtra }: {
+  label: string; count: number; accent?: 'blue' | 'red' | 'slate'; defaultOpen?: boolean
+  children: ReactNode; headerExtra?: ReactNode
+}) {
+  const [open, setOpen] = useState(defaultOpen)
+  const labelCls = accent === 'red'
+    ? 'text-red-500 dark:text-[#e8a045]'
+    : accent === 'slate'
+    ? 'text-slate-400 dark:text-white/30'
+    : 'text-blue-500 dark:text-[#6498c8]'
+  const countCls = accent === 'red'
+    ? 'text-red-500 dark:text-[#e8a045] bg-red-50 dark:bg-[#e8a045]/[0.08]'
+    : accent === 'slate'
+    ? 'text-slate-400 dark:text-white/30 bg-slate-100 dark:bg-white/[0.05]'
+    : 'text-blue-500 dark:text-[#6498c8] bg-blue-50 dark:bg-[#6498c8]/[0.08]'
+  const chevronCls = accent === 'red' ? 'text-[#e8a045]/60' : accent === 'slate' ? 'text-slate-300 dark:text-white/20' : 'text-[#6498c8]/60'
+  return (
+    <div>
+      <div className="flex items-center gap-1 px-4 py-1.5">
+        <button
+          onClick={() => setOpen((o) => !o)}
+          className="flex items-center gap-2 flex-1 text-left hover:opacity-80 transition-opacity"
+        >
+          <span className={`text-[10px] font-bold uppercase tracking-wide flex-1 ${labelCls}`}>{label}</span>
+          {count > 0 && <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${countCls}`}>{count}</span>}
+          {open ? <ChevronUp size={11} className={chevronCls} /> : <ChevronDown size={11} className={chevronCls} />}
+        </button>
+        {headerExtra}
+      </div>
+      {open && <div>{children}</div>}
+    </div>
+  )
+}
 
 export default function TodosPage() {
+  const navigate = useNavigate()
+  const location = useLocation()
+
   const todos = useTodosStore((s) => s.todos)
   const load = useTodosStore((s) => s.load)
   const save = useTodosStore((s) => s.save)
   const remove = useTodosStore((s) => s.remove)
   const reorder = useTodosStore((s) => s.reorder)
 
+  const folders = useTodoFoldersStore((s) => s.folders)
+  const loadFolders = useTodoFoldersStore((s) => s.load)
+  const saveFolder = useTodoFoldersStore((s) => s.save)
+
+  const lists = useTodoListsStore((s) => s.lists)
+  const loadLists = useTodoListsStore((s) => s.load)
+  const saveList = useTodoListsStore((s) => s.save)
+
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<Todo | null>(null)
+  const [folderFormOpen, setFolderFormOpen] = useState(false)
+  const [editingFolder, setEditingFolder] = useState<TodoFolder | null>(null)
+  const [listFormOpen, setListFormOpen] = useState(false)
+  const [editingList, setEditingList] = useState<TodoList | null>(null)
+  const [newListFolderId, setNewListFolderId] = useState<string | undefined>()
+  const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set())
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    load()
+    loadFolders()
+    loadLists()
+  }, [load, loadFolders, loadLists])
+
+  const activeListId = location.pathname.startsWith('/lists/')
+    ? location.pathname.slice('/lists/'.length)
+    : undefined
+
+  const todayStr = useMemo(() => today().toString(), [])
+  const globalIncomplete = useMemo(() => todos.filter((t) => !t.completed && !t.dueDate && !t.listId), [todos])
+  const globalComplete = useMemo(() => todos.filter((t) => t.completed && !t.dueDate && !t.listId), [todos])
+  const overdueDated = useMemo(
+    () => todos.filter((t) => !t.completed && t.dueDate && t.dueDate < todayStr)
+      .sort((a, b) => b.dueDate!.localeCompare(a.dueDate!)),
+    [todos, todayStr],
+  )
+  const upcomingDated = useMemo(
+    () => todos.filter((t) => !t.completed && t.dueDate && t.dueDate >= todayStr)
+      .sort((a, b) => a.dueDate!.localeCompare(b.dueDate!)),
+    [todos, todayStr],
+  )
+
+  const sortedFolders = useMemo(() => [...folders].sort((a, b) => a.order - b.order), [folders])
+  const standaloneLists = useMemo(() => lists.filter((l) => !l.folderId).sort((a, b) => a.order - b.order), [lists])
+
+  const todoCount = globalIncomplete.length + overdueDated.length + upcomingDated.length
+
+  function listIncompleteCount(listId: string) {
+    return todos.filter((t) => t.listId === listId && !t.completed).length
+  }
+
+  function toggleFolder(id: string) {
+    setCollapsedFolders((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   function handleToggle(t: Todo) {
     const now = new Date().toISOString()
     save({ ...t, completed: !t.completed, completedAt: !t.completed ? now : undefined, updatedAt: now })
   }
 
-  const incomplete = todos.filter((t) => !t.completed)
-  const complete = todos.filter((t) => t.completed)
+  function ListItem({ l, indent = false }: { l: TodoList; indent?: boolean }) {
+    const count = listIncompleteCount(l.id)
+    const active = activeListId === l.id
+    return (
+      <button
+        onClick={() => navigate(`/lists/${l.id}`)}
+        className={`flex items-center gap-2 w-full py-1.5 transition-colors text-left ${indent ? 'pl-8 pr-4' : 'px-4'} ${
+          active ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.12]' : 'hover:bg-slate-50 dark:hover:bg-white/[0.03]'
+        }`}
+      >
+        <List size={11} className={active ? 'shrink-0 text-[#6498c8]' : 'shrink-0 text-slate-400 dark:text-white/25'} />
+        <span className={`text-[13px] truncate flex-1 ${active ? 'font-medium text-[#6498c8]' : 'text-slate-600 dark:text-white/60'}`}>{l.name}</span>
+        {count > 0 && <span className="text-[10px] font-bold text-[#6498c8]/70 tabular-nums shrink-0">{count}</span>}
+        <ArrowRight size={11} className="shrink-0 text-slate-300 dark:text-white/20" />
+      </button>
+    )
+  }
 
   return (
-    <div className="flex flex-col h-full bg-[var(--bg-app)]">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-black/10 dark:border-white/[0.07]">
-        <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-white/40">
-          Todos
-          {incomplete.length > 0 && (
-            <span className="ml-2 text-blue-500 dark:text-blue-400">{incomplete.length}</span>
+    <>
+      <div className="flex flex-col h-full bg-[var(--bg-app)]">
+        {/* Header */}
+        <div className="flex items-center px-4 py-3 border-b border-black/10 dark:border-white/[0.07]">
+          <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-white/40 flex-1">Todos</span>
+          {todoCount > 0 && (
+            <span className="text-[11px] font-bold text-blue-400 tabular-nums mr-2">{todoCount}</span>
           )}
-        </span>
-        <button
-          onClick={() => { setEditing(null); setFormOpen(true) }}
-          className="flex items-center gap-1.5 text-[13px] font-medium text-blue-600 dark:text-blue-400"
-        >
-          <Plus size={16} />
-          Add
-        </button>
-      </div>
+        </div>
 
-      <div className="flex-1 overflow-y-auto">
-        {todos.length === 0 ? (
-          <p className="text-[13px] text-slate-400 dark:text-white/25 text-center py-12">No todos yet</p>
-        ) : (
-          <>
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Anytime */}
+          {(globalIncomplete.length > 0 || globalComplete.length > 0) && (
             <div className="py-1">
-              <SortableTodoList
-                todos={incomplete}
-                onToggle={handleToggle}
-                onEdit={(t) => { setEditing(t); setFormOpen(true) }}
-                onDelete={remove}
-                onReorder={reorder}
-              />
+              <CollapsibleSection label="Anytime" count={globalIncomplete.length} defaultOpen={true}>
+                <div className="px-2 pb-1">
+                  <SortableTodoList
+                    todos={globalIncomplete}
+                    onToggle={handleToggle}
+                    onEdit={(t) => { setEditing(t); setFormOpen(true) }}
+                    onDelete={remove}
+                    onReorder={reorder}
+                  />
+                  {globalComplete.length > 0 && (
+                    <div className="mt-1 border-t border-slate-100 dark:border-white/[0.05] pt-2 pb-1">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 dark:text-white/30 px-2 mb-1">Done</p>
+                      <SortableTodoList
+                        todos={globalComplete}
+                        onToggle={handleToggle}
+                        onEdit={(t) => { setEditing(t); setFormOpen(true) }}
+                        onDelete={remove}
+                        onReorder={reorder}
+                      />
+                    </div>
+                  )}
+                </div>
+              </CollapsibleSection>
             </div>
-            {complete.length > 0 && (
-              <div className="mt-1 border-t border-slate-100 dark:border-white/[0.05] pt-2 pb-4">
-                <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-300 dark:text-white/20 px-4 mb-1">Done</p>
-                <SortableTodoList
-                  todos={complete}
-                  onToggle={handleToggle}
-                  onEdit={(t) => { setEditing(t); setFormOpen(true) }}
-                  onDelete={remove}
-                  onReorder={reorder}
-                />
-              </div>
-            )}
-          </>
-        )}
+          )}
+
+          {/* Overdue */}
+          {overdueDated.length > 0 && (
+            <div className="border-t border-slate-200 dark:border-white/[0.07] pt-1 pb-1">
+              <CollapsibleSection label="Overdue" count={overdueDated.length} accent="red">
+                <ul className="flex flex-col gap-1 px-2 pb-1 pt-1">
+                  {overdueDated.map((t) => (
+                    <li key={t.id}>
+                      <button
+                        onClick={() => navigate(`/day/${t.dueDate}`, { state: { tab: 'todos' } })}
+                        className="flex items-center gap-1 w-full px-3 py-2 rounded-xl bg-white dark:bg-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.07] transition-colors text-left"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[11px] font-semibold text-[#e8a045]/80 mb-0.5">{formatOverdueDate(t.dueDate!)}</div>
+                          <div className="text-[13px] font-medium text-slate-700 dark:text-white/75 truncate">{t.title}</div>
+                        </div>
+                        <ArrowRight size={13} className="shrink-0 text-slate-300 dark:text-white/20" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </CollapsibleSection>
+            </div>
+          )}
+
+          {/* Upcoming */}
+          {upcomingDated.length > 0 && (
+            <div className="border-t border-slate-200 dark:border-white/[0.07] pt-1 pb-1">
+              <CollapsibleSection label="Upcoming" count={upcomingDated.length}>
+                <ul className="flex flex-col gap-1 px-2 pb-1 pt-1">
+                  {upcomingDated.map((t) => (
+                    <li key={t.id}>
+                      <button
+                        onClick={() => navigate(`/day/${t.dueDate}`, { state: { tab: 'todos' } })}
+                        className="flex items-center gap-1 w-full px-3 py-2 rounded-xl bg-white dark:bg-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.07] transition-colors text-left"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[11px] font-semibold text-[#6498c8]/80 mb-0.5">{formatUpcomingDate(t.dueDate!)}</div>
+                          <div className="text-[13px] font-medium text-slate-700 dark:text-white/75 truncate">{t.title}</div>
+                        </div>
+                        <ArrowRight size={13} className="shrink-0 text-slate-300 dark:text-white/20" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </CollapsibleSection>
+            </div>
+          )}
+
+          {/* Lists */}
+          {(lists.length > 0 || folders.length > 0) && (
+            <div className="border-t border-slate-200 dark:border-white/[0.07] pt-1 pb-2">
+              <CollapsibleSection
+                label="Lists"
+                count={lists.length}
+                accent="slate"
+                defaultOpen={true}
+                headerExtra={
+                  <div className="flex items-center gap-0.5 shrink-0">
+                    <button
+                      onClick={() => { setEditingList(null); setNewListFolderId(undefined); setListFormOpen(true) }}
+                      className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                      title="New list"
+                    ><Plus size={11} /></button>
+                    <button
+                      onClick={() => { setEditingFolder(null); setFolderFormOpen(true) }}
+                      className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                      title="New folder"
+                    ><FolderOpen size={11} /></button>
+                  </div>
+                }
+              >
+                {standaloneLists.map((l) => <ListItem key={l.id} l={l} />)}
+                {sortedFolders.map((folder) => {
+                  const folderLists = lists.filter((l) => l.folderId === folder.id).sort((a, b) => a.order - b.order)
+                  const collapsed = collapsedFolders.has(folder.id)
+                  return (
+                    <div key={folder.id}>
+                      <button
+                        onClick={() => toggleFolder(folder.id)}
+                        className="flex items-center gap-1.5 w-full px-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
+                      >
+                        {collapsed
+                          ? <ChevronRight size={10} className="text-slate-300 dark:text-white/20 shrink-0" />
+                          : <ChevronDown size={10} className="text-slate-300 dark:text-white/20 shrink-0" />}
+                        <FolderOpen size={11} className="text-slate-400 dark:text-white/25 shrink-0" />
+                        <span className="text-[11px] font-semibold text-slate-400 dark:text-white/30 uppercase tracking-wide truncate">{folder.name}</span>
+                      </button>
+                      {!collapsed && folderLists.map((l) => <ListItem key={l.id} l={l} indent />)}
+                    </div>
+                  )
+                })}
+              </CollapsibleSection>
+            </div>
+          )}
+
+          {todos.length === 0 && lists.length === 0 && folders.length === 0 && (
+            <p className="text-[12px] text-slate-400 dark:text-white/25 text-center py-8 leading-relaxed">No todos yet</p>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="p-3 border-t border-slate-200 dark:border-white/[0.07] shrink-0">
+          <button
+            onClick={() => { setEditing(null); setFormOpen(true) }}
+            className="flex items-center justify-center gap-2 w-full text-[13px] font-medium text-slate-500 dark:text-white/50 hover:text-slate-800 dark:hover:text-white/80 bg-white dark:bg-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.1] px-3 py-2 rounded-lg transition-all"
+          >
+            <Plus size={13} />
+            Add Todo
+          </button>
+        </div>
       </div>
 
       {formOpen && (
         <TodoForm
           todo={editing}
-          onSave={async (t) => { await save(t); setFormOpen(false); setEditing(null) }}
+          onSave={(t) => { save(t); setFormOpen(false); setEditing(null) }}
           onClose={() => { setFormOpen(false); setEditing(null) }}
         />
       )}
-    </div>
+
+      {folderFormOpen && (
+        <FolderForm
+          folder={editingFolder}
+          onSave={async (f) => { await saveFolder(f); setFolderFormOpen(false); setEditingFolder(null) }}
+          onClose={() => { setFolderFormOpen(false); setEditingFolder(null) }}
+        />
+      )}
+
+      {listFormOpen && (
+        <ListForm
+          list={editingList}
+          folders={folders}
+          defaultFolderId={newListFolderId}
+          onSave={async (l) => {
+            await saveList(l)
+            setListFormOpen(false)
+            setEditingList(null)
+            navigate(`/lists/${l.id}`)
+          }}
+          onClose={() => { setListFormOpen(false); setEditingList(null) }}
+        />
+      )}
+    </>
   )
 }
