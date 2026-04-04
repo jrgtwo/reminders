@@ -23,6 +23,18 @@ export default function SettingsPage() {
   const syncStatus = useSyncStore((s) => s.status)
   const lastSyncedAt = useSyncStore((s) => s.lastSyncedAt)
   const triggerSync = useSyncStore((s) => s.trigger)
+  const migrationPrefKey = user ? `reminder_migration_pref_${user.id}` : null
+  const [migrationPref, setMigrationPref] = useState<'sync' | 'skip' | null>(
+    () => (migrationPrefKey ? (localStorage.getItem(migrationPrefKey) as 'sync' | 'skip' | null) : null)
+  )
+
+  function handleMigrationPrefChange(val: 'sync' | 'skip' | null) {
+    if (!migrationPrefKey) return
+    if (val) localStorage.setItem(migrationPrefKey, val)
+    else localStorage.removeItem(migrationPrefKey)
+    setMigrationPref(val)
+  }
+
   const [importStatus, setImportStatus] = useState<{ ok: boolean; msg: string } | null>(null)
   const [exporting, setExporting] = useState(false)
   const [importing, setImporting] = useState(false)
@@ -166,6 +178,33 @@ export default function SettingsPage() {
               <RefreshCw size={14} className={syncStatus === 'syncing' ? 'animate-spin' : ''} />
               {syncStatus === 'syncing' ? 'Syncing…' : 'Sync now'}
             </Button>
+          </div>
+          <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
+            <div>
+              <p className="text-sm font-medium">On login conflict</p>
+              <p className="text-xs text-gray-400 mt-0.5">
+                What to do when local and cloud data differ
+              </p>
+            </div>
+            <div className="flex items-center gap-1 p-1 rounded-lg bg-gray-200 dark:bg-[var(--bg-elevated)]">
+              {(['sync', null, 'skip'] as const).map((val) => {
+                const label = val === 'sync' ? 'Always merge' : val === 'skip' ? 'Always skip' : 'Ask'
+                const active = migrationPref === val
+                return (
+                  <button
+                    key={String(val)}
+                    onClick={() => handleMigrationPrefChange(val)}
+                    className={`px-2.5 py-1 text-xs rounded-md font-medium transition-all ${
+                      active
+                        ? 'bg-white dark:bg-[var(--bg-card)] text-gray-900 dark:text-gray-100 shadow-sm'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
           </div>
         </section>
       )}

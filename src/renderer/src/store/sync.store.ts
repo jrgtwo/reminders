@@ -17,7 +17,7 @@ interface SyncState {
   checkingFirstLogin: boolean
   trigger: () => Promise<void>
   checkFirstLogin: () => Promise<void>
-  completeMigration: (action: 'sync' | 'skip') => Promise<void>
+  completeMigration: (action: 'sync' | 'skip', remember?: boolean) => Promise<void>
   init: () => void
 }
 
@@ -102,6 +102,14 @@ export const useSyncStore = create<SyncState>((set, get) => ({
       } else {
         const migrationCase: MigrationCase =
           hasLocal && hasRemote ? 'both' : hasLocal ? 'local-only' : 'cloud-only'
+
+        const savedPref = localStorage.getItem(`reminder_migration_pref_${user.id}`)
+        if (savedPref === 'sync' || savedPref === 'skip') {
+          set({ checkingFirstLogin: false })
+          await get().completeMigration(savedPref)
+          return
+        }
+
         set({ migrationCase, checkingFirstLogin: false })
       }
     } catch (err) {
@@ -110,22 +118,27 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     }
   },
 
-  completeMigration: async (action) => {
+  completeMigration: async (action, remember = false) => {
     const { session, user } = useAuthStore.getState()
     if (!user) return
+
+    if (remember) {
+      localStorage.setItem(`reminder_migration_pref_${user.id}`, action)
+    }
 
     capture('sync_first_login_migration', { action, migration_case: get().migrationCase })
     set({ migrationCase: null })
 
+    // Always mark first login done so the dialog doesn't reappear
+    if (isElectron()) {
+      const api = (window as any).electronAPI
+      await api.sync.markFirstLoginDone(user.id)
+    } else {
+      webMarkFirstLoginDone(user.id)
+    }
+
     if (action === 'sync' && session) {
       await get().trigger()
-    } else {
-      if (isElectron()) {
-        const api = (window as any).electronAPI
-        await api.sync.markFirstLoginDone(user.id)
-      } else {
-        webMarkFirstLoginDone(user.id)
-      }
     }
   },
 
