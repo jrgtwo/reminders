@@ -43,7 +43,7 @@ interface CollapsibleSectionProps {
   children: ReactNode
 }
 
-function CollapsibleSection({ label, count, accent, defaultOpen = true, indent = false, children }: CollapsibleSectionProps) {
+function CollapsibleSection({ label, count, accent, defaultOpen = false, indent = false, children }: CollapsibleSectionProps) {
   const [open, setOpen] = useState(defaultOpen)
   const s = accentStyles[accent]
 
@@ -172,10 +172,8 @@ export default function LeftSidebar() {
 
   return (
     <aside
-      className={`relative h-full flex flex-col border-r border-slate-300/60 dark:border-white/[0.07] overflow-hidden bg-[var(--bg-app)] ${leftOpen ? 'shadow-[4px_0_24px_rgba(0,0,0,0.12)] dark:shadow-[4px_0_24px_rgba(0,0,0,0.5)]' : ''} ${
-        leftOpen ? '' : 'w-11 transition-[width] duration-200'
-      }`}
-      style={leftOpen ? { width } : undefined}
+      className={`relative h-full flex flex-col border-r border-slate-300/60 dark:border-white/[0.07] overflow-hidden bg-[var(--bg-app)] transition-[width] duration-200 ${leftOpen ? 'shadow-[4px_0_16px_rgba(0,0,0,0.07)] dark:shadow-[4px_0_16px_rgba(0,0,0,0.3)]' : 'shadow-[2px_0_6px_rgba(0,0,0,0.04)] dark:shadow-[2px_0_6px_rgba(0,0,0,0.2)]'}`}
+      style={{ width: leftOpen ? width : 44 }}
     >
       {/* Header */}
       <div className="flex items-center px-3 py-2.5 border-b border-black/30 dark:border-black/60 bg-[var(--bg-header)] shrink-0 h-11">

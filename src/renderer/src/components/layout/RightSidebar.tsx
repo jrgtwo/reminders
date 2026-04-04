@@ -201,10 +201,8 @@ export default function RightSidebar() {
   return (
     <>
       <aside
-        className={`relative h-full flex flex-col border-l border-slate-300/60 dark:border-white/[0.07] overflow-hidden bg-[var(--bg-app)] ${rightOpen ? 'shadow-[-4px_0_24px_rgba(0,0,0,0.12)] dark:shadow-[-4px_0_24px_rgba(0,0,0,0.5)]' : ''} ${
-          rightOpen ? '' : 'w-11 transition-[width] duration-200'
-        }`}
-        style={rightOpen ? { width } : undefined}
+        className={`relative h-full flex flex-col border-l border-slate-300/60 dark:border-white/[0.07] overflow-hidden bg-[var(--bg-app)] transition-[width] duration-200 ${rightOpen ? 'shadow-[-4px_0_16px_rgba(0,0,0,0.07)] dark:shadow-[-4px_0_16px_rgba(0,0,0,0.3)]' : 'shadow-[-2px_0_6px_rgba(0,0,0,0.04)] dark:shadow-[-2px_0_6px_rgba(0,0,0,0.2)]'}`}
+        style={{ width: rightOpen ? width : 44 }}
       >
         {/* Header */}
         <div className="flex items-center px-3 py-2.5 border-b border-black/30 dark:border-black/60 bg-[var(--bg-header)] shrink-0 h-11">
@@ -231,7 +229,7 @@ export default function RightSidebar() {
               {/* Anytime */}
               {(globalIncomplete.length > 0 || globalComplete.length > 0) && (
                 <div className="py-1">
-                  <CollapsibleSection label="Anytime" count={globalIncomplete.length} defaultOpen={true} headerExtra={
+                  <CollapsibleSection label="Anytime" count={globalIncomplete.length} headerExtra={
                     <button onClick={() => navigate('/anytime')} className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors" title="Open Anytime"><ArrowRight size={11} /></button>
                   }>
                     <div className="px-2 pb-1">
@@ -314,7 +312,6 @@ export default function RightSidebar() {
                     label="Lists"
                     count={lists.length}
                     accent="slate"
-                    defaultOpen={true}
                     headerExtra={
                       <div className="flex items-center gap-0.5 shrink-0">
                         <button
