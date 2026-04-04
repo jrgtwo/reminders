@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   CheckSquare, ChevronLeft, ChevronRight, ChevronDown, ChevronUp,
@@ -90,6 +90,32 @@ export default function RightSidebar() {
   const loadLists = useTodoListsStore((s) => s.load)
   const saveList = useTodoListsStore((s) => s.save)
 
+  const [width, setWidth] = useState(256)
+  const dragging = useRef(false)
+
+  function onResizeStart(e: React.MouseEvent) {
+    e.preventDefault()
+    dragging.current = true
+    const startX = e.clientX
+    const startWidth = width
+
+    function onMouseMove(e: MouseEvent) {
+      if (!dragging.current) return
+      setWidth(Math.max(180, Math.min(520, startWidth - (e.clientX - startX))))
+    }
+    function onMouseUp() {
+      dragging.current = false
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+  }
+
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<Todo | null>(null)
   const [folderFormOpen, setFolderFormOpen] = useState(false)
@@ -175,9 +201,10 @@ export default function RightSidebar() {
   return (
     <>
       <aside
-        className={`flex flex-col border-l border-slate-300/60 dark:border-white/[0.07] transition-[width] duration-200 overflow-hidden bg-[var(--bg-app)] ${
-          rightOpen ? 'w-64' : 'w-11'
+        className={`relative h-full flex flex-col border-l border-slate-300/60 dark:border-white/[0.07] overflow-hidden bg-[var(--bg-app)] ${rightOpen ? 'shadow-[-4px_0_24px_rgba(0,0,0,0.12)] dark:shadow-[-4px_0_24px_rgba(0,0,0,0.5)]' : ''} ${
+          rightOpen ? '' : 'w-11 transition-[width] duration-200'
         }`}
+        style={rightOpen ? { width } : undefined}
       >
         {/* Header */}
         <div className="flex items-center px-3 py-2.5 border-b border-black/30 dark:border-black/60 bg-[var(--bg-header)] shrink-0 h-11">
@@ -340,6 +367,14 @@ export default function RightSidebar() {
             </div>
           )}
         </div>
+
+        {/* Resize handle */}
+        {rightOpen && (
+          <div
+            onMouseDown={onResizeStart}
+            className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500/30 transition-colors"
+          />
+        )}
 
         {/* Bottom */}
         {rightOpen && (

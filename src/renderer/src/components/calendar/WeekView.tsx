@@ -4,6 +4,7 @@ import { Temporal } from '@js-temporal/polyfill'
 import { getWeekDays, isSameDay, parseDateStr } from '../../utils/dates'
 import { getOccurrencesInRange } from '../../utils/recurrence'
 import { useRemindersStore } from '../../store/reminders.store'
+import { useTodosStore } from '../../store/todos.store'
 import { useUIStore } from '../../store/ui.store'
 import type { Reminder } from '../../types/models'
 import ReminderForm from '../reminders/ReminderForm'
@@ -38,7 +39,22 @@ export default function WeekView({ displayDate }: Props) {
   const [newForm, setNewForm] = useState<{ date: string; time: string } | null>(null)
   const [detail, setDetail] = useState<{ reminder: Reminder; dateStr: string } | null>(null)
 
+  const todos = useTodosStore((s) => s.todos)
+
   const days = useMemo(() => getWeekDays(displayDate), [displayDate])
+
+  const todosByDate = useMemo(() => {
+    const map: Record<string, typeof todos> = {}
+    const weekStart = days[0].toString()
+    const weekEnd = days[6].toString()
+    for (const t of todos) {
+      if (!t.dueDate || t.completed) continue
+      if (t.dueDate < weekStart || t.dueDate > weekEnd) continue
+      if (!map[t.dueDate]) map[t.dueDate] = []
+      map[t.dueDate].push(t)
+    }
+    return map
+  }, [todos, days])
 
   const { timedByDate, allDayByDate } = useMemo(() => {
     const timed: Record<string, Reminder[]> = {}
@@ -64,7 +80,7 @@ export default function WeekView({ displayDate }: Props) {
   const nowMinutes = now.hour * 60 + now.minute
   const nowTop = (nowMinutes / 60) * SLOT_H
 
-  const hasAllDay = days.some((d) => (allDayByDate[d.toString()] ?? []).length > 0)
+  const hasAllDay = days.some((d) => (allDayByDate[d.toString()] ?? []).length > 0 || (todosByDate[d.toString()] ?? []).length > 0)
 
   // Auto-scroll to current time on mount
   useEffect(() => {
@@ -134,20 +150,34 @@ export default function WeekView({ displayDate }: Props) {
           {days.map((day) => {
             const dateStr = day.toString()
             const dayReminders = allDayByDate[dateStr] ?? []
+            const dayTodos = todosByDate[dateStr] ?? []
+            const isOverdue = dateStr < todayStr
+            const todoChip = isOverdue
+              ? 'bg-[#e8a045]/[0.12] text-[#e8a045] hover:bg-[#e8a045]/[0.28]'
+              : 'bg-emerald-500/[0.12] text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/[0.28]'
             return (
               <div key={dateStr} className="flex flex-col gap-[2px] px-1 py-1 min-h-[28px] overflow-hidden min-w-0">
                 {dayReminders.slice(0, 3).map((r) => (
                   <button
                     key={r.id}
                     onClick={(e) => { e.stopPropagation(); setDetail({ reminder: r, dateStr }) }}
-                    className="w-full text-left px-1.5 py-[2px] rounded text-[10px] font-semibold truncate bg-[#6498c8]/[0.12] text-[#6498c8] hover:bg-[#6498c8]/[0.2] transition-colors"
+                    className="w-full text-left px-1.5 py-[2px] rounded text-[10px] font-semibold truncate bg-[#6498c8]/[0.12] text-[#6498c8] transition-all duration-150 hover:bg-[#6498c8]/[0.28] hover:brightness-125 hover:shadow-md hover:scale-[1.03]"
                   >
                     {r.title}
                   </button>
                 ))}
-                {dayReminders.length > 3 && (
+                {dayTodos.slice(0, 3).map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={(e) => { e.stopPropagation(); navigate(`/day/${dateStr}`, { state: { tab: 'todos' } }) }}
+                    className={`w-full text-left px-1.5 py-[2px] rounded text-[10px] font-semibold truncate transition-all duration-150 hover:brightness-125 hover:shadow-md hover:scale-[1.03] ${todoChip}`}
+                  >
+                    ☐ {t.title}
+                  </button>
+                ))}
+                {(dayReminders.length + dayTodos.length) > 3 && (
                   <span className="text-[9px] text-slate-400 dark:text-white/25 pl-1">
-                    +{dayReminders.length - 3}
+                    +{dayReminders.length + dayTodos.length - 3}
                   </span>
                 )}
               </div>
@@ -208,7 +238,8 @@ export default function WeekView({ displayDate }: Props) {
                     key={`${dateStr}-${hour}`}
                     className={[
                       'relative border-t border-l border-slate-200/50 dark:border-white/[0.04] overflow-hidden min-w-0 cursor-pointer',
-                      isToday ? 'bg-blue-50/30 dark:bg-blue-500/[0.03]' : '',
+                      'opacity-80 hover:opacity-100 hover:brightness-105 transition-all duration-150',
+                      isToday ? 'bg-blue-50/30 dark:bg-blue-500/[0.03]' : 'hover:bg-slate-50/80 dark:hover:bg-white/[0.02]',
                     ]
                       .filter(Boolean)
                       .join(' ')}
@@ -220,7 +251,7 @@ export default function WeekView({ displayDate }: Props) {
                         <button
                           key={r.id}
                           onClick={(e) => { e.stopPropagation(); setDetail({ reminder: r, dateStr }) }}
-                          className="w-full text-left px-1.5 py-[3px] rounded-md text-[11px] font-semibold truncate bg-[#6498c8]/[0.15] text-[#6498c8] hover:bg-[#6498c8]/[0.25] transition-colors"
+                          className="w-full text-left px-1.5 py-[3px] rounded-md text-[11px] font-semibold truncate bg-[#6498c8]/[0.15] text-[#6498c8] transition-all duration-150 hover:bg-[#6498c8]/[0.28] hover:brightness-125 hover:shadow-md hover:scale-[1.03]"
                         >
                           {r.time} {r.title}
                         </button>

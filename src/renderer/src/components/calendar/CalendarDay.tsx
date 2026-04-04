@@ -68,16 +68,15 @@ export default function CalendarDay({
     <button
       onClick={onClick}
       className={[
-        'relative flex flex-col items-start w-full text-left cursor-pointer rounded-xl overflow-hidden',
-        'transition-all duration-150',
-        'z-0 hover:z-10 opacity-80 hover:opacity-100',
+        'relative flex flex-col items-start w-full text-left cursor-pointer rounded-lg overflow-hidden',
+        'transition-all duration-200',
+        'z-0 hover:z-10 opacity-80 hover:opacity-100 hover:brightness-110',
+        '[transform-origin:top_center] hover:[transform:perspective(600px)_rotateX(2deg)]',
         tall ? 'p-3.5 gap-2' : 'p-1.5 gap-1 md:p-2 md:gap-1.5 lg:p-2.5 lg:gap-2',
         bg,
         isSelected
           ? 'shadow-[0_0_0_2px_rgba(59,130,246,0.5),0_4px_20px_rgba(59,130,246,0.14)] dark:shadow-[0_0_0_2px_rgba(96,165,250,0.45),0_4px_20px_rgba(59,130,246,0.18)]'
-          : todayDate
-          ? 'hover:shadow-[0_2px_12px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_2px_12px_rgba(0,0,0,0.35)]'
-          : 'hover:shadow-[0_2px_12px_rgba(0,0,0,0.07)] dark:hover:shadow-[0_2px_12px_rgba(0,0,0,0.3)]',
+          : 'shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.4),0_1px_2px_rgba(0,0,0,0.3)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.4),0_1px_3px_rgba(0,0,0,0.25)]',
       ]
         .filter(Boolean)
         .join(' ')}

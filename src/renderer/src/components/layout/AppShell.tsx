@@ -196,14 +196,14 @@ export default function AppShell() {
         </div>
       )}
 
-      <div className="relative flex flex-1 overflow-hidden">
-        <div className="hidden lg:flex">
+      <div className="relative flex-1 overflow-hidden">
+        <div className="hidden lg:block absolute left-0 top-0 bottom-0 z-20">
           <LeftSidebar />
         </div>
-        <main className="flex-1 overflow-auto bg-[var(--bg-app)]">
+        <main className="h-full overflow-auto bg-[var(--bg-app)] lg:pl-11 lg:pr-11">
           <Outlet />
         </main>
-        <div className="hidden lg:flex">
+        <div className="hidden lg:block absolute right-0 top-0 bottom-0 z-20">
           <RightSidebar />
         </div>
       </div>

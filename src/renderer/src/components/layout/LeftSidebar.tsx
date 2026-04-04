@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Bell, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Plus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useUIStore } from '../../store/ui.store'
@@ -72,6 +72,31 @@ function CollapsibleSection({ label, count, accent, defaultOpen = true, indent =
 export default function LeftSidebar() {
   const leftOpen = useUIStore((s) => s.leftOpen)
   const setLeftOpen = useUIStore((s) => s.setLeftOpen)
+  const [width, setWidth] = useState(240)
+  const dragging = useRef(false)
+
+  function onResizeStart(e: React.MouseEvent) {
+    e.preventDefault()
+    dragging.current = true
+    const startX = e.clientX
+    const startWidth = width
+
+    function onMouseMove(e: MouseEvent) {
+      if (!dragging.current) return
+      setWidth(Math.max(180, Math.min(520, startWidth + e.clientX - startX)))
+    }
+    function onMouseUp() {
+      dragging.current = false
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+  }
   const setNewReminderDate = useUIStore((s) => s.setNewReminderDate)
   const navigate = useNavigate()
   const reminders = useRemindersStore((s) => s.reminders)
@@ -147,9 +172,10 @@ export default function LeftSidebar() {
 
   return (
     <aside
-      className={`flex flex-col border-r border-slate-300/60 dark:border-white/[0.07] transition-[width] duration-200 overflow-hidden bg-[var(--bg-app)] ${
-        leftOpen ? 'w-60' : 'w-11'
+      className={`relative h-full flex flex-col border-r border-slate-300/60 dark:border-white/[0.07] overflow-hidden bg-[var(--bg-app)] ${leftOpen ? 'shadow-[4px_0_24px_rgba(0,0,0,0.12)] dark:shadow-[4px_0_24px_rgba(0,0,0,0.5)]' : ''} ${
+        leftOpen ? '' : 'w-11 transition-[width] duration-200'
       }`}
+      style={leftOpen ? { width } : undefined}
     >
       {/* Header */}
       <div className="flex items-center px-3 py-2.5 border-b border-black/30 dark:border-black/60 bg-[var(--bg-header)] shrink-0 h-11">
@@ -254,6 +280,14 @@ export default function LeftSidebar() {
           </div>
         )}
       </div>
+
+      {/* Resize handle */}
+      {leftOpen && (
+        <div
+          onMouseDown={onResizeStart}
+          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500/30 transition-colors"
+        />
+      )}
 
       {/* Bottom nav */}
       {leftOpen && (
