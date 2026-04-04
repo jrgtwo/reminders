@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+button, a { cursor: pointer; }
+
 /* class-based dark mode */
 @custom-variant dark (&:where(.dark, .dark *));
 

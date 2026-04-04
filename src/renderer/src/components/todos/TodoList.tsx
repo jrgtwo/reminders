@@ -21,7 +21,12 @@ interface Props {
 export default function TodoList({ todos, onToggle, onEdit, onDelete, onReorder }: Props) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
+  function handleDragStart() {
+    document.body.style.cursor = 'grabbing'
+  }
+
   function handleDragEnd(event: DragEndEvent) {
+    document.body.style.cursor = ''
     const { active, over } = event
     if (!over || active.id === over.id) return
 
@@ -34,7 +39,7 @@ export default function TodoList({ todos, onToggle, onEdit, onDelete, onReorder 
   const sorted = [...todos].sort((a, b) => a.order - b.order)
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <SortableContext items={sorted.map((t) => t.id)} strategy={verticalListSortingStrategy}>
         <div className="flex flex-col gap-1 py-1">
           {sorted.map((todo) => (

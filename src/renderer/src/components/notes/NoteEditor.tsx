@@ -194,7 +194,7 @@ function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
   return (
     <>
       {/* Toolbar */}
-      <div className="border-b border-gray-200 dark:border-[var(--border)]">
+      <div className="border-b border-slate-100 dark:border-white/[0.05]">
         <div ref={containerRef} className="flex items-center gap-0.5 px-2 py-1">
           {visibleDefs.map((def) =>
             def.type === 'divider' ? (
@@ -265,11 +265,13 @@ function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
       {/* Editor content */}
       <div
         className="
-          px-4 py-3 text-sm text-gray-900 dark:text-gray-100
+          px-4 py-4 text-[15px] font-normal text-gray-900 dark:text-gray-100
           [&_.milkdown]:outline-none
           [&_.ProseMirror]:outline-none
           [&_.ProseMirror]:whitespace-pre-wrap
-          [&_.ProseMirror]:min-h-[120px]
+          [&_.ProseMirror]:min-h-[360px]
+          [&_.ProseMirror]:caret-[#6498c8]
+          [&_.ProseMirror]:font-normal
           [&_.ProseMirror_p]:mb-2
           [&_.ProseMirror_p:last-child]:mb-0
           [&_.ProseMirror_h1]:text-xl [&_.ProseMirror_h1]:font-bold [&_.ProseMirror_h1]:mb-2 [&_.ProseMirror_h1]:mt-1
@@ -331,7 +333,7 @@ export default function NoteEditor({ date }: Props) {
   if (!loaded) return <div className="mb-8 min-h-[200px]" />
 
   return (
-    <div className="mb-8 rounded-lg border border-gray-200 dark:border-[var(--border)] bg-gray-50 dark:bg-[var(--bg-card)] resize-y overflow-auto min-h-[200px]">
+    <div className="mb-8 min-h-[400px] bg-white/[0.03] dark:bg-white/[0.03]">
       <MilkdownProvider key={date}>
         <EditorWithToolbar initialContent={initialContent} onChange={handleChange} />
       </MilkdownProvider>

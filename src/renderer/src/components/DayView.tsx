@@ -5,11 +5,14 @@ import { Temporal } from '@js-temporal/polyfill'
 import { parseDateStr, today } from '../utils/dates'
 import { getOccurrencesInRange } from '../utils/recurrence'
 import { useRemindersStore } from '../store/reminders.store'
+import { useTodosStore } from '../store/todos.store'
 import { useUIStore } from '../store/ui.store'
-import type { Reminder } from '../types/models'
+import type { Reminder, Todo } from '../types/models'
 import NoteEditor from './notes/NoteEditor'
 import ReminderList from './reminders/ReminderList'
 import ReminderForm from './reminders/ReminderForm'
+import TodoList from './todos/TodoList'
+import TodoForm from './todos/TodoForm'
 
 function formatDayHeading(date: Temporal.PlainDate) {
   return {
@@ -39,11 +42,19 @@ export default function DayView() {
   const remove = useRemindersStore((s) => s.remove)
   const toggleComplete = useRemindersStore((s) => s.toggleComplete)
 
+  const todos = useTodosStore((s) => s.todos)
+  const saveTodo = useTodosStore((s) => s.save)
+  const removeTodo = useTodosStore((s) => s.remove)
+  const reorderTodos = useTodosStore((s) => s.reorder)
+
   const triggerNewReminder = useUIStore((s) => s.triggerNewReminder)
   const setTriggerNewReminder = useUIStore((s) => s.setTriggerNewReminder)
 
+  const [tab, setTab] = useState<'notes' | 'reminders' | 'todos'>('notes')
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<Reminder | null>(null)
+  const [todoFormOpen, setTodoFormOpen] = useState(false)
+  const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
 
   useEffect(() => {
     if (!triggerNewReminder) return
@@ -57,11 +68,37 @@ export default function DayView() {
     [reminders, plainDate],
   )
 
+  const { overdueReminders, upcomingReminders } = useMemo(() => {
+    const cmp = Temporal.PlainDate.compare(plainDate, Temporal.Now.plainDateISO())
+    if (cmp < 0) return { overdueReminders: dayReminders, upcomingReminders: [] }
+    if (cmp > 0) return { overdueReminders: [], upcomingReminders: dayReminders }
+    // today — split by time
+    const now = Temporal.Now.plainTimeISO()
+    const overdue = dayReminders.filter((r) => r.time && Temporal.PlainTime.compare(Temporal.PlainTime.from(r.time), now) < 0)
+    const upcoming = dayReminders.filter((r) => !r.time || Temporal.PlainTime.compare(Temporal.PlainTime.from(r.time), now) >= 0)
+    return { overdueReminders: overdue, upcomingReminders: upcoming }
+  }, [dayReminders, plainDate])
+
+  const incompleteTodos = useMemo(() => todos.filter((t) => !t.completed), [todos])
+  const completedTodayTodos = useMemo(
+    () => todos.filter((t) => t.completed && t.completedAt?.startsWith(dateStr)),
+    [todos, dateStr],
+  )
+  const dayTodos = useMemo(
+    () => [...incompleteTodos, ...completedTodayTodos].sort((a, b) => a.order - b.order),
+    [incompleteTodos, completedTodayTodos],
+  )
+
+  function handleToggleTodo(t: Todo) {
+    const now = new Date().toISOString()
+    saveTodo({ ...t, completed: !t.completed, completedAt: !t.completed ? now : undefined, updatedAt: now })
+  }
+
   const { weekday, rest } = formatDayHeading(plainDate)
   const status = getDayStatus(plainDate)
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-8 py-7">
+    <div className="max-w-3xl mx-auto px-4 sm:px-8 py-7">
       {/* Back */}
       <button
         onClick={() => navigate(-1)}
@@ -86,19 +123,87 @@ export default function DayView() {
         <p className="text-sm text-slate-400 dark:text-white/35 font-medium">{rest}</p>
       </div>
 
-      {/* Note editor */}
-      <NoteEditor date={dateStr} />
+      {/* Tabs */}
+      <div className="flex items-center gap-1 border-b border-slate-200/60 dark:border-white/[0.07] mb-6">
+        {([
+          { id: 'notes',     label: 'Notes',     count: null },
+          { id: 'reminders', label: 'Reminders', count: dayReminders.length, overdue: overdueReminders.length, upcoming: upcomingReminders.length },
+          { id: 'todos',     label: 'Todos',     count: incompleteTodos.length },
+        ] as const).map(({ id, label, count, ...rest }) => (
+          <button
+            key={id}
+            onClick={() => setTab(id)}
+            className={`relative flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium transition-colors ${
+              tab === id
+                ? 'text-slate-900 dark:text-white'
+                : 'text-slate-400 dark:text-white/35 hover:text-slate-600 dark:hover:text-white/60'
+            }`}
+          >
+            {label}
+            {id === 'reminders' ? (
+              <>
+                {'overdue' in rest && rest.overdue > 0 && (
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#e8a045]/[0.15] text-[#e8a045]">
+                    {rest.overdue}
+                  </span>
+                )}
+                {'upcoming' in rest && rest.upcoming > 0 && (
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#6498c8]/[0.15] text-[#6498c8]">
+                    {rest.upcoming}
+                  </span>
+                )}
+              </>
+            ) : (
+              count !== null && count > 0 && (
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#6498c8]/[0.15] text-[#6498c8]">
+                  {count}
+                </span>
+              )
+            )}
+            {tab === id && (
+              <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-slate-900 dark:bg-white rounded-t-full" />
+            )}
+          </button>
+        ))}
+      </div>
 
-      {/* Reminders */}
-      <div className="mt-8" />
-      <ReminderList
-        date={dateStr}
-        reminders={dayReminders}
-        onAdd={() => { setEditing(null); setFormOpen(true) }}
-        onEdit={(r) => { setEditing(r); setFormOpen(true) }}
-        onDelete={remove}
-        onToggle={toggleComplete}
-      />
+      {/* Tab content */}
+      {tab === 'notes' && <NoteEditor date={dateStr} />}
+
+      {tab === 'reminders' && (
+        <ReminderList
+          date={dateStr}
+          reminders={dayReminders}
+          onAdd={() => { setEditing(null); setFormOpen(true) }}
+          onEdit={(r) => { setEditing(r); setFormOpen(true) }}
+          onDelete={remove}
+          onToggle={toggleComplete}
+        />
+      )}
+
+      {tab === 'todos' && (
+        <div>
+          <div className="flex justify-end mb-3">
+            <button
+              onClick={() => { setEditingTodo(null); setTodoFormOpen(true) }}
+              className="text-[12px] font-medium text-[#6498c8] hover:opacity-80 transition-opacity"
+            >
+              + Add
+            </button>
+          </div>
+          {dayTodos.length > 0 ? (
+            <TodoList
+              todos={dayTodos}
+              onToggle={handleToggleTodo}
+              onEdit={(t) => { setEditingTodo(t); setTodoFormOpen(true) }}
+              onDelete={removeTodo}
+              onReorder={reorderTodos}
+            />
+          ) : (
+            <p className="text-[13px] text-slate-400 dark:text-white/25">No todos yet.</p>
+          )}
+        </div>
+      )}
 
       {formOpen && (
         <ReminderForm
@@ -106,6 +211,14 @@ export default function DayView() {
           reminder={editing}
           onSave={async (r) => { await save(r); setFormOpen(false) }}
           onClose={() => setFormOpen(false)}
+        />
+      )}
+
+      {todoFormOpen && (
+        <TodoForm
+          todo={editingTodo}
+          onSave={async (t) => { await saveTodo(t); setTodoFormOpen(false) }}
+          onClose={() => setTodoFormOpen(false)}
         />
       )}
     </div>
