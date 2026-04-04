@@ -5,6 +5,8 @@ import icon from '../../resources/icon.png?asset'
 import { registerReminderHandlers } from './ipc/reminders'
 import { registerNoteHandlers } from './ipc/notes'
 import { registerTodoHandlers } from './ipc/todos'
+import { registerTodoFolderHandlers } from './ipc/todo_folders'
+import { registerTodoListHandlers } from './ipc/todo_lists'
 import { registerWindowHandlers } from './ipc/window'
 import { registerAuthHandlers } from './ipc/auth'
 import { registerSyncHandlers } from './ipc/sync'
@@ -86,6 +88,8 @@ app.whenReady().then(() => {
   registerReminderHandlers()
   registerNoteHandlers()
   registerTodoHandlers()
+  registerTodoFolderHandlers()
+  registerTodoListHandlers()
   registerAuthHandlers()
   registerSyncHandlers()
   startNotificationScheduler()

@@ -1,5 +1,5 @@
   import type { IStorageAdapter } from './types'
-  import type { Reminder, Note, Todo } from '../types/models'
+  import type { Reminder, Note, Todo, TodoFolder, TodoList } from '../types/models'
 
   // Calls window.electronAPI exposed by the preload contextBridge
   export class ElectronAdapter implements IStorageAdapter {
@@ -18,4 +18,12 @@
     saveTodo(t: Todo): Promise<Todo> { return this.api.todos.save(t) }
     deleteTodo(id: string): Promise<void> { return this.api.todos.delete(id) }
     reorderTodos(orderedIds: string[]): Promise<void> { return this.api.todos.reorder(orderedIds) }
+
+    getTodoFolders(): Promise<TodoFolder[]> { return this.api.todoFolders.getAll() }
+    saveTodoFolder(f: TodoFolder): Promise<TodoFolder> { return this.api.todoFolders.save(f) }
+    deleteTodoFolder(id: string): Promise<void> { return this.api.todoFolders.delete(id) }
+
+    getTodoLists(): Promise<TodoList[]> { return this.api.todoLists.getAll() }
+    saveTodoList(l: TodoList): Promise<TodoList> { return this.api.todoLists.save(l) }
+    deleteTodoList(id: string): Promise<void> { return this.api.todoLists.delete(id) }
   }

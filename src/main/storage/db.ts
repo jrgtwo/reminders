@@ -51,7 +51,29 @@ const MIGRATIONS = [
     last_pull_at TEXT
   );
 
-  UPDATE schema_version SET version = 2;`
+  UPDATE schema_version SET version = 2;`,
+  `ALTER TABLE todos ADD COLUMN due_date TEXT;`,
+  // MIGRATIONS[3]
+  `CREATE TABLE IF NOT EXISTS todo_folders (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    sort_order REAL NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    deleted_at TEXT,
+    last_synced_at TEXT
+  );
+  CREATE TABLE IF NOT EXISTS todo_lists (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    folder_id TEXT,
+    sort_order REAL NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    deleted_at TEXT,
+    last_synced_at TEXT
+  );
+  ALTER TABLE todos ADD COLUMN list_id TEXT;`
 ]
 
 export function getDb(): Database.Database {

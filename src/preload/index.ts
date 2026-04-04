@@ -18,6 +18,16 @@ const api = {
     delete:   (id: string)    => ipcRenderer.invoke('todos:delete', id),
     reorder:  (ids: string[]) => ipcRenderer.invoke('todos:reorder', ids),
   },
+  todoFolders: {
+    getAll:  ()             => ipcRenderer.invoke('todo_folders:getAll'),
+    save:    (f: unknown)   => ipcRenderer.invoke('todo_folders:save', f),
+    delete:  (id: string)  => ipcRenderer.invoke('todo_folders:delete', id),
+  },
+  todoLists: {
+    getAll:  ()             => ipcRenderer.invoke('todo_lists:getAll'),
+    save:    (l: unknown)   => ipcRenderer.invoke('todo_lists:save', l),
+    delete:  (id: string)  => ipcRenderer.invoke('todo_lists:delete', id),
+  },
   auth: {
     openExternal: (url: string) => ipcRenderer.invoke('auth:openExternal', url),
     onCallback: (cb: (url: string) => void) => {

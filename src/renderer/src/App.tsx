@@ -20,6 +20,7 @@ import DayView from './components/DayView'
 import SettingsPage from './components/settings/SettingsPage'
 import RemindersPage from './components/mobile/RemindersPage'
 import TodosPage from './components/mobile/TodosPage'
+import ListsPage from './components/lists/ListsPage'
 import {
   addMonths,
   subMonths,
@@ -96,6 +97,7 @@ const routes = [
       { path: 'day/:date', element: <DayPage /> },
       { path: 'reminders', element: <RemindersPage /> },
       { path: 'todos', element: <TodosPage /> },
+      { path: 'lists/:listId', element: <ListsPage /> },
       { path: 'settings', element: <SettingsPage /> },
     ],
   },

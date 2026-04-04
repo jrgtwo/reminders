@@ -18,7 +18,7 @@ interface Props {
   onReorder: (orderedIds: string[]) => void
 }
 
-export default function TodoList({ todos, onToggle, onEdit, onDelete, onReorder }: Props) {
+export default function SortableTodoList({ todos, onToggle, onEdit, onDelete, onReorder }: Props) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
   function handleDragStart() {

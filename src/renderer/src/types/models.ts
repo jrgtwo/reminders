@@ -30,9 +30,28 @@ export type RecurrenceFrequency = 'daily' | 'weekly' | 'monthly' | 'yearly'
     id: string
     title: string
     description?: string
+    dueDate?: string       // 'YYYY-MM-DD', optional — undated todos are global
+    listId?: string        // links to a named TodoList; undefined = Anytime/global
     order: number          // float gap (1000, 2000…) for drag-to-reorder
     completed: boolean
     completedAt?: string
+    createdAt: string
+    updatedAt: string
+  }
+
+  export interface TodoFolder {
+    id: string
+    name: string
+    order: number
+    createdAt: string
+    updatedAt: string
+  }
+
+  export interface TodoList {
+    id: string
+    name: string
+    folderId?: string
+    order: number
     createdAt: string
     updatedAt: string
   }

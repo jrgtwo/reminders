@@ -6,14 +6,18 @@ import Input from '../ui/Input'
 
 interface Props {
   todo: Todo | null
+  defaultDueDate?: string
+  defaultListId?: string
   onSave: (t: Todo) => Promise<void>
   onClose: () => void
 }
 
-export default function TodoForm({ todo, onSave, onClose }: Props) {
+export default function TodoForm({ todo, defaultDueDate, defaultListId, onSave, onClose }: Props) {
   const isNew = !todo
   const [title, setTitle] = useState(todo?.title ?? '')
   const [description, setDescription] = useState(todo?.description ?? '')
+  const [dueDate, setDueDate] = useState(todo?.dueDate ?? defaultDueDate ?? '')
+  const listId = todo?.listId ?? defaultListId
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -29,6 +33,8 @@ export default function TodoForm({ todo, onSave, onClose }: Props) {
       id: todo?.id ?? crypto.randomUUID(),
       title: title.trim(),
       description: description.trim() || undefined,
+      dueDate: dueDate || undefined,
+      listId,
       order: todo?.order ?? Date.now(),
       completed: todo?.completed ?? false,
       completedAt: todo?.completedAt,
@@ -56,6 +62,13 @@ export default function TodoForm({ todo, onSave, onClose }: Props) {
           placeholder="What needs to be done?"
           autoFocus
           error={error}
+        />
+
+        <Input
+          label="Due date (optional)"
+          type="date"
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
         />
 
         <div className="flex flex-col gap-1">

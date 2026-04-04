@@ -180,9 +180,9 @@ export class SyncEngine {
       if (!local) {
         db.prepare(
           `INSERT OR IGNORE INTO todos
-            (id, title, description, sort_order, completed, completed_at, created_at, updated_at, deleted_at, last_synced_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-        ).run(t.id, t.title, t.description, t.sort_order, t.completed, t.completed_at,
+            (id, title, description, due_date, list_id, sort_order, completed, completed_at, created_at, updated_at, deleted_at, last_synced_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ).run(t.id, t.title, t.description, t.due_date, t.list_id, t.sort_order, t.completed, t.completed_at,
               t.created_at, t.updated_at, t.deleted_at, t.updated_at)
       } else {
         const remoteTs = new Date(t.updated_at).getTime()
@@ -192,10 +192,64 @@ export class SyncEngine {
             .run(t.deleted_at, t.updated_at, t.updated_at, t.id)
         } else if (remoteTs >= localTs) {
           db.prepare(
-            `UPDATE todos SET title = ?, description = ?, sort_order = ?, completed = ?,
+            `UPDATE todos SET title = ?, description = ?, due_date = ?, list_id = ?, sort_order = ?, completed = ?,
               completed_at = ?, updated_at = ?, deleted_at = ?, last_synced_at = ? WHERE id = ?`
-          ).run(t.title, t.description, t.sort_order, t.completed, t.completed_at,
+          ).run(t.title, t.description, t.due_date, t.list_id, t.sort_order, t.completed, t.completed_at,
                 t.updated_at, t.deleted_at, t.updated_at, t.id)
+        }
+      }
+    }
+
+    // --- Todo Folders ---
+    let foldersQuery = sb.from('todo_folders').select('*').eq('user_id', userId)
+    if (lastPullAt) foldersQuery = foldersQuery.gt('updated_at', lastPullAt)
+    const { data: folders, error: fErr } = await foldersQuery
+    if (fErr) throw fErr
+
+    for (const f of folders ?? []) {
+      const local = db.prepare('SELECT * FROM todo_folders WHERE id = ?').get(f.id) as any
+      if (!local) {
+        db.prepare(
+          `INSERT OR IGNORE INTO todo_folders (id, name, sort_order, created_at, updated_at, deleted_at, last_synced_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)`
+        ).run(f.id, f.name, f.sort_order, f.created_at, f.updated_at, f.deleted_at, f.updated_at)
+      } else {
+        const remoteTs = new Date(f.updated_at).getTime()
+        const localTs = new Date(local.updated_at).getTime()
+        if (f.deleted_at && !local.deleted_at) {
+          db.prepare('UPDATE todo_folders SET deleted_at = ?, updated_at = ?, last_synced_at = ? WHERE id = ?')
+            .run(f.deleted_at, f.updated_at, f.updated_at, f.id)
+        } else if (remoteTs >= localTs) {
+          db.prepare(
+            `UPDATE todo_folders SET name = ?, sort_order = ?, updated_at = ?, deleted_at = ?, last_synced_at = ? WHERE id = ?`
+          ).run(f.name, f.sort_order, f.updated_at, f.deleted_at, f.updated_at, f.id)
+        }
+      }
+    }
+
+    // --- Todo Lists ---
+    let listsQuery = sb.from('todo_lists').select('*').eq('user_id', userId)
+    if (lastPullAt) listsQuery = listsQuery.gt('updated_at', lastPullAt)
+    const { data: lists, error: lErr } = await listsQuery
+    if (lErr) throw lErr
+
+    for (const l of lists ?? []) {
+      const local = db.prepare('SELECT * FROM todo_lists WHERE id = ?').get(l.id) as any
+      if (!local) {
+        db.prepare(
+          `INSERT OR IGNORE INTO todo_lists (id, name, folder_id, sort_order, created_at, updated_at, deleted_at, last_synced_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+        ).run(l.id, l.name, l.folder_id, l.sort_order, l.created_at, l.updated_at, l.deleted_at, l.updated_at)
+      } else {
+        const remoteTs = new Date(l.updated_at).getTime()
+        const localTs = new Date(local.updated_at).getTime()
+        if (l.deleted_at && !local.deleted_at) {
+          db.prepare('UPDATE todo_lists SET deleted_at = ?, updated_at = ?, last_synced_at = ? WHERE id = ?')
+            .run(l.deleted_at, l.updated_at, l.updated_at, l.id)
+        } else if (remoteTs >= localTs) {
+          db.prepare(
+            `UPDATE todo_lists SET name = ?, folder_id = ?, sort_order = ?, updated_at = ?, deleted_at = ?, last_synced_at = ? WHERE id = ?`
+          ).run(l.name, l.folder_id, l.sort_order, l.updated_at, l.deleted_at, l.updated_at, l.id)
         }
       }
     }
@@ -243,12 +297,45 @@ export class SyncEngine {
     for (const t of todos) {
       const { error } = await sb.from('todos').upsert({
         id: t.id, user_id: userId, title: t.title, description: t.description,
-        sort_order: t.sort_order, completed: t.completed, completed_at: t.completed_at,
-        created_at: t.created_at, updated_at: t.updated_at, deleted_at: t.deleted_at
+        due_date: t.due_date ?? null, list_id: t.list_id ?? null,
+        sort_order: t.sort_order, completed: t.completed,
+        completed_at: t.completed_at, created_at: t.created_at, updated_at: t.updated_at,
+        deleted_at: t.deleted_at
       })
       if (!error) {
         db.prepare('UPDATE todos SET last_synced_at = ? WHERE id = ?')
           .run(new Date().toISOString(), t.id)
+      }
+    }
+
+    const todoFolders = db
+      .prepare('SELECT * FROM todo_folders WHERE last_synced_at IS NULL OR updated_at > last_synced_at')
+      .all() as any[]
+
+    for (const f of todoFolders) {
+      const { error } = await sb.from('todo_folders').upsert({
+        id: f.id, user_id: userId, name: f.name, sort_order: f.sort_order,
+        created_at: f.created_at, updated_at: f.updated_at, deleted_at: f.deleted_at
+      })
+      if (!error) {
+        db.prepare('UPDATE todo_folders SET last_synced_at = ? WHERE id = ?')
+          .run(new Date().toISOString(), f.id)
+      }
+    }
+
+    const todoLists = db
+      .prepare('SELECT * FROM todo_lists WHERE last_synced_at IS NULL OR updated_at > last_synced_at')
+      .all() as any[]
+
+    for (const l of todoLists) {
+      const { error } = await sb.from('todo_lists').upsert({
+        id: l.id, user_id: userId, name: l.name, folder_id: l.folder_id ?? null,
+        sort_order: l.sort_order, created_at: l.created_at, updated_at: l.updated_at,
+        deleted_at: l.deleted_at
+      })
+      if (!error) {
+        db.prepare('UPDATE todo_lists SET last_synced_at = ? WHERE id = ?')
+          .run(new Date().toISOString(), l.id)
       }
     }
   }

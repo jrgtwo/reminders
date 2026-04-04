@@ -58,12 +58,16 @@ reminders/
 │   │   ├── ipc/
 │   │   │   ├── reminders.ts
 │   │   │   ├── notes.ts
-│   │   │   └── todos.ts
+│   │   │   ├── todos.ts
+│   │   │   ├── todo_folders.ts
+│   │   │   └── todo_lists.ts
 │   │   ├── storage/
 │   │   │   ├── db.ts           # better-sqlite3 init + migrations
 │   │   │   ├── reminders.repo.ts
 │   │   │   ├── notes.repo.ts
-│   │   │   └── todos.repo.ts
+│   │   │   ├── todos.repo.ts
+│   │   │   ├── todo_folders.repo.ts
+│   │   │   └── todo_lists.repo.ts
 │   │   ├── notifications.ts    # 60s interval scheduler
 │   │   └── tray.ts
 │   │
@@ -102,20 +106,30 @@ reminders/
 │       │   ├── notes/
 │       │   │   └── NoteEditor.tsx       # Tiptap editor
 │       │   ├── todos/
-│       │   │   ├── TodoList.tsx         # @dnd-kit sortable wrapper
+│       │   │   ├── TodoList.tsx         # SortableTodoList — @dnd-kit sortable wrapper
 │       │   │   ├── TodoItem.tsx         # drag handle + checkbox
-│       │   │   └── TodoForm.tsx         # dialog
+│       │   │   └── TodoForm.tsx         # dialog (supports defaultListId prop)
+│       │   ├── lists/
+│       │   │   ├── ListsPage.tsx        # individual list view at /lists/:listId
+│       │   │   ├── FolderForm.tsx       # create/rename folder dialog
+│       │   │   └── ListForm.tsx         # create/rename list dialog (optional folder)
+│       │   ├── mobile/
+│       │   │   ├── RemindersPage.tsx    # mobile /reminders tab
+│       │   │   └── TodosPage.tsx        # mobile /todos tab
 │       │   └── ui/                      # shared primitives
 │       │       ├── Button.tsx
 │       │       ├── Dialog.tsx
 │       │       ├── Input.tsx
-│       │       └── Badge.tsx
+│       │       ├── Badge.tsx
+│       │       └── MarkdownView.tsx
 │       │
 │       ├── store/
 │       │   ├── reminders.store.ts
 │       │   ├── notes.store.ts
 │       │   ├── todos.store.ts
-│       │   └── ui.store.ts       # sidebar open, view, selectedDate, darkMode
+│       │   ├── todo_folders.store.ts
+│       │   ├── todo_lists.store.ts
+│       │   └── ui.store.ts       # sidebar open, view, selectedDate, darkMode, triggerNewTodo
 │       │
 │       ├── hooks/
 │       │   ├── useKeyboardShortcuts.ts
@@ -176,6 +190,25 @@ export interface Todo {
   order: number             // float gap (1000, 2000...) for O(1) reorder
   completed: boolean
   completedAt?: string
+  dueDate?: string          // 'YYYY-MM-DD' — makes todo appear in Overdue/Upcoming
+  listId?: string           // links to a named TodoList; undefined = Anytime/global
+  createdAt: string
+  updatedAt: string
+}
+
+export interface TodoFolder {
+  id: string
+  name: string
+  order: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface TodoList {
+  id: string
+  name: string
+  folderId?: string         // optional one-level folder grouping
+  order: number
   createdAt: string
   updatedAt: string
 }
@@ -207,10 +240,20 @@ export interface IStorageAdapter {
   saveTodo(t: Todo): Promise<Todo>
   deleteTodo(id: string): Promise<void>
   reorderTodos(ids: string[]): Promise<void>
+
+  // Todo Folders
+  getTodoFolders(): Promise<TodoFolder[]>
+  saveTodoFolder(f: TodoFolder): Promise<TodoFolder>
+  deleteTodoFolder(id: string): Promise<void>
+
+  // Todo Lists
+  getTodoLists(): Promise<TodoList[]>
+  saveTodoList(l: TodoList): Promise<TodoList>
+  deleteTodoList(id: string): Promise<void>
 }
 ```
 
-**Web adapter** (`platform/web.ts`): `idb` with three object stores: `reminders` (index on `date`), `notes` (keyed by `date`), `todos` (index on `order`). Schema version via `openDB` version param.
+**Web adapter** (`platform/web.ts`): `idb` with five object stores: `reminders` (index on `date`), `notes` (keyed by `date`), `todos` (index on `order`), `todo_folders` (index on `order`), `todo_lists` (index on `order`). Schema at `DB_VERSION = 2`. Migration is self-healing: `openDB` is raced against a 3-second timeout — if blocked by another tab holding the old version, the DB is deleted and recreated (safe because Supabase is source of truth).
 
 **Electron adapter** (`platform/electron.ts`): Thin wrapper that calls `window.electronAPI.*` (IPC invoke). All real work happens in the main process SQLite repos.
 
@@ -268,10 +311,35 @@ CREATE TABLE todos (
   sort_order REAL NOT NULL DEFAULT 0,
   completed INTEGER NOT NULL DEFAULT 0,
   completed_at TEXT,
+  due_date TEXT,
+  list_id TEXT,
   created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL
+  updated_at TEXT NOT NULL,
+  deleted_at TEXT,
+  last_synced_at TEXT
 );
 CREATE INDEX idx_todos_order ON todos(sort_order);
+
+CREATE TABLE todo_folders (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  sort_order REAL NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  deleted_at TEXT,
+  last_synced_at TEXT
+);
+
+CREATE TABLE todo_lists (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  folder_id TEXT,
+  sort_order REAL NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  deleted_at TEXT,
+  last_synced_at TEXT
+);
 
 CREATE TABLE schema_version (version INTEGER PRIMARY KEY);
 ```
@@ -305,7 +373,7 @@ Migrations: array of SQL strings, applied sequentially in a transaction. Version
 - Right sidebar collapses to `w-0 overflow-hidden`
 - Sidebar state in `ui.store.ts`: `leftOpen`, `rightOpen`, `currentView`, `selectedDate`, `darkMode`
 - Routing: `createMemoryRouter` for Electron + Capacitor, `createBrowserRouter` for web
-- Routes: `/` (calendar), `/day/:date` (day detail), `/settings`
+- Routes: `/` (calendar), `/day/:date` (day detail), `/reminders` (mobile), `/todos` (mobile), `/lists/:listId` (named list view), `/settings`
 
 **Responsive / mobile layout:**
 - `AppShell` uses `md:flex-row flex-col` — sidebars visible on `md+`, hidden on mobile

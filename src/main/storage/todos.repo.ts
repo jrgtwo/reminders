@@ -11,14 +11,14 @@ export function getAllTodos(): Todo[] {
 export function saveTodo(t: Todo): Todo {
   getDb()
     .prepare(
-      `INSERT INTO todos (id, title, description, sort_order, completed,
+      `INSERT INTO todos (id, title, description, due_date, list_id, sort_order, completed,
  completed_at, created_at, updated_at)
-        VALUES (@id, @title, @description, @sort_order, @completed, @completed_at,
+        VALUES (@id, @title, @description, @due_date, @list_id, @sort_order, @completed, @completed_at,
  @created_at, @updated_at)
         ON CONFLICT(id) DO UPDATE SET
-          title = @title, description = @description, sort_order = @sort_order,
-          completed = @completed, completed_at = @completed_at, updated_at =
- @updated_at`
+          title = @title, description = @description, due_date = @due_date, list_id = @list_id,
+          sort_order = @sort_order, completed = @completed, completed_at = @completed_at,
+          updated_at = @updated_at`
     )
     .run(serialize(t))
   return t
@@ -42,6 +42,8 @@ function serialize(t: Todo) {
     id: t.id,
     title: t.title,
     description: t.description ?? null,
+    due_date: t.dueDate ?? null,
+    list_id: t.listId ?? null,
     sort_order: t.order,
     completed: t.completed ? 1 : 0,
     completed_at: t.completedAt ?? null,
@@ -55,6 +57,8 @@ function deserialize(row: any): Todo {
     id: row.id,
     title: row.title,
     description: row.description ?? undefined,
+    dueDate: row.due_date ?? undefined,
+    listId: row.list_id ?? undefined,
     order: row.sort_order,
     completed: row.completed === 1,
     completedAt: row.completed_at ?? undefined,

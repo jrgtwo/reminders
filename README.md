@@ -11,11 +11,13 @@ Runs as a native desktop app on Windows and macOS (Electron), a deployable web a
 - **Calendar** — Month and week views. Events color-coded by urgency (red = overdue, amber = today, indigo = upcoming). Month view shows dot + title per event; week view shows full-width chips. Click any day to open the day view. Today button jumps to and selects today.
 - **Reminders** — Create one-off or recurring reminders (daily, weekly, monthly, yearly). One record per series via RFC 5545 rrule; per-occurrence completion tracking. Add from the sidebar without leaving the calendar view.
 - **Notes** — A rich Markdown note per day via Milkdown (ProseMirror). Supports headings, bold, italic, strikethrough, lists, blockquotes, tables, code blocks, and links. Full toolbar with responsive overflow. Autosaves on every keystroke (800ms debounce).
-- **Todos** — Persistent list with drag-to-reorder (float-gap ordering). Expandable descriptions rendered as Markdown.
+- **Todos** — Persistent global list with drag-to-reorder (float-gap ordering). Expandable descriptions rendered as Markdown. Todos can optionally have a due date (appears in Overdue/Upcoming) or belong to a named list.
+- **Todo lists** — Named lists with optional one-level folder grouping. Lists are accessible from the right sidebar (Anytime / Overdue / Upcoming / Lists sections). Clicking a list opens its dedicated page. New lists and folders are created inline from the sidebar.
 - **Search** — Live in-memory filter across all reminders and todos, accessible from the header or via `/`.
 - **Export / Import** — Full JSON backup and restore (all reminders, notes, and todos).
 - **Command center header** — Always-visible stats bar showing overdue, upcoming (next 30 days), and open todo counts. Live sync status indicator.
-- **Schedule sidebar** — Left sidebar lists all overdue reminders (highlighted in red) and upcoming reminders (next 30 days). Click any item to navigate to that day.
+- **Schedule sidebar** — Left sidebar lists overdue reminders (in red) and upcoming reminders (next 30 days) grouped by Yesterday / This Week / Older and Today / This Week / Later. Click any item to navigate to that day.
+- **Todos sidebar** — Right sidebar shows Anytime (undated, unassigned todos), Overdue (past-due dated todos), Upcoming (future dated todos), and Lists (named todo lists with folder groupings). Each section is collapsible.
 - **Account + sync** — Sign-in via magic link (email). Required on the web app; optional on Electron (falls back to local-only). Once signed in, data syncs across devices via Supabase. Offline-first: changes are saved locally and synced on next connection. First-login migration dialog handles merging pre-existing local and cloud data. Sync status visible in the header; "Sync now" button in Settings.
 - **Dark mode** — Toggle persisted across sessions.
 - **Keyboard shortcuts** — Full keyboard navigation (see below).
@@ -88,7 +90,9 @@ src/
     │   ├── calendar/       # MonthView, WeekView, CalendarDay, CalendarHeader
     │   ├── reminders/      # ReminderList, ReminderItem, ReminderForm, RecurrenceEditor
     │   ├── notes/          # NoteEditor (Milkdown)
-    │   ├── todos/          # TodoList, TodoItem, TodoForm
+    │   ├── todos/          # SortableTodoList, TodoItem, TodoForm
+    │   ├── lists/          # ListsPage, FolderForm, ListForm
+    │   ├── mobile/         # RemindersPage, TodosPage (mobile tab pages)
     │   ├── settings/       # SettingsPage
     │   └── ui/             # Button, Dialog, Input, Badge, MarkdownView
     ├── hooks/
@@ -98,9 +102,9 @@ src/
     ├── lib/
     │   ├── supabase.ts     # Supabase client singleton
     │   └── webSync.ts      # Renderer-side sync engine (web platform)
-    ├── store/              # Zustand stores (reminders, notes, todos, ui, auth, sync)
+    ├── store/              # Zustand stores (reminders, notes, todos, todo_folders, todo_lists, ui, auth, sync)
     ├── utils/              # recurrence helpers, date utils, exportImport
-    └── types/models.ts     # Reminder, Note, Todo, RecurrenceRule
+    └── types/models.ts     # Reminder, Note, Todo, TodoFolder, TodoList, RecurrenceRule
 ```
 
 ---
@@ -224,6 +228,9 @@ Sign in via Settings → Account to enable optional cloud sync (Supabase). Local
 - [x] Cloud sync (9e) — sync status UI (header indicator, "Sync now" button in Settings, error banner); web sync engine (`lib/webSync.ts`) — sync now works on web app too, not just Electron; storage init race condition fix
 - [x] Web deployment — remindertoday.com on Vercel; `vercel.json` SPA routing; invite-only access gate (web requires sign-in, public signups disabled); local HTTPS dev via `@vitejs/plugin-basic-ssl`
 - [x] Design overhaul — command center header with live stats; urgency-based event coloring; month/week view differentiated event styles; card-style sidebar items with hover shadows; unified slate color system
+- [x] Named todo lists — lists with one-level folder grouping; right sidebar shows Anytime / Overdue / Upcoming / Lists sections; individual list pages at `/lists/:listId`; synced via Supabase; IndexedDB v2 migration with self-healing timeout fallback
+- [x] Sidebar UX — left sidebar shows schedule only (overdue + upcoming reminders); right sidebar shows all todo sections + lists; collapsible sections throughout
+- [ ] Folder management UI — full folder rename/delete/reorder; move lists between folders
 - [ ] Amazon SES SMTP — configure SES sending domain + Supabase SMTP settings for magic link email delivery
 - [ ] Tests — Vitest unit tests, Playwright e2e, GitHub Actions CI
 - [ ] Mobile (Capacitor) — deferred until core app is stable

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { useTodosStore } from '../../store/todos.store'
 import type { Todo } from '../../types/models'
-import TodoList from '../todos/TodoList'
+import SortableTodoList from '../todos/TodoList'
 import TodoForm from '../todos/TodoForm'
 
 export default function TodosPage() {
@@ -49,7 +49,7 @@ export default function TodosPage() {
         ) : (
           <>
             <div className="py-1">
-              <TodoList
+              <SortableTodoList
                 todos={incomplete}
                 onToggle={handleToggle}
                 onEdit={(t) => { setEditing(t); setFormOpen(true) }}
@@ -60,7 +60,7 @@ export default function TodosPage() {
             {complete.length > 0 && (
               <div className="mt-1 border-t border-slate-100 dark:border-white/[0.05] pt-2 pb-4">
                 <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-300 dark:text-white/20 px-4 mb-1">Done</p>
-                <TodoList
+                <SortableTodoList
                   todos={complete}
                   onToggle={handleToggle}
                   onEdit={(t) => { setEditing(t); setFormOpen(true) }}

@@ -255,7 +255,7 @@ export default function LeftSidebar() {
         )}
       </div>
 
-      {/* Add button */}
+      {/* Bottom nav */}
       {leftOpen && (
         <div className="p-3 border-t border-slate-200 dark:border-white/[0.07] shrink-0">
           <button

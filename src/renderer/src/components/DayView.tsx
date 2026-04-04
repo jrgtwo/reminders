@@ -11,7 +11,7 @@ import type { Reminder, Todo } from '../types/models'
 import NoteEditor from './notes/NoteEditor'
 import ReminderList from './reminders/ReminderList'
 import ReminderForm from './reminders/ReminderForm'
-import TodoList from './todos/TodoList'
+import SortableTodoList from './todos/TodoList'
 import TodoForm from './todos/TodoForm'
 
 function formatDayHeading(date: Temporal.PlainDate) {
@@ -55,6 +55,13 @@ export default function DayView() {
   const [tab, setTab] = useState<'notes' | 'reminders' | 'todos'>(
     initialTab === 'reminders' || initialTab === 'todos' ? initialTab : 'notes'
   )
+
+  useEffect(() => {
+    const stateTab = (location.state as { tab?: string } | null)?.tab
+    if (stateTab === 'reminders' || stateTab === 'todos') {
+      setTab(stateTab)
+    }
+  }, [location.state])
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<Reminder | null>(null)
   const [todoFormOpen, setTodoFormOpen] = useState(false)
@@ -83,7 +90,10 @@ export default function DayView() {
     return { overdueReminders: overdue, upcomingReminders: upcoming }
   }, [dayReminders, plainDate])
 
-  const incompleteTodos = useMemo(() => todos.filter((t) => !t.completed), [todos])
+  const incompleteTodos = useMemo(
+    () => todos.filter((t) => !t.completed && t.dueDate === dateStr),
+    [todos, dateStr],
+  )
   const completedTodayTodos = useMemo(
     () => todos.filter((t) => t.completed && t.completedAt?.startsWith(dateStr)),
     [todos, dateStr],
@@ -105,7 +115,7 @@ export default function DayView() {
     <div className="max-w-3xl mx-auto px-4 sm:px-8 py-7">
       {/* Back */}
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => navigate('/')}
         className="flex items-center gap-1.5 text-[13px] text-slate-400 dark:text-white/30 hover:text-slate-700 dark:hover:text-white/60 mb-8 transition-colors -ml-0.5"
       >
         <ArrowLeft size={14} />
@@ -196,7 +206,7 @@ export default function DayView() {
             </button>
           </div>
           {dayTodos.length > 0 ? (
-            <TodoList
+            <SortableTodoList
               todos={dayTodos}
               onToggle={handleToggleTodo}
               onEdit={(t) => { setEditingTodo(t); setTodoFormOpen(true) }}
@@ -221,6 +231,7 @@ export default function DayView() {
       {todoFormOpen && (
         <TodoForm
           todo={editingTodo}
+          defaultDueDate={editingTodo ? undefined : dateStr}
           onSave={async (t) => { await saveTodo(t); setTodoFormOpen(false) }}
           onClose={() => setTodoFormOpen(false)}
         />

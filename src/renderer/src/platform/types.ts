@@ -1,4 +1,4 @@
-import type { Reminder, Note, Todo } from '../types/models'
+import type { Reminder, Note, Todo, TodoFolder, TodoList } from '../types/models'
 
 export interface IStorageAdapter {
   // Reminders
@@ -16,5 +16,15 @@ export interface IStorageAdapter {
   getTodos(): Promise<Todo[]>
   saveTodo(t: Todo): Promise<Todo>
   deleteTodo(id: string): Promise<void>
-reorderTodos(orderedIds: string[]): Promise<void>
+  reorderTodos(orderedIds: string[]): Promise<void>
+
+  // Todo Folders
+  getTodoFolders(): Promise<TodoFolder[]>
+  saveTodoFolder(f: TodoFolder): Promise<TodoFolder>
+  deleteTodoFolder(id: string): Promise<void>
+
+  // Todo Lists
+  getTodoLists(): Promise<TodoList[]>
+  saveTodoList(l: TodoList): Promise<TodoList>
+  deleteTodoList(id: string): Promise<void>
 }
