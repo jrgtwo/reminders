@@ -63,9 +63,9 @@ export default function CalendarDay({
     : 'bg-emerald-500/[0.12] text-emerald-600 dark:bg-emerald-500/[0.08] dark:text-emerald-400'
 
   let bg: string
-  if (isSelected) {
-    bg = 'bg-[var(--bg-surface)]'
-  } else if (todayDate) {
+  if (todayDate) {
+    bg = 'bg-blue-50/60 dark:bg-[#6498c8]/[0.07]'
+  } else if (isSelected) {
     bg = 'bg-[var(--bg-surface)]'
   } else if (!inMonth) {
     bg = 'bg-[var(--bg-surface-muted)]'
@@ -87,13 +87,12 @@ export default function CalendarDay({
         isSelected
           ? 'shadow-[0_2px_6px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.4),0_1px_3px_rgba(0,0,0,0.25)] outline outline-1 outline-slate-300/60 dark:outline-white/[0.1]'
           : 'shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.4),0_1px_2px_rgba(0,0,0,0.3)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.4),0_1px_3px_rgba(0,0,0,0.25)]',
-        todayDate && !isSelected ? 'bg-blue-50/60 dark:bg-[#6498c8]/[0.07]' : '',
       ]
         .filter(Boolean)
         .join(' ')}
     >
       {/* Today stripe */}
-      {todayDate && !isSelected && (
+      {todayDate && (
         <div className="absolute top-0 left-0 right-0 h-[5px] bg-blue-500 dark:bg-[#6498c8] rounded-t-lg" />
       )}
 
