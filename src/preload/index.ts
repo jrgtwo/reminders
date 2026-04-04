@@ -41,6 +41,11 @@ const api = {
       ipcRenderer.invoke('sync:checkFirstLogin', userId, session, config),
     markFirstLoginDone: (userId: string) => ipcRenderer.invoke('sync:markFirstLoginDone', userId),
   },
+  safeStorage: {
+    saveKey: (userId: string, b64: string) => ipcRenderer.invoke('safeStorage:save', userId, b64),
+    loadKey: (userId: string) => ipcRenderer.invoke('safeStorage:load', userId),
+    clearKey: (userId: string) => ipcRenderer.invoke('safeStorage:clear', userId),
+  },
   onNavigate: (cb: (path: string) => void) => {
     ipcRenderer.on('navigate', (_, path: string) => cb(path))
   },

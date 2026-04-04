@@ -1,6 +1,6 @@
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
-import { initStorage } from '../platform'
+import { initStorage, getRawStorage } from '../platform'
 import type { IStorageAdapter } from '../platform/types'
 import type { Reminder, Note, Todo, TodoFolder, TodoList } from '../types/models'
 
@@ -141,7 +141,8 @@ export async function webCheckFirstLogin(userId: string): Promise<{
     return { isFirstLogin: false, hasLocal: false, hasRemote: false }
   }
 
-  const adapter = await initStorage()
+  await initStorage()
+  const adapter = getRawStorage()
   const [reminders, notes, todos] = await Promise.all([
     adapter.getReminders(),
     adapter.getAllNotes(),
@@ -167,7 +168,8 @@ export function webMarkFirstLoginDone(userId: string): void {
 
 export async function webSync(session: Session): Promise<{ lastSyncedAt: string }> {
   const userId = session.user.id
-  const adapter = await initStorage()
+  await initStorage()
+  const adapter = getRawStorage()
   const lastPullAt = localStorage.getItem(LAST_PULL_KEY(userId))
 
   await pull(userId, lastPullAt, adapter)

@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import type { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import { capture } from '../lib/analytics'
+import { initEncryptionKey, clearEncryptionKey } from '../lib/keyManager'
 
 interface AuthState {
   user: User | null
@@ -21,11 +22,17 @@ export const useAuthStore = create<AuthState>((set) => ({
     // Restore existing session on app launch
     const sessionReady = supabase.auth.getSession().then(({ data: { session } }) => {
       set({ session, user: session?.user ?? null, isLoggedIn: !!session })
+      if (session?.user) {
+        initEncryptionKey(session.user.id).catch(console.error)
+      }
     })
 
     // Keep store in sync with Supabase auth state changes
     supabase.auth.onAuthStateChange((_, session) => {
       set({ session, user: session?.user ?? null, isLoggedIn: !!session })
+      if (session?.user) {
+        initEncryptionKey(session.user.id).catch(console.error)
+      }
     })
 
     // Electron: receive deep-link OAuth callback from main process
@@ -65,7 +72,9 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   signOut: async () => {
     capture('auth_signed_out')
+    const userId = useAuthStore.getState().user?.id
     await supabase.auth.signOut()
     set({ user: null, session: null, isLoggedIn: false })
+    if (userId) await clearEncryptionKey(userId)
   },
 }))

@@ -1,0 +1,146 @@
+import type { IStorageAdapter } from './types'
+import type { Reminder, Note, Todo, TodoFolder, TodoList } from '../types/models'
+import { encrypt, decrypt } from '../lib/encryption'
+
+export class EncryptedAdapter implements IStorageAdapter {
+  constructor(
+    private inner: IStorageAdapter,
+    private getKey: () => CryptoKey | null,
+  ) {}
+
+  // --- Helpers ---
+
+  private async enc(text: string): Promise<string>
+  private async enc(text: string | undefined): Promise<string | undefined>
+  private async enc(text: string | undefined): Promise<string | undefined> {
+    if (text === undefined) return undefined
+    const key = this.getKey()
+    if (!key) return text
+    return encrypt(key, text)
+  }
+
+  private async dec(text: string): Promise<string>
+  private async dec(text: string | undefined): Promise<string | undefined>
+  private async dec(text: string | undefined): Promise<string | undefined> {
+    if (text === undefined) return undefined
+    const key = this.getKey()
+    if (!key) return text
+    return decrypt(key, text)
+  }
+
+  // --- Reminders ---
+
+  async getReminders(): Promise<Reminder[]> {
+    return Promise.all((await this.inner.getReminders()).map((r) => this.decR(r)))
+  }
+
+  async getRemindersByDate(date: string): Promise<Reminder[]> {
+    return Promise.all((await this.inner.getRemindersByDate(date)).map((r) => this.decR(r)))
+  }
+
+  async saveReminder(r: Reminder): Promise<Reminder> {
+    const saved = await this.inner.saveReminder(await this.encR(r))
+    return this.decR(saved)
+  }
+
+  deleteReminder(id: string): Promise<void> {
+    return this.inner.deleteReminder(id)
+  }
+
+  private async encR(r: Reminder): Promise<Reminder> {
+    return { ...r, title: await this.enc(r.title), description: await this.enc(r.description) }
+  }
+
+  private async decR(r: Reminder): Promise<Reminder> {
+    return { ...r, title: await this.dec(r.title), description: await this.dec(r.description) }
+  }
+
+  // --- Notes ---
+
+  async getAllNotes(): Promise<Note[]> {
+    return Promise.all((await this.inner.getAllNotes()).map((n) => this.decN(n)))
+  }
+
+  async getNoteByDate(date: string): Promise<Note | null> {
+    const n = await this.inner.getNoteByDate(date)
+    return n ? this.decN(n) : null
+  }
+
+  async saveNote(n: Note): Promise<Note> {
+    const saved = await this.inner.saveNote(await this.encN(n))
+    return this.decN(saved)
+  }
+
+  private async encN(n: Note): Promise<Note> {
+    return { ...n, content: await this.enc(n.content) }
+  }
+
+  private async decN(n: Note): Promise<Note> {
+    return { ...n, content: await this.dec(n.content) }
+  }
+
+  // --- Todos ---
+
+  async getTodos(): Promise<Todo[]> {
+    return Promise.all((await this.inner.getTodos()).map((t) => this.decT(t)))
+  }
+
+  async saveTodo(t: Todo): Promise<Todo> {
+    const saved = await this.inner.saveTodo(await this.encT(t))
+    return this.decT(saved)
+  }
+
+  deleteTodo(id: string): Promise<void> {
+    return this.inner.deleteTodo(id)
+  }
+
+  reorderTodos(orderedIds: string[]): Promise<void> {
+    return this.inner.reorderTodos(orderedIds)
+  }
+
+  private async encT(t: Todo): Promise<Todo> {
+    return { ...t, title: await this.enc(t.title), description: await this.enc(t.description) }
+  }
+
+  private async decT(t: Todo): Promise<Todo> {
+    return { ...t, title: await this.dec(t.title), description: await this.dec(t.description) }
+  }
+
+  // --- Todo Folders ---
+
+  async getTodoFolders(): Promise<TodoFolder[]> {
+    return Promise.all((await this.inner.getTodoFolders()).map((f) => this.decF(f)))
+  }
+
+  async saveTodoFolder(f: TodoFolder): Promise<TodoFolder> {
+    const saved = await this.inner.saveTodoFolder({ ...f, name: await this.enc(f.name) })
+    return this.decF(saved)
+  }
+
+  deleteTodoFolder(id: string): Promise<void> {
+    return this.inner.deleteTodoFolder(id)
+  }
+
+  private async decF(f: TodoFolder): Promise<TodoFolder> {
+    return { ...f, name: await this.dec(f.name) }
+  }
+
+  // --- Todo Lists ---
+
+  async getTodoLists(): Promise<TodoList[]> {
+    return Promise.all((await this.inner.getTodoLists()).map((l) => this.decL(l)))
+  }
+
+  async saveTodoList(l: TodoList): Promise<TodoList> {
+    const saved = await this.inner.saveTodoList({ ...l, name: await this.enc(l.name) })
+    return this.decL(saved)
+  }
+
+  deleteTodoList(id: string): Promise<void> {
+    return this.inner.deleteTodoList(id)
+  }
+
+  private async decL(l: TodoList): Promise<TodoList> {
+    return { ...l, name: await this.dec(l.name) }
+  }
+}
