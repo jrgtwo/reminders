@@ -70,7 +70,7 @@ export default function CalendarDay({
       className={[
         'relative flex flex-col items-start w-full text-left cursor-pointer rounded-xl overflow-hidden',
         'transition-all duration-150',
-        'z-0 hover:z-10',
+        'z-0 hover:z-10 opacity-80 hover:opacity-100',
         tall ? 'p-3.5 gap-2' : 'p-1.5 gap-1 md:p-2 md:gap-1.5 lg:p-2.5 lg:gap-2',
         bg,
         isSelected
@@ -108,7 +108,7 @@ export default function CalendarDay({
               {reminders.slice(0, 4).map((r) => (
                 <div
                   key={r.id}
-                  className={`w-full px-2 py-[4px] rounded-md text-[11px] font-semibold leading-tight truncate ${colors.chip}`}
+                  className={`w-full px-2 py-[4px] rounded-md text-[11px] font-semibold leading-tight truncate transition-all duration-150 hover:brightness-125 hover:shadow-md hover:scale-[1.03] ${colors.chip}`}
                 >
                   {r.title}
                 </div>
@@ -129,7 +129,7 @@ export default function CalendarDay({
                   : <Bell size={13} />
                 return (
                   <span key={r.id} className="min-w-0 lg:w-full" onClick={(e) => { e.stopPropagation(); onReminderClick?.() }}>
-                    <span className={`hidden lg:flex items-center gap-1 w-full px-1.5 py-[3px] rounded-md text-[10px] font-medium overflow-hidden ${colors.chip}`}>
+                    <span className={`hidden lg:flex items-center gap-1 w-full px-1.5 py-[3px] rounded-md text-[10px] font-medium overflow-hidden transition-all duration-150 hover:brightness-125 hover:shadow-md hover:scale-[1.03] ${colors.chip}`}>
                       <span className="shrink-0">{icon}</span>
                       <span className="truncate">{r.title}</span>
                     </span>
@@ -144,7 +144,7 @@ export default function CalendarDay({
               })}
               {hasNote && (
                 <span className="min-w-0 lg:w-full" onClick={(e) => { e.stopPropagation(); onNoteClick?.() }}>
-                  <span className="hidden lg:flex items-center gap-1 w-full px-1.5 py-[3px] rounded-md text-[10px] font-medium bg-slate-100 text-slate-500 dark:bg-white/[0.07] dark:text-white/35">
+                  <span className="hidden lg:flex items-center gap-1 w-full px-1.5 py-[3px] rounded-md text-[10px] font-medium transition-all duration-150 hover:brightness-125 hover:shadow-md hover:scale-[1.03] bg-slate-100 text-slate-500 dark:bg-white/[0.07] dark:text-white/35">
                     <FileText size={13} />
                   </span>
                   <span className="hidden md:flex lg:hidden items-center justify-center w-[22px] h-[22px] rounded bg-slate-100 text-slate-500 dark:bg-white/[0.07] dark:text-white/35">
