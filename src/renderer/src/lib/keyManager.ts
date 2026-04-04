@@ -7,6 +7,12 @@ export function getEncryptionKey(): CryptoKey | null {
   return encryptionKey
 }
 
+export function setEncryptionKey(key: CryptoKey): void {
+  encryptionKey = key
+}
+
+export { cacheKeyLocally as cacheKey }
+
 async function loadCachedKey(userId: string): Promise<CryptoKey | null> {
   try {
     const api = (window as any).electronAPI

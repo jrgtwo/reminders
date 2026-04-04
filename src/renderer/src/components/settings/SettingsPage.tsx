@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { ArrowLeft, Download, Upload, Check, AlertCircle, LogOut, Mail, RefreshCw, Cloud, CloudOff } from 'lucide-react'
+import { ArrowLeft, Download, Upload, Check, AlertCircle, LogOut, Mail, RefreshCw, Cloud, CloudOff, ShieldCheck } from 'lucide-react'
+import { rotateEncryptionKey } from '../../lib/keyRotation'
 import { useNavigate } from 'react-router-dom'
 import { useUIStore, type Theme } from '../../store/ui.store'
 import { useAuthStore } from '../../store/auth.store'
@@ -38,6 +39,20 @@ export default function SettingsPage() {
   const [importStatus, setImportStatus] = useState<{ ok: boolean; msg: string } | null>(null)
   const [exporting, setExporting] = useState(false)
   const [importing, setImporting] = useState(false)
+  const [rotateStatus, setRotateStatus] = useState<'idle' | 'confirm' | 'rotating' | 'done' | 'error'>('idle')
+
+  async function handleRotateKey() {
+    if (!user) return
+    setRotateStatus('rotating')
+    try {
+      await rotateEncryptionKey(user.id)
+      setRotateStatus('done')
+      setTimeout(() => setRotateStatus('idle'), 3000)
+    } catch {
+      setRotateStatus('error')
+      setTimeout(() => setRotateStatus('idle'), 4000)
+    }
+  }
   const [email, setEmail] = useState('')
   const [magicLinkStatus, setMagicLinkStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
 
@@ -205,6 +220,55 @@ export default function SettingsPage() {
                 )
               })}
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* Security — only when logged in */}
+      {isLoggedIn && (
+        <section className="space-y-3">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            Security
+          </h2>
+          <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
+            <div className="flex items-center gap-3">
+              <ShieldCheck size={16} className="text-gray-400 dark:text-gray-500 shrink-0" />
+              <div>
+                <p className="text-sm font-medium">Rotate encryption key</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Generate a new key and re-encrypt all local data
+                </p>
+              </div>
+            </div>
+            {rotateStatus === 'confirm' ? (
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs text-gray-500 dark:text-gray-400">Are you sure?</span>
+                <Button variant="ghost" size="sm" onClick={() => setRotateStatus('idle')}>
+                  Cancel
+                </Button>
+                <Button size="sm" onClick={handleRotateKey}>
+                  Rotate
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={rotateStatus === 'rotating' || rotateStatus === 'done' || rotateStatus === 'error'}
+                onClick={() => setRotateStatus('confirm')}
+              >
+                {rotateStatus === 'rotating' && <RefreshCw size={14} className="animate-spin" />}
+                {rotateStatus === 'done' && <Check size={14} />}
+                {rotateStatus === 'error' && <AlertCircle size={14} />}
+                {rotateStatus === 'rotating'
+                  ? 'Rotating…'
+                  : rotateStatus === 'done'
+                  ? 'Done'
+                  : rotateStatus === 'error'
+                  ? 'Failed'
+                  : 'Rotate'}
+              </Button>
+            )}
           </div>
         </section>
       )}
