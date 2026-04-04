@@ -18,6 +18,10 @@ interface SyncState {
   trigger: () => Promise<void>
   checkFirstLogin: () => Promise<void>
   completeMigration: (action: 'sync' | 'skip', remember?: boolean) => Promise<void>
+  /** Wipe local DB and pull a fresh copy from the cloud. */
+  resetFromCloud: () => Promise<void>
+  /** Wipe local DB without syncing. Next sync will do a full pull. */
+  clearLocalData: () => Promise<void>
   init: () => void
 }
 
@@ -115,6 +119,51 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     } catch (err) {
       console.error('[sync] checkFirstLogin failed:', err)
       set({ checkingFirstLogin: false })
+    }
+  },
+
+  resetFromCloud: async () => {
+    const { session, user } = useAuthStore.getState()
+    if (!session || !user) return
+
+    set({ status: 'syncing' })
+    try {
+      if (!isElectron()) {
+        const { initStorage, getRawStorage } = await import('../platform')
+        await initStorage()
+        const adapter = getRawStorage()
+        if (adapter.clearAll) await adapter.clearAll()
+        localStorage.removeItem(`sync_last_pull_${user.id}`)
+        localStorage.removeItem(`sync_first_login_done_${user.id}`)
+      }
+      // trigger() will do a full pull (no lastPullAt) and reload all stores
+      await useSyncStore.getState().trigger()
+    } catch (err) {
+      console.error('[sync] resetFromCloud failed:', err)
+      set({ status: 'error' })
+    }
+  },
+
+  clearLocalData: async () => {
+    const { user } = useAuthStore.getState()
+    try {
+      if (!isElectron()) {
+        const { initStorage, getRawStorage } = await import('../platform')
+        await initStorage()
+        const adapter = getRawStorage()
+        if (adapter.clearAll) await adapter.clearAll()
+        if (user) {
+          localStorage.removeItem(`sync_last_pull_${user.id}`)
+          localStorage.removeItem(`sync_first_login_done_${user.id}`)
+        }
+      }
+      await Promise.all([
+        useRemindersStore.getState().load(),
+        useNotesStore.getState().loadNoteDates(),
+        useTodosStore.getState().load(),
+      ])
+    } catch (err) {
+      console.error('[sync] clearLocalData failed:', err)
     }
   },
 

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowLeft, Download, Upload, Check, AlertCircle, LogOut, Mail, RefreshCw, Cloud, CloudOff, ShieldCheck } from 'lucide-react'
+import { ArrowLeft, Download, Upload, Check, AlertCircle, LogOut, Mail, RefreshCw, Cloud, CloudOff, ShieldCheck, Trash2, RotateCcw } from 'lucide-react'
 import { rotateEncryptionKey } from '../../lib/keyRotation'
 import { useNavigate } from 'react-router-dom'
 import { useUIStore, type Theme } from '../../store/ui.store'
@@ -24,6 +24,8 @@ export default function SettingsPage() {
   const syncStatus = useSyncStore((s) => s.status)
   const lastSyncedAt = useSyncStore((s) => s.lastSyncedAt)
   const triggerSync = useSyncStore((s) => s.trigger)
+  const resetFromCloud = useSyncStore((s) => s.resetFromCloud)
+  const clearLocalData = useSyncStore((s) => s.clearLocalData)
   const migrationPrefKey = user ? `reminder_migration_pref_${user.id}` : null
   const [migrationPref, setMigrationPref] = useState<'sync' | 'skip' | null>(
     () => (migrationPrefKey ? (localStorage.getItem(migrationPrefKey) as 'sync' | 'skip' | null) : null)
@@ -40,6 +42,8 @@ export default function SettingsPage() {
   const [exporting, setExporting] = useState(false)
   const [importing, setImporting] = useState(false)
   const [rotateStatus, setRotateStatus] = useState<'idle' | 'confirm' | 'rotating' | 'done' | 'error'>('idle')
+  const [resetStatus, setResetStatus] = useState<'idle' | 'confirm' | 'running' | 'done' | 'error'>('idle')
+  const [clearStatus, setClearStatus] = useState<'idle' | 'confirm' | 'running' | 'done'>('idle')
 
   async function handleRotateKey() {
     if (!user) return
@@ -86,6 +90,25 @@ export default function SettingsPage() {
     } finally {
       setImporting(false)
     }
+  }
+
+  async function handleResetFromCloud() {
+    setResetStatus('running')
+    try {
+      await resetFromCloud()
+      setResetStatus('done')
+      setTimeout(() => setResetStatus('idle'), 3000)
+    } catch {
+      setResetStatus('error')
+      setTimeout(() => setResetStatus('idle'), 4000)
+    }
+  }
+
+  async function handleClearLocalData() {
+    setClearStatus('running')
+    await clearLocalData()
+    setClearStatus('done')
+    setTimeout(() => setClearStatus('idle'), 3000)
   }
 
   return (
@@ -360,6 +383,67 @@ export default function SettingsPage() {
               {importStatus.msg}
             </div>
           )}
+          {isLoggedIn && (
+            <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
+              <div className="flex items-center gap-3">
+                <RotateCcw size={16} className="text-gray-400 dark:text-gray-500 shrink-0" />
+                <div>
+                  <p className="text-sm font-medium">Reset from cloud</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Replace local data with the current cloud copy
+                  </p>
+                </div>
+              </div>
+              {resetStatus === 'confirm' ? (
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Are you sure?</span>
+                  <Button variant="ghost" size="sm" onClick={() => setResetStatus('idle')}>Cancel</Button>
+                  <Button size="sm" onClick={handleResetFromCloud}>Reset</Button>
+                </div>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={resetStatus === 'running' || syncStatus === 'syncing'}
+                  onClick={() => setResetStatus('confirm')}
+                >
+                  {resetStatus === 'running' && <RefreshCw size={14} className="animate-spin" />}
+                  {resetStatus === 'done' && <Check size={14} />}
+                  {resetStatus === 'error' && <AlertCircle size={14} />}
+                  {resetStatus === 'running' ? 'Resetting…' : resetStatus === 'done' ? 'Done' : resetStatus === 'error' ? 'Failed' : 'Reset'}
+                </Button>
+              )}
+            </div>
+          )}
+          <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
+            <div className="flex items-center gap-3">
+              <Trash2 size={16} className="text-gray-400 dark:text-gray-500 shrink-0" />
+              <div>
+                <p className="text-sm font-medium">Clear local data</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Wipe all data from this device{isLoggedIn ? ' — cloud copy stays intact' : ''}
+                </p>
+              </div>
+            </div>
+            {clearStatus === 'confirm' ? (
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs text-gray-500 dark:text-gray-400">Are you sure?</span>
+                <Button variant="ghost" size="sm" onClick={() => setClearStatus('idle')}>Cancel</Button>
+                <Button size="sm" onClick={handleClearLocalData}>Clear</Button>
+              </div>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={clearStatus === 'running'}
+                onClick={() => setClearStatus('confirm')}
+              >
+                {clearStatus === 'running' && <RefreshCw size={14} className="animate-spin" />}
+                {clearStatus === 'done' && <Check size={14} />}
+                {clearStatus === 'running' ? 'Clearing…' : clearStatus === 'done' ? 'Done' : 'Clear'}
+              </Button>
+            )}
+          </div>
         </div>
       </section>
 
