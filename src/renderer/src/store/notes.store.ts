@@ -47,7 +47,7 @@ import { create } from 'zustand'
          s.notes[saved.date] = saved
          if (!s.noteDates.includes(saved.date)) s.noteDates.push(saved.date)
        })
-       capture('note_saved', { date: saved.date, content_length: saved.content.length })
+       capture('note_saved', { content_length: saved.content.length })
      },
    }))
  )

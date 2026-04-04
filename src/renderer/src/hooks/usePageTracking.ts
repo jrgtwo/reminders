@@ -9,6 +9,7 @@ export function usePageTracking(): void {
   useEffect(() => {
     if (location.pathname === prevPathname.current) return
     prevPathname.current = location.pathname
-    capture('$pageview', { $current_url: location.pathname, $search: location.search })
+    const redacted = location.pathname.replace(/\/day\/\d{4}-\d{2}-\d{2}/, '/day')
+    capture('$pageview', { $current_url: redacted })
   }, [location.pathname, location.search])
 }

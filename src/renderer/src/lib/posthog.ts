@@ -23,9 +23,9 @@ if (key) {
   posthog.register({ platform })
 }
 
-export function identifyUser(userId: string, email: string): void {
+export function identifyUser(userId: string): void {
   if (!key) return
-  posthog.identify(userId, { email, platform })
+  posthog.identify(userId, { platform })
 }
 
 export function resetUser(): void {

@@ -143,7 +143,7 @@ export default function App() {
   useEffect(() => {
     return useAuthStore.subscribe((state, prev) => {
       if (!prev.isLoggedIn && state.isLoggedIn && state.user) {
-        identifyUser(state.user.id, state.user.email ?? '')
+        identifyUser(state.user.id)
       }
       if (prev.isLoggedIn && !state.isLoggedIn) {
         resetUser()
