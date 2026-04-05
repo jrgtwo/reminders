@@ -1,47 +1,92 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
-  CheckSquare, ChevronLeft, ChevronRight, ChevronDown, ChevronUp,
-  Plus, ArrowRight, List, FolderOpen,
+  CheckSquare,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  ArrowRight,
+  List,
+  FolderOpen
 } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useTodoFoldersStore } from '../../store/todo_folders.store'
 import { useTodoListsStore } from '../../store/todo_lists.store'
 import { useUIStore } from '../../store/ui.store'
-import { today, parseDateStr } from '../../utils/dates'
-import { Temporal } from '@js-temporal/polyfill'
+
 import type { TodoFolder, TodoList } from '../../types/models'
 import FolderForm from '../lists/FolderForm'
 import ListForm from '../lists/ListForm'
 
-function formatDate(dateStr: string): string {
-  const t = today()
-  const date = parseDateStr(dateStr)
-  const cmp = Temporal.PlainDate.compare(date, t)
-  if (cmp === 0) return 'Today'
-  const daysDiff = t.until(date, { largestUnit: 'days' }).days
-  if (daysDiff === 1) return 'Tomorrow'
-  if (daysDiff === -1) return 'Yesterday'
-  if (daysDiff > 0 && daysDiff < 7) return date.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-  return date.toLocaleString('en-US', { month: 'short', day: 'numeric', year: Math.abs(daysDiff) > 300 ? 'numeric' : undefined })
+// --- Date hierarchy helpers ---
+const MONTH_NAMES = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December'
+]
+
+type DayMap = Record<string, TodoList[]>
+type MonthMap = Record<string, DayMap>
+type YearMap = Record<string, MonthMap>
+
+function buildDateTree(lists: TodoList[]): YearMap {
+  const tree: YearMap = {}
+  for (const l of lists) {
+    if (!l.dueDate) continue
+    const [year, month, day] = l.dueDate.split('-')
+    if (!tree[year]) tree[year] = {}
+    if (!tree[year][month]) tree[year][month] = {}
+    if (!tree[year][month][day]) tree[year][month][day] = []
+    tree[year][month][day].push(l)
+  }
+  return tree
 }
 
-function CollapsibleSection({ label, count, accent = 'blue', defaultOpen = false, children, headerExtra }: {
-  label: string; count: number; accent?: 'blue' | 'red' | 'slate'; defaultOpen?: boolean
-  children: ReactNode; headerExtra?: ReactNode
+function CollapsibleSection({
+  label,
+  count,
+  accent = 'blue',
+  defaultOpen = false,
+  children,
+  headerExtra
+}: {
+  label: string
+  count: number
+  accent?: 'blue' | 'red' | 'slate'
+  defaultOpen?: boolean
+  children: ReactNode
+  headerExtra?: ReactNode
 }) {
   const [open, setOpen] = useState(defaultOpen)
-  const labelCls = accent === 'red'
-    ? 'text-red-500 dark:text-[#e8a045]'
-    : accent === 'slate'
-    ? 'text-slate-400 dark:text-white/30'
-    : 'text-blue-500 dark:text-[#6498c8]'
-  const countCls = accent === 'red'
-    ? 'text-red-500 dark:text-[#e8a045] bg-red-50 dark:bg-[#e8a045]/[0.08]'
-    : accent === 'slate'
-    ? 'text-slate-400 dark:text-white/30 bg-slate-100 dark:bg-white/[0.05]'
-    : 'text-blue-500 dark:text-[#6498c8] bg-blue-50 dark:bg-[#6498c8]/[0.08]'
-  const chevronCls = accent === 'red' ? 'text-[#e8a045]/60' : accent === 'slate' ? 'text-slate-300 dark:text-white/20' : 'text-[#6498c8]/60'
+  const labelCls =
+    accent === 'red'
+      ? 'text-red-500 dark:text-[#e8a045]'
+      : accent === 'slate'
+        ? 'text-slate-400 dark:text-white/30'
+        : 'text-blue-500 dark:text-[#6498c8]'
+  const countCls =
+    accent === 'red'
+      ? 'text-red-500 dark:text-[#e8a045] bg-red-50 dark:bg-[#e8a045]/[0.08]'
+      : accent === 'slate'
+        ? 'text-slate-400 dark:text-white/30 bg-slate-100 dark:bg-white/[0.05]'
+        : 'text-blue-500 dark:text-[#6498c8] bg-blue-50 dark:bg-[#6498c8]/[0.08]'
+  const chevronCls =
+    accent === 'red'
+      ? 'text-[#e8a045]/60'
+      : accent === 'slate'
+        ? 'text-slate-300 dark:text-white/20'
+        : 'text-[#6498c8]/60'
   return (
     <div>
       <div className="flex items-center gap-1 px-4 py-1.5">
@@ -49,28 +94,176 @@ function CollapsibleSection({ label, count, accent = 'blue', defaultOpen = false
           onClick={() => setOpen((o) => !o)}
           className="flex items-center gap-2 flex-1 text-left hover:opacity-80 transition-opacity"
         >
-          <span className={`text-[10px] font-bold uppercase tracking-wide flex-1 ${labelCls}`}>{label}</span>
-          {count > 0 && <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${countCls}`}>{count}</span>}
-          {open ? <ChevronUp size={11} className={chevronCls} /> : <ChevronDown size={11} className={chevronCls} />}
+          <span className={`text-[10px] font-bold uppercase tracking-wide flex-1 ${labelCls}`}>
+            {label}
+          </span>
+          {count > 0 && (
+            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${countCls}`}>
+              {count}
+            </span>
+          )}
+          {open ? (
+            <ChevronUp size={11} className={chevronCls} />
+          ) : (
+            <ChevronDown size={11} className={chevronCls} />
+          )}
         </button>
         {headerExtra}
       </div>
-      {open && <div>{children}</div>}
+      {open && <div className="animate-in fade-in duration-200">{children}</div>}
     </div>
   )
 }
 
-function ListNavItem({ l, active, indent = false }: { l: TodoList; active: boolean; indent?: boolean }) {
+function DateSection({
+  lists,
+  activeListId,
+  onNewListForDate
+}: {
+  lists: TodoList[]
+  activeListId?: string
+  onNewListForDate: (date: string) => void
+}) {
+  const tree = useMemo(() => buildDateTree(lists), [lists])
+  const years = Object.keys(tree).sort((a, b) => b.localeCompare(a))
+
+  const [collapsedYears, setCollapsedYears] = useState<Set<string>>(new Set())
+  const [collapsedMonths, setCollapsedMonths] = useState<Set<string>>(new Set())
+
+  if (years.length === 0) {
+    return (
+      <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2">
+        No date-based lists yet
+      </p>
+    )
+  }
+
+  return (
+    <>
+      {years.map((year) => {
+        const yearCollapsed = collapsedYears.has(year)
+        const months = Object.keys(tree[year]).sort((a, b) => b.localeCompare(a))
+        return (
+          <div key={year}>
+            <button
+              onClick={() =>
+                setCollapsedYears((prev) => {
+                  const next = new Set(prev)
+                  next.has(year) ? next.delete(year) : next.add(year)
+                  return next
+                })
+              }
+              className="flex items-center gap-1.5 w-full px-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
+            >
+              {yearCollapsed ? (
+                <ChevronRight size={10} className="text-slate-300 dark:text-white/20 shrink-0" />
+              ) : (
+                <ChevronDown size={10} className="text-slate-300 dark:text-white/20 shrink-0" />
+              )}
+              <span className="text-[11px] font-bold text-slate-500 dark:text-white/40 uppercase tracking-wide">
+                {year}
+              </span>
+            </button>
+
+            {!yearCollapsed &&
+              months.map((month) => {
+                const monthKey = `${year}-${month}`
+                const monthCollapsed = collapsedMonths.has(monthKey)
+                const days = Object.keys(tree[year][month]).sort((a, b) => b.localeCompare(a))
+                const monthName = MONTH_NAMES[parseInt(month, 10) - 1]
+
+                return (
+                  <div key={month}>
+                    <button
+                      onClick={() =>
+                        setCollapsedMonths((prev) => {
+                          const next = new Set(prev)
+                          next.has(monthKey) ? next.delete(monthKey) : next.add(monthKey)
+                          return next
+                        })
+                      }
+                      className="flex items-center gap-1.5 w-full pl-6 pr-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
+                    >
+                      {monthCollapsed ? (
+                        <ChevronRight
+                          size={9}
+                          className="text-slate-300 dark:text-white/20 shrink-0"
+                        />
+                      ) : (
+                        <ChevronDown
+                          size={9}
+                          className="text-slate-300 dark:text-white/20 shrink-0"
+                        />
+                      )}
+                      <span className="text-[11px] font-semibold text-slate-400 dark:text-white/30">
+                        {monthName}
+                      </span>
+                    </button>
+
+                    {!monthCollapsed &&
+                      days.map((day) => {
+                        const dayLists = tree[year][month][day]
+                        const dateStr = `${year}-${month}-${day}`
+                        return (
+                          <div key={day}>
+                            <div className="flex items-center pl-10 pr-4 py-0.5">
+                              <span className="text-[11px] font-semibold text-slate-400 dark:text-white/25 flex-1">
+                                {parseInt(day, 10)}
+                              </span>
+                              <button
+                                onClick={() => onNewListForDate(dateStr)}
+                                className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                                title={`New list for ${dateStr}`}
+                              >
+                                <Plus size={10} />
+                              </button>
+                            </div>
+                            {dayLists.map((l) => (
+                              <ListNavItem key={l.id} l={l} active={activeListId === l.id} indent />
+                            ))}
+                          </div>
+                        )
+                      })}
+                  </div>
+                )
+              })}
+          </div>
+        )
+      })}
+    </>
+  )
+}
+
+function ListNavItem({
+  l,
+  active,
+  indent = false
+}: {
+  l: TodoList
+  active: boolean
+  indent?: boolean
+}) {
   const navigate = useNavigate()
   return (
     <button
       onClick={() => navigate(`/lists/${l.id}`)}
       className={`flex items-center gap-2 w-full py-1.5 transition-colors text-left ${indent ? 'pl-8 pr-4' : 'px-4'} ${
-        active ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.12]' : 'hover:bg-slate-50 dark:hover:bg-white/[0.03]'
+        active
+          ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.12]'
+          : 'hover:bg-slate-50 dark:hover:bg-white/[0.03]'
       }`}
     >
-      <List size={11} className={active ? 'shrink-0 text-[#6498c8]' : 'shrink-0 text-slate-400 dark:text-white/25'} />
-      <span className={`text-[13px] truncate flex-1 ${active ? 'font-medium text-[#6498c8]' : 'text-slate-600 dark:text-white/60'}`}>{l.name}</span>
+      <List
+        size={11}
+        className={
+          active ? 'shrink-0 text-[#6498c8]' : 'shrink-0 text-slate-400 dark:text-white/25'
+        }
+      />
+      <span
+        className={`text-[13px] truncate flex-1 ${active ? 'font-medium text-[#6498c8]' : 'text-slate-600 dark:text-white/60'}`}
+      >
+        {l.name}
+      </span>
       <ArrowRight size={11} className="shrink-0 text-slate-300 dark:text-white/20" />
     </button>
   )
@@ -133,18 +326,11 @@ export default function RightSidebar() {
     ? location.pathname.slice('/lists/'.length)
     : undefined
 
-  const todayStr = useMemo(() => today().toString(), [])
-
-  const adHocLists = useMemo(() => lists.filter((l) => !l.dueDate).sort((a, b) => a.order - b.order), [lists])
+  const adHocLists = useMemo(
+    () => lists.filter((l) => !l.dueDate).sort((a, b) => a.order - b.order),
+    [lists]
+  )
   const dateLists = useMemo(() => lists.filter((l) => !!l.dueDate), [lists])
-  const overdueLists = useMemo(
-    () => dateLists.filter((l) => l.dueDate! < todayStr).sort((a, b) => b.dueDate!.localeCompare(a.dueDate!)),
-    [dateLists, todayStr]
-  )
-  const upcomingLists = useMemo(
-    () => dateLists.filter((l) => l.dueDate! >= todayStr).sort((a, b) => a.dueDate!.localeCompare(b.dueDate!)),
-    [dateLists, todayStr]
-  )
 
   const standaloneLists = useMemo(() => adHocLists.filter((l) => !l.folderId), [adHocLists])
   const sortedFolders = useMemo(() => [...folders].sort((a, b) => a.order - b.order), [folders])
@@ -184,7 +370,9 @@ export default function RightSidebar() {
             <>
               <span className="text-[11px] font-semibold text-white/50 ml-2 flex-1">Lists</span>
               {listCount > 0 && (
-                <span className="text-[11px] font-bold text-blue-400 tabular-nums">{listCount}</span>
+                <span className="text-[11px] font-bold text-blue-400 tabular-nums">
+                  {listCount}
+                </span>
               )}
             </>
           )}
@@ -194,64 +382,10 @@ export default function RightSidebar() {
         <div className="flex-1 overflow-y-auto">
           {rightOpen && (
             <>
-              {/* Overdue date-based lists */}
-              {overdueLists.length > 0 && (
-                <div className="py-1">
-                  <CollapsibleSection label="Overdue" count={overdueLists.length} accent="red" defaultOpen>
-                    <ul className="flex flex-col gap-1 px-2 pb-1">
-                      {overdueLists.map((l) => (
-                        <li key={l.id}>
-                          <button
-                            onClick={() => navigate(`/lists/${l.id}`)}
-                            className={`flex items-center gap-2 w-full px-3 py-2 rounded-xl text-left transition-colors ${
-                              activeListId === l.id
-                                ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.12]'
-                                : 'bg-white dark:bg-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.07]'
-                            }`}
-                          >
-                            <div className="flex-1 min-w-0">
-                              <div className="text-[10px] font-semibold text-[#e8a045]/80 mb-0.5">{formatDate(l.dueDate!)}</div>
-                              <div className="text-[13px] font-medium text-slate-700 dark:text-white/75 truncate">{l.name}</div>
-                            </div>
-                            <ArrowRight size={13} className="shrink-0 text-slate-300 dark:text-white/20" />
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </CollapsibleSection>
-                </div>
-              )}
-
-              {/* Upcoming date-based lists */}
-              {upcomingLists.length > 0 && (
-                <div className={`py-1 ${overdueLists.length > 0 ? 'border-t border-slate-200 dark:border-white/[0.07]' : ''}`}>
-                  <CollapsibleSection label="Upcoming" count={upcomingLists.length} defaultOpen>
-                    <ul className="flex flex-col gap-1 px-2 pb-1">
-                      {upcomingLists.map((l) => (
-                        <li key={l.id}>
-                          <button
-                            onClick={() => navigate(`/lists/${l.id}`)}
-                            className={`flex items-center gap-2 w-full px-3 py-2 rounded-xl text-left transition-colors ${
-                              activeListId === l.id
-                                ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.12]'
-                                : 'bg-white dark:bg-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.07]'
-                            }`}
-                          >
-                            <div className="flex-1 min-w-0">
-                              <div className="text-[10px] font-semibold text-[#6498c8]/80 mb-0.5">{formatDate(l.dueDate!)}</div>
-                              <div className="text-[13px] font-medium text-slate-700 dark:text-white/75 truncate">{l.name}</div>
-                            </div>
-                            <ArrowRight size={13} className="shrink-0 text-slate-300 dark:text-white/20" />
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </CollapsibleSection>
-                </div>
-              )}
-
               {/* Ad-hoc lists */}
-              <div className={`py-1 ${dateLists.length > 0 ? 'border-t border-slate-200 dark:border-white/[0.07]' : ''}`}>
+              <div
+                className={`py-1 ${dateLists.length > 0 ? 'border-t border-slate-200 dark:border-white/[0.07]' : ''}`}
+              >
                 <CollapsibleSection
                   label="My Lists"
                   count={adHocLists.length}
@@ -263,17 +397,26 @@ export default function RightSidebar() {
                         onClick={() => openNewList()}
                         className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
                         title="New list"
-                      ><Plus size={11} /></button>
+                      >
+                        <Plus size={11} />
+                      </button>
                       <button
-                        onClick={() => { setEditingFolder(null); setFolderFormOpen(true) }}
+                        onClick={() => {
+                          setEditingFolder(null)
+                          setFolderFormOpen(true)
+                        }}
                         className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
                         title="New folder"
-                      ><FolderOpen size={11} /></button>
+                      >
+                        <FolderOpen size={11} />
+                      </button>
                     </div>
                   }
                 >
                   {adHocLists.length === 0 && folders.length === 0 && (
-                    <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2">No lists yet</p>
+                    <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2">
+                      No lists yet
+                    </p>
                   )}
                   {standaloneLists.map((l) => (
                     <ListNavItem key={l.id} l={l} active={activeListId === l.id} />
@@ -287,27 +430,75 @@ export default function RightSidebar() {
                           onClick={() => toggleFolder(folder.id)}
                           className="flex items-center gap-1.5 w-full px-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
                         >
-                          {collapsed
-                            ? <ChevronRight size={10} className="text-slate-300 dark:text-white/20 shrink-0" />
-                            : <ChevronDown size={10} className="text-slate-300 dark:text-white/20 shrink-0" />}
-                          <FolderOpen size={11} className="text-slate-400 dark:text-white/25 shrink-0" />
-                          <span className="text-[11px] font-semibold text-slate-400 dark:text-white/30 uppercase tracking-wide truncate flex-1">{folder.name}</span>
+                          {collapsed ? (
+                            <ChevronRight
+                              size={10}
+                              className="text-slate-300 dark:text-white/20 shrink-0"
+                            />
+                          ) : (
+                            <ChevronDown
+                              size={10}
+                              className="text-slate-300 dark:text-white/20 shrink-0"
+                            />
+                          )}
+                          <FolderOpen
+                            size={11}
+                            className="text-slate-400 dark:text-white/25 shrink-0"
+                          />
+                          <span className="text-[11px] font-semibold text-slate-400 dark:text-white/30 uppercase tracking-wide truncate flex-1">
+                            {folder.name}
+                          </span>
                           <button
-                            onClick={(e) => { e.stopPropagation(); openNewList({ folderId: folder.id }) }}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              openNewList({ folderId: folder.id })
+                            }}
                             className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-                          ><Plus size={10} /></button>
+                          >
+                            <Plus size={10} />
+                          </button>
                         </button>
-                        {!collapsed && folderLists.map((l) => (
-                          <ListNavItem key={l.id} l={l} active={activeListId === l.id} indent />
-                        ))}
+                        {!collapsed &&
+                          folderLists.map((l) => (
+                            <ListNavItem key={l.id} l={l} active={activeListId === l.id} indent />
+                          ))}
                       </div>
                     )
                   })}
                 </CollapsibleSection>
               </div>
 
+              {/* By Date section */}
+              {dateLists.length > 0 && (
+                <div className="border-t border-slate-200 dark:border-white/[0.07] pt-1 pb-2">
+                  <CollapsibleSection
+                    label="By Date"
+                    count={dateLists.length}
+                    accent="slate"
+                    defaultOpen
+                    headerExtra={
+                      <button
+                        onClick={() => openNewList()}
+                        className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                        title="New date-based list"
+                      >
+                        <Plus size={11} />
+                      </button>
+                    }
+                  >
+                    <DateSection
+                      lists={dateLists}
+                      activeListId={activeListId}
+                      onNewListForDate={(date) => openNewList({ dueDate: date })}
+                    />
+                  </CollapsibleSection>
+                </div>
+              )}
+
               {lists.length === 0 && folders.length === 0 && (
-                <p className="text-[12px] text-slate-400 dark:text-white/25 text-center py-8 leading-relaxed">No lists yet</p>
+                <p className="text-[12px] text-slate-400 dark:text-white/25 text-center py-8 leading-relaxed">
+                  No lists yet
+                </p>
               )}
             </>
           )}
@@ -316,7 +507,9 @@ export default function RightSidebar() {
             <div className="flex flex-col items-center pt-3">
               <CheckSquare size={14} className="text-slate-300 dark:text-white/20" />
               {listCount > 0 && (
-                <span className="text-[11px] font-bold text-blue-500 dark:text-blue-400 mt-2">{listCount}</span>
+                <span className="text-[11px] font-bold text-blue-500 dark:text-blue-400 mt-2">
+                  {listCount}
+                </span>
               )}
             </div>
           )}
@@ -347,8 +540,15 @@ export default function RightSidebar() {
       {folderFormOpen && (
         <FolderForm
           folder={editingFolder}
-          onSave={async (f) => { await saveFolder(f); setFolderFormOpen(false); setEditingFolder(null) }}
-          onClose={() => { setFolderFormOpen(false); setEditingFolder(null) }}
+          onSave={async (f) => {
+            await saveFolder(f)
+            setFolderFormOpen(false)
+            setEditingFolder(null)
+          }}
+          onClose={() => {
+            setFolderFormOpen(false)
+            setEditingFolder(null)
+          }}
         />
       )}
 
@@ -364,7 +564,10 @@ export default function RightSidebar() {
             setEditingList(null)
             navigate(`/lists/${l.id}`)
           }}
-          onClose={() => { setListFormOpen(false); setEditingList(null) }}
+          onClose={() => {
+            setListFormOpen(false)
+            setEditingList(null)
+          }}
         />
       )}
     </>

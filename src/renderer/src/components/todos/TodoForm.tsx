@@ -35,11 +35,14 @@ export default function TodoForm({ item, listId, onSave, onClose }: Props) {
       completed: item?.completed ?? false,
       completedAt: item?.completedAt,
       createdAt: item?.createdAt ?? now,
-      updatedAt: now,
+      updatedAt: now
     }
+    console.log('[TodoForm] About to save item:', newItem)
     try {
       await onSave(newItem)
-    } catch {
+      console.log('[TodoForm] Item saved successfully')
+    } catch (err) {
+      console.error('[TodoForm] Save failed:', err)
       setError('Failed to save')
       setSaving(false)
     }
@@ -51,7 +54,10 @@ export default function TodoForm({ item, listId, onSave, onClose }: Props) {
         <Input
           label="Title"
           value={title}
-          onChange={(e) => { setTitle(e.target.value); setError('') }}
+          onChange={(e) => {
+            setTitle(e.target.value)
+            setError('')
+          }}
           placeholder="What needs to be done?"
           autoFocus
           error={error}
@@ -60,7 +66,9 @@ export default function TodoForm({ item, listId, onSave, onClose }: Props) {
         <div className="flex flex-col gap-1">
           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Description{' '}
-            <span className="font-normal text-gray-400 dark:text-gray-500">(optional — supports Markdown)</span>
+            <span className="font-normal text-gray-400 dark:text-gray-500">
+              (optional — supports Markdown)
+            </span>
           </label>
           <textarea
             value={description}
@@ -72,7 +80,9 @@ export default function TodoForm({ item, listId, onSave, onClose }: Props) {
         </div>
 
         <div className="flex justify-end gap-2 pt-2 border-t border-gray-200 dark:border-[var(--border)]">
-          <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button type="button" variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
           <Button type="submit" disabled={saving}>
             {saving ? 'Saving…' : isNew ? 'Add Item' : 'Save Changes'}
           </Button>

@@ -5,10 +5,16 @@ export function getAllLists(): TodoList[] {
   const rows = getDb()
     .prepare('SELECT * FROM todo_lists WHERE deleted_at IS NULL ORDER BY sort_order')
     .all() as any[]
-  return rows.map(deserialize)
+  console.log('[todo_lists.repo] getAllLists raw:', rows)
+  const lists = rows.map(deserialize)
+  console.log('[todo_lists.repo] getAllLists result:', lists)
+  return lists
 }
 
 export function saveList(l: TodoList): TodoList {
+  console.log('[todo_lists.repo] saveList input:', l)
+  const serialized = serialize(l)
+  console.log('[todo_lists.repo] saveList serialized:', serialized)
   getDb()
     .prepare(
       `INSERT INTO todo_lists (id, name, folder_id, due_date, sort_order, created_at, updated_at)
@@ -17,7 +23,8 @@ export function saveList(l: TodoList): TodoList {
          name = @name, folder_id = @folder_id, due_date = @due_date,
          sort_order = @sort_order, updated_at = @updated_at`
     )
-    .run(serialize(l))
+    .run(serialized)
+  console.log('[todo_lists.repo] saveList done')
   return l
 }
 
@@ -36,7 +43,7 @@ function serialize(l: TodoList) {
     due_date: l.dueDate ?? null,
     sort_order: l.order,
     created_at: l.createdAt,
-    updated_at: l.updatedAt,
+    updated_at: l.updatedAt
   }
 }
 
@@ -48,6 +55,6 @@ function deserialize(row: any): TodoList {
     dueDate: row.due_date ?? undefined,
     order: row.sort_order,
     createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    updatedAt: row.updated_at
   }
 }

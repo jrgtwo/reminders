@@ -1,6 +1,9 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
+import { enableMapSet } from 'immer'
 import type { TodoList, TodoListItem } from '../types/models'
+
+enableMapSet()
 
 interface TodoListsState {
   lists: TodoList[]
@@ -22,8 +25,16 @@ export const useTodoListsStore = create<TodoListsState>()(
 
     load: async () => {
       const { getStorage } = await import('../platform')
-      const lists = await getStorage().getTodoLists()
-      set((s) => { s.lists = lists })
+      try {
+        const lists = await getStorage().getTodoLists()
+        console.log('[todo_lists.store] Loaded lists:', lists)
+        set((s) => {
+          s.lists = lists
+        })
+      } catch (err) {
+        console.error('[todo_lists] Failed to load lists:', err)
+        throw err
+      }
     },
 
     save: async (l) => {
@@ -60,7 +71,9 @@ export const useTodoListsStore = create<TodoListsState>()(
           return l ? { ...l, order: (i + 1) * 1000 } : null
         })
         .filter(Boolean) as TodoList[]
-      set((s) => { s.lists = sorted })
+      set((s) => {
+        s.lists = sorted
+      })
       const { getStorage } = await import('../platform')
       await Promise.all(sorted.map((l) => getStorage().saveTodoList(l)))
     },
@@ -68,31 +81,42 @@ export const useTodoListsStore = create<TodoListsState>()(
     loadItems: async (listId) => {
       const { getStorage } = await import('../platform')
       const items = await getStorage().getTodoListItems(listId)
-      set((s) => { s.items.set(listId, items) })
+      set((s) => {
+        s.items.set(listId, items)
+      })
     },
 
     saveItem: async (item) => {
       const { getStorage } = await import('../platform')
-      await getStorage().saveTodoListItem(item)
-      set((s) => {
-        const listItems = s.items.get(item.listId) ?? []
-        const idx = listItems.findIndex((x) => x.id === item.id)
-        if (idx >= 0) listItems[idx] = item
-        else listItems.push(item)
-        s.items.set(item.listId, [...listItems])
-      })
+      try {
+        const saved = await getStorage().saveTodoListItem(item)
+        set((s) => {
+          const listItems = s.items.get(item.listId) ?? []
+          const idx = listItems.findIndex((x) => x.id === saved.id)
+          if (idx >= 0) listItems[idx] = saved
+          else listItems.push(saved)
+          s.items.set(item.listId, [...listItems])
+        })
+      } catch (err) {
+        console.error('[todo_lists] Failed to save item:', err)
+        throw err
+      }
     },
 
     deleteItem: async (id) => {
       // Find which list this item belongs to
-      const listId = Array.from(get().items.entries())
-        .find(([, items]) => items.some((i) => i.id === id))?.[0]
+      const listId = Array.from(get().items.entries()).find(([, items]) =>
+        items.some((i) => i.id === id)
+      )?.[0]
       if (!listId) return
       const { getStorage } = await import('../platform')
       await getStorage().deleteTodoListItem(id)
       set((s) => {
         const listItems = s.items.get(listId) ?? []
-        s.items.set(listId, listItems.filter((i) => i.id !== id))
+        s.items.set(
+          listId,
+          listItems.filter((i) => i.id !== id)
+        )
       })
     },
 
@@ -109,6 +133,6 @@ export const useTodoListsStore = create<TodoListsState>()(
       })
       const { getStorage } = await import('../platform')
       await getStorage().reorderTodoListItems(listId, orderedIds)
-    },
+    }
   }))
 )

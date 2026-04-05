@@ -3,22 +3,30 @@ import type { TodoListItem } from '../../renderer/src/types/models'
 
 export function getAllItemsForList(listId: string): TodoListItem[] {
   const rows = getDb()
-    .prepare('SELECT * FROM todo_list_items WHERE list_id = ? AND deleted_at IS NULL ORDER BY sort_order')
+    .prepare(
+      'SELECT * FROM todo_list_items WHERE list_id = ? AND deleted_at IS NULL ORDER BY sort_order'
+    )
     .all(listId) as any[]
   return rows.map(deserialize)
 }
 
 export function saveItem(item: TodoListItem): TodoListItem {
-  getDb()
-    .prepare(
-      `INSERT INTO todo_list_items (id, list_id, title, description, sort_order, completed, completed_at, created_at, updated_at)
-       VALUES (@id, @list_id, @title, @description, @sort_order, @completed, @completed_at, @created_at, @updated_at)
-       ON CONFLICT(id) DO UPDATE SET
-         title = @title, description = @description, sort_order = @sort_order,
-         completed = @completed, completed_at = @completed_at, updated_at = @updated_at`
-    )
-    .run(serialize(item))
-  return item
+  try {
+    const result = getDb()
+      .prepare(
+        `INSERT INTO todo_list_items (id, list_id, title, description, sort_order, completed, completed_at, created_at, updated_at)
+         VALUES (@id, @list_id, @title, @description, @sort_order, @completed, @completed_at, @created_at, @updated_at)
+         ON CONFLICT(id) DO UPDATE SET
+           title = @title, description = @description, sort_order = @sort_order,
+           completed = @completed, completed_at = @completed_at, updated_at = @updated_at`
+      )
+      .run(serialize(item))
+    console.log('[todo_list_items.repo] saveItem result:', result)
+    return item
+  } catch (err) {
+    console.error('[todo_list_items.repo] saveItem error:', err)
+    throw err
+  }
 }
 
 export function deleteItem(id: string): void {
@@ -26,9 +34,11 @@ export function deleteItem(id: string): void {
 }
 
 export function reorderItems(listId: string, orderedIds: string[]): void {
-  const stmt = getDb().prepare('UPDATE todo_list_items SET sort_order = ? WHERE id = ?')
+  const stmt = getDb().prepare(
+    'UPDATE todo_list_items SET sort_order = ? WHERE id = ? AND list_id = ?'
+  )
   getDb().transaction((ids: string[]) => {
-    ids.forEach((id, i) => stmt.run((i + 1) * 1000, id))
+    ids.forEach((id, i) => stmt.run((i + 1) * 1000, id, listId))
   })(orderedIds)
 }
 
@@ -42,7 +52,7 @@ function serialize(item: TodoListItem) {
     completed: item.completed ? 1 : 0,
     completed_at: item.completedAt ?? null,
     created_at: item.createdAt,
-    updated_at: item.updatedAt,
+    updated_at: item.updatedAt
   }
 }
 
@@ -56,6 +66,6 @@ function deserialize(row: any): TodoListItem {
     completed: row.completed === 1,
     completedAt: row.completed_at ?? undefined,
     createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    updatedAt: row.updated_at
   }
 }
