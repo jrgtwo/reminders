@@ -98,96 +98,106 @@ export default function WeekView({ displayDate }: Props) {
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
-      {/* Day header row */}
-      <div
-        className="grid border-b border-slate-200/60 dark:border-white/[0.06] bg-[var(--bg-app)] shrink-0"
-        style={{ gridTemplateColumns: '3.5rem repeat(7, 1fr)' }}
-      >
-        {/* Time gutter label */}
-        <div />
-        {days.map((day) => {
-          const isToday = day.toString() === todayStr
-          const isSelected = isSameDay(day, selectedPlainDate)
-          return (
-            <button
-              key={day.toString()}
-              onClick={() => handleDayClick(day)}
-              className="flex flex-col items-center py-2 gap-0.5 hover:bg-slate-100/60 dark:hover:bg-white/[0.03] transition-colors"
-            >
-              <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-300 dark:text-white/18">
-                {DAY_NAMES[day.dayOfWeek % 7]}
-              </span>
-              <span
-                className={[
-                  'flex items-center justify-center w-8 h-8 rounded-full text-[15px] font-bold leading-none',
-                  isSelected
-                    ? 'bg-blue-500 text-white'
-                    : isToday
-                    ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/30'
-                    : 'text-slate-700 dark:text-white/80',
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-              >
-                {day.day}
-              </span>
-            </button>
-          )
-        })}
-      </div>
+      {/* Single scroll container — header rows are sticky so the scrollbar width applies to everything equally */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto bg-[var(--bg-app)]">
 
-      {/* All-day strip */}
-      {hasAllDay && (
+        {/* Day header row — sticky */}
         <div
-          className="grid border-b border-slate-200/60 dark:border-white/[0.06] bg-[var(--bg-app)] shrink-0"
+          className="sticky top-0 z-20 grid border-b border-slate-200/60 dark:border-white/[0.06] bg-[var(--bg-app)]"
           style={{ gridTemplateColumns: '3.5rem repeat(7, 1fr)' }}
         >
-          <div className="flex items-center justify-end pr-2 py-1">
-            <span className="text-[9px] font-medium uppercase tracking-wide text-slate-300 dark:text-white/20">
-              all‑day
-            </span>
-          </div>
+          {/* Time gutter label */}
+          <div />
           {days.map((day) => {
-            const dateStr = day.toString()
-            const dayReminders = allDayByDate[dateStr] ?? []
-            const dayTodos = todosByDate[dateStr] ?? []
-            const isOverdue = dateStr < todayStr
-            const todoChip = isOverdue
-              ? 'bg-[#e8a045]/[0.12] text-[#e8a045] hover:bg-[#e8a045]/[0.28]'
-              : 'bg-emerald-500/[0.12] text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/[0.28]'
+            const isToday = day.toString() === todayStr
+            const isSelected = isSameDay(day, selectedPlainDate)
             return (
-              <div key={dateStr} className="flex flex-col gap-[2px] px-1 py-1 min-h-[28px] overflow-hidden min-w-0">
-                {dayReminders.slice(0, 3).map((r) => (
-                  <button
-                    key={r.id}
-                    onClick={(e) => { e.stopPropagation(); setDetail({ reminder: r, dateStr }) }}
-                    className="w-full text-left px-1.5 py-[2px] rounded text-[10px] font-semibold truncate bg-[#6498c8]/[0.12] text-[#6498c8] transition-all duration-150 hover:bg-[#6498c8]/[0.28] hover:brightness-125 hover:shadow-md hover:scale-[1.03]"
-                  >
-                    {r.title}
-                  </button>
-                ))}
-                {dayTodos.slice(0, 3).map((t) => (
-                  <button
-                    key={t.id}
-                    onClick={(e) => { e.stopPropagation(); navigate(`/day/${dateStr}`, { state: { tab: 'todos' } }) }}
-                    className={`w-full text-left px-1.5 py-[2px] rounded text-[10px] font-semibold truncate transition-all duration-150 hover:brightness-125 hover:shadow-md hover:scale-[1.03] ${todoChip}`}
-                  >
-                    ☐ {t.title}
-                  </button>
-                ))}
-                {(dayReminders.length + dayTodos.length) > 3 && (
-                  <span className="text-[9px] text-slate-400 dark:text-white/25 pl-1">
-                    +{dayReminders.length + dayTodos.length - 3}
-                  </span>
+              <button
+                key={day.toString()}
+                onClick={() => handleDayClick(day)}
+                className={[
+                  'relative flex flex-col items-center py-2 gap-0.5 overflow-hidden transition-colors',
+                  isToday
+                    ? 'bg-blue-50/60 dark:bg-[#6498c8]/[0.07] hover:bg-blue-100/60 dark:hover:bg-[#6498c8]/[0.12]'
+                    : 'hover:bg-slate-100/60 dark:hover:bg-white/[0.03]',
+                ].join(' ')}
+              >
+                {isToday && (
+                  <div className="absolute top-0 left-0 right-0 h-[5px] bg-blue-500 dark:bg-[#6498c8]" />
                 )}
-              </div>
+                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-300 dark:text-white/18">
+                  {DAY_NAMES[day.dayOfWeek % 7]}
+                </span>
+                <span
+                  className={[
+                    'flex items-center justify-center w-8 h-8 text-[15px] font-bold leading-none',
+                    isToday
+                      ? 'text-blue-500 dark:text-[#6498c8]'
+                      : isSelected
+                      ? 'text-slate-900 dark:text-white'
+                      : 'text-slate-700 dark:text-white/80',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                >
+                  {day.day}
+                </span>
+              </button>
             )
           })}
         </div>
-      )}
 
-      {/* Time grid */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto bg-[var(--bg-app)]">
+        {/* All-day strip — sticky below header (~65px) */}
+        {hasAllDay && (
+          <div
+            className="sticky top-[65px] z-10 grid border-b border-slate-200/60 dark:border-white/[0.06] bg-[var(--bg-app)]"
+            style={{ gridTemplateColumns: '3.5rem repeat(7, 1fr)' }}
+          >
+            <div className="flex items-center justify-end pr-2 py-1">
+              <span className="text-[9px] font-medium uppercase tracking-wide text-slate-300 dark:text-white/20">
+                all‑day
+              </span>
+            </div>
+            {days.map((day) => {
+              const dateStr = day.toString()
+              const dayReminders = allDayByDate[dateStr] ?? []
+              const dayTodos = todosByDate[dateStr] ?? []
+              const isOverdue = dateStr < todayStr
+              const todoChip = isOverdue
+                ? 'bg-[#e8a045]/[0.12] text-[#e8a045] hover:bg-[#e8a045]/[0.28]'
+                : 'bg-emerald-500/[0.12] text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/[0.28]'
+              return (
+                <div key={dateStr} className={['flex flex-col gap-[2px] px-1 py-1 min-h-[28px] overflow-hidden min-w-0', dateStr === todayStr ? 'bg-blue-50/60 dark:bg-[#6498c8]/[0.07]' : ''].join(' ')}>
+                  {dayReminders.slice(0, 3).map((r) => (
+                    <button
+                      key={r.id}
+                      onClick={(e) => { e.stopPropagation(); setDetail({ reminder: r, dateStr }) }}
+                      className="w-full text-left px-1.5 py-[2px] rounded text-[10px] font-semibold truncate bg-[#6498c8]/[0.12] text-[#6498c8] transition-all duration-150 hover:bg-[#6498c8]/[0.28] hover:brightness-125 hover:shadow-md hover:scale-[1.03]"
+                    >
+                      {r.title}
+                    </button>
+                  ))}
+                  {dayTodos.slice(0, 3).map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={(e) => { e.stopPropagation(); navigate(`/day/${dateStr}`, { state: { tab: 'todos' } }) }}
+                      className={`w-full text-left px-1.5 py-[2px] rounded text-[10px] font-semibold truncate transition-all duration-150 hover:brightness-125 hover:shadow-md hover:scale-[1.03] ${todoChip}`}
+                    >
+                      ☐ {t.title}
+                    </button>
+                  ))}
+                  {(dayReminders.length + dayTodos.length) > 3 && (
+                    <span className="text-[9px] text-slate-400 dark:text-white/25 pl-1">
+                      +{dayReminders.length + dayTodos.length - 3}
+                    </span>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Time grid */}
         <div
           className="relative grid"
           style={{
@@ -239,7 +249,7 @@ export default function WeekView({ displayDate }: Props) {
                     className={[
                       'relative border-t border-l border-slate-200/50 dark:border-white/[0.04] overflow-hidden min-w-0 cursor-pointer',
                       'opacity-80 hover:opacity-100 hover:brightness-105 transition-all duration-150',
-                      isToday ? 'bg-blue-50/30 dark:bg-blue-500/[0.03]' : 'hover:bg-slate-50/80 dark:hover:bg-white/[0.02]',
+                      isToday ? 'bg-blue-50/60 dark:bg-[#6498c8]/[0.07]' : 'hover:bg-slate-50/80 dark:hover:bg-white/[0.02]',
                     ]
                       .filter(Boolean)
                       .join(' ')}
@@ -264,6 +274,7 @@ export default function WeekView({ displayDate }: Props) {
           ))}
         </div>
       </div>
+      {/* end scroll container */}
       {newForm && (
         <ReminderForm
           date={newForm.date}

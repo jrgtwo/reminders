@@ -305,51 +305,52 @@ export default function RightSidebar() {
                 </div>
               )}
 
-              {/* Lists */}
-              {(lists.length > 0 || folders.length > 0) && (
-                <div className="border-t-4 border-slate-100 dark:border-white/[0.05] mt-1 pt-2 pb-2">
-                  <CollapsibleSection
-                    label="Lists"
-                    count={lists.length}
-                    accent="slate"
-                    headerExtra={
-                      <div className="flex items-center gap-0.5 shrink-0">
+              {/* Lists — always visible so users can create their first list */}
+              <div className="border-t-4 border-slate-100 dark:border-white/[0.05] mt-1 pt-2 pb-2">
+                <CollapsibleSection
+                  label="Lists"
+                  count={lists.length}
+                  accent="slate"
+                  headerExtra={
+                    <div className="flex items-center gap-0.5 shrink-0">
+                      <button
+                        onClick={() => { setEditingList(null); setNewListFolderId(undefined); setListFormOpen(true) }}
+                        className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                        title="New list"
+                      ><Plus size={11} /></button>
+                      <button
+                        onClick={() => { setEditingFolder(null); setFolderFormOpen(true) }}
+                        className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                        title="New folder"
+                      ><FolderOpen size={11} /></button>
+                    </div>
+                  }
+                >
+                  {lists.length === 0 && folders.length === 0 && (
+                    <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2">No lists yet</p>
+                  )}
+                  {standaloneLists.map((l) => <ListItem key={l.id} l={l} />)}
+                  {sortedFolders.map((folder) => {
+                    const folderLists = lists.filter((l) => l.folderId === folder.id).sort((a, b) => a.order - b.order)
+                    const collapsed = collapsedFolders.has(folder.id)
+                    return (
+                      <div key={folder.id}>
                         <button
-                          onClick={() => { setEditingList(null); setNewListFolderId(undefined); setListFormOpen(true) }}
-                          className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-                          title="New list"
-                        ><Plus size={11} /></button>
-                        <button
-                          onClick={() => { setEditingFolder(null); setFolderFormOpen(true) }}
-                          className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-                          title="New folder"
-                        ><FolderOpen size={11} /></button>
+                          onClick={() => toggleFolder(folder.id)}
+                          className="flex items-center gap-1.5 w-full px-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
+                        >
+                          {collapsed
+                            ? <ChevronRight size={10} className="text-slate-300 dark:text-white/20 shrink-0" />
+                            : <ChevronDown size={10} className="text-slate-300 dark:text-white/20 shrink-0" />}
+                          <FolderOpen size={11} className="text-slate-400 dark:text-white/25 shrink-0" />
+                          <span className="text-[11px] font-semibold text-slate-400 dark:text-white/30 uppercase tracking-wide truncate">{folder.name}</span>
+                        </button>
+                        {!collapsed && folderLists.map((l) => <ListItem key={l.id} l={l} indent />)}
                       </div>
-                    }
-                  >
-                    {standaloneLists.map((l) => <ListItem key={l.id} l={l} />)}
-                    {sortedFolders.map((folder) => {
-                      const folderLists = lists.filter((l) => l.folderId === folder.id).sort((a, b) => a.order - b.order)
-                      const collapsed = collapsedFolders.has(folder.id)
-                      return (
-                        <div key={folder.id}>
-                          <button
-                            onClick={() => toggleFolder(folder.id)}
-                            className="flex items-center gap-1.5 w-full px-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
-                          >
-                            {collapsed
-                              ? <ChevronRight size={10} className="text-slate-300 dark:text-white/20 shrink-0" />
-                              : <ChevronDown size={10} className="text-slate-300 dark:text-white/20 shrink-0" />}
-                            <FolderOpen size={11} className="text-slate-400 dark:text-white/25 shrink-0" />
-                            <span className="text-[11px] font-semibold text-slate-400 dark:text-white/30 uppercase tracking-wide truncate">{folder.name}</span>
-                          </button>
-                          {!collapsed && folderLists.map((l) => <ListItem key={l.id} l={l} indent />)}
-                        </div>
-                      )
-                    })}
-                  </CollapsibleSection>
-                </div>
-              )}
+                    )
+                  })}
+                </CollapsibleSection>
+              </div>
 
               {todos.length === 0 && lists.length === 0 && folders.length === 0 && (
                 <p className="text-[12px] text-slate-400 dark:text-white/25 text-center py-8 leading-relaxed">No todos yet</p>
