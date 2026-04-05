@@ -34,6 +34,14 @@ export const useTodoListsStore = create<TodoListsState>()(
       const { getStorage } = await import('../platform')
       await getStorage().deleteTodoList(id)
       set((s) => { s.lists = s.lists.filter((l) => l.id !== id) })
+      if (!(window as any).electronAPI) {
+        const { useAuthStore } = await import('./auth.store')
+        const userId = useAuthStore.getState().user?.id
+        if (userId) {
+          const { webSoftDelete } = await import('../lib/webSync')
+          webSoftDelete('todo_lists', id, userId).catch(console.error)
+        }
+      }
     },
 
     reorder: async (orderedIds) => {

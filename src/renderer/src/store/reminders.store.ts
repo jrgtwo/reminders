@@ -45,6 +45,15 @@ import { create } from 'zustand'
        await getStorage().deleteReminder(id)
        set((s) => { s.reminders = s.reminders.filter((r) => r.id !== id) })
        capture('reminder_deleted')
+       // Propagate delete to Supabase so it doesn't come back on the next pull.
+       if (!(window as any).electronAPI) {
+         const { useAuthStore } = await import('./auth.store')
+         const userId = useAuthStore.getState().user?.id
+         if (userId) {
+           const { webSoftDelete } = await import('../lib/webSync')
+           webSoftDelete('reminders', id, userId).catch(console.error)
+         }
+       }
      },
 
      toggleComplete: async (id, date) => {

@@ -3,7 +3,7 @@ import { useAuthStore } from './auth.store'
 import { useRemindersStore } from './reminders.store'
 import { useNotesStore } from './notes.store'
 import { useTodosStore } from './todos.store'
-import { webSync, webCheckFirstLogin, webMarkFirstLoginDone } from '../lib/webSync'
+import { webSync, webCheckFirstLogin, webMarkFirstLoginDone, webResetFromCloud } from '../lib/webSync'
 import { capture } from '../lib/analytics'
 
 type SyncStatus = 'idle' | 'syncing' | 'error'
@@ -125,19 +125,24 @@ export const useSyncStore = create<SyncState>((set, get) => ({
   resetFromCloud: async () => {
     const { session, user } = useAuthStore.getState()
     if (!session || !user) return
+    // Don't use get().status guard here — we manage status ourselves
+    if (get().status === 'syncing') return
 
     set({ status: 'syncing' })
     try {
       if (!isElectron()) {
-        const { initStorage, getRawStorage } = await import('../platform')
-        await initStorage()
-        const adapter = getRawStorage()
-        if (adapter.clearAll) await adapter.clearAll()
-        localStorage.removeItem(`sync_last_pull_${user.id}`)
-        localStorage.removeItem(`sync_first_login_done_${user.id}`)
+        // webResetFromCloud: clears local, full pull, no push.
+        // Skipping push ensures records deleted from Supabase aren't re-created.
+        const result = await webResetFromCloud(session)
+        set({ status: 'idle', lastSyncedAt: result.lastSyncedAt })
+      } else {
+        set({ status: 'idle' })
       }
-      // trigger() will do a full pull (no lastPullAt) and reload all stores
-      await useSyncStore.getState().trigger()
+      await Promise.all([
+        useRemindersStore.getState().load(),
+        useNotesStore.getState().loadNoteDates(),
+        useTodosStore.getState().load(),
+      ])
     } catch (err) {
       console.error('[sync] resetFromCloud failed:', err)
       set({ status: 'error' })
@@ -152,10 +157,9 @@ export const useSyncStore = create<SyncState>((set, get) => ({
         await initStorage()
         const adapter = getRawStorage()
         if (adapter.clearAll) await adapter.clearAll()
-        if (user) {
-          localStorage.removeItem(`sync_last_pull_${user.id}`)
-          localStorage.removeItem(`sync_first_login_done_${user.id}`)
-        }
+        // Reset lastPullAt so the next sync does a full pull.
+        // Keep FIRST_LOGIN_KEY so the merge dialog doesn't reappear.
+        if (user) localStorage.removeItem(`sync_last_pull_${user.id}`)
       }
       await Promise.all([
         useRemindersStore.getState().load(),

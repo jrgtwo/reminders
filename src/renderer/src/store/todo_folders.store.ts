@@ -33,6 +33,14 @@ export const useTodoFoldersStore = create<TodoFoldersState>()(
       const { getStorage } = await import('../platform')
       await getStorage().deleteTodoFolder(id)
       set((s) => { s.folders = s.folders.filter((f) => f.id !== id) })
+      if (!(window as any).electronAPI) {
+        const { useAuthStore } = await import('./auth.store')
+        const userId = useAuthStore.getState().user?.id
+        if (userId) {
+          const { webSoftDelete } = await import('../lib/webSync')
+          webSoftDelete('todo_folders', id, userId).catch(console.error)
+        }
+      }
     },
   }))
 )

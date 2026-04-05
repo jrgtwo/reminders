@@ -165,6 +165,57 @@ export function webMarkFirstLoginDone(userId: string): void {
   localStorage.setItem(FIRST_LOGIN_KEY(userId), '1')
 }
 
+// --- Reset from cloud ---
+
+/**
+ * Clear all local data and do a full pull from Supabase — no push.
+ *
+ * Skipping push is intentional: after clearAll local is empty, and we don't
+ * want to re-upload any records that were (or should have been) deleted from
+ * Supabase. This gives a clean "cloud wins" reset.
+ */
+export async function webResetFromCloud(session: Session): Promise<{ lastSyncedAt: string }> {
+  const userId = session.user.id
+  await initStorage()
+  const adapter = getRawStorage()
+
+  if (adapter.clearAll) await adapter.clearAll()
+  localStorage.removeItem(LAST_PULL_KEY(userId))
+  // Do NOT remove FIRST_LOGIN_KEY — that would re-trigger the merge dialog.
+
+  await pull(userId, null, adapter)
+
+  const now = new Date().toISOString()
+  localStorage.setItem(LAST_PULL_KEY(userId), now)
+  return { lastSyncedAt: now }
+}
+
+// --- Soft-delete propagation ---
+
+/**
+ * Soft-delete a record in Supabase after it has been deleted locally.
+ *
+ * Without this, push would either ignore the deletion (record gone from local)
+ * or re-create it on the next full pull. Setting deleted_at ensures:
+ *  - Pull skips the record and removes it from any device that still has it
+ *  - Push never upserts a record that is already soft-deleted server-side
+ *
+ * Call this after local delete. Fire-and-forget safe — catch at call site so
+ * a network failure doesn't prevent the local operation from completing.
+ */
+export async function webSoftDelete(
+  table: 'reminders' | 'todos' | 'todo_folders' | 'todo_lists',
+  id: string,
+  userId: string
+): Promise<void> {
+  const now = new Date().toISOString()
+  await supabase
+    .from(table)
+    .update({ deleted_at: now, updated_at: now })
+    .eq('id', id)
+    .eq('user_id', userId)
+}
+
 // --- Sync ---
 
 export async function webSync(session: Session): Promise<{ lastSyncedAt: string }> {

@@ -41,6 +41,14 @@ import { create } from 'zustand'
        await getStorage().deleteTodo(id)
        set((s) => { s.todos = s.todos.filter((t) => t.id !== id) })
        capture('todo_deleted')
+       if (!(window as any).electronAPI) {
+         const { useAuthStore } = await import('./auth.store')
+         const userId = useAuthStore.getState().user?.id
+         if (userId) {
+           const { webSoftDelete } = await import('../lib/webSync')
+           webSoftDelete('todos', id, userId).catch(console.error)
+         }
+       }
      },
 
      reorder: async (orderedIds) => {
