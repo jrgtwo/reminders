@@ -129,7 +129,9 @@ reminders/
 │       │   ├── todos.store.ts
 │       │   ├── todo_folders.store.ts
 │       │   ├── todo_lists.store.ts
-│       │   └── ui.store.ts       # sidebar open, view, selectedDate, darkMode, triggerNewTodo
+│       │   ├── ui.store.ts       # sidebar open, view, selectedDate, theme, triggerNewTodo
+│       │   ├── auth.store.ts     # session, user, sendMagicLink, signOut, init()
+│       │   └── sync.store.ts     # sync status, lastSyncedAt, trigger, resetFromCloud, clearLocalData
 │       │
 │       ├── hooks/
 │       │   ├── useKeyboardShortcuts.ts
@@ -138,9 +140,18 @@ reminders/
 │       ├── types/
 │       │   └── models.ts
 │       │
+│       ├── lib/
+│       │   ├── supabase.ts       # Supabase client singleton
+│       │   ├── webSync.ts        # renderer-side pull/push/merge + webResetFromCloud + webSoftDelete
+│       │   ├── encryption.ts     # Web Crypto AES-256-GCM utils
+│       │   ├── keyManager.ts     # key fetch/cache/fingerprint logic
+│       │   ├── keyRotation.ts    # key rotation: re-encrypt all local data + push new key
+│       │   ├── analytics.ts      # PostHog event capture wrapper
+│       │   └── posthog.ts        # PostHog client singleton
+│       │
 │       └── utils/
 │           ├── recurrence.ts    # rrule helpers
-│           ├── dates.ts         # date-fns wrappers
+│           ├── dates.ts         # Temporal API wrappers
 │           └── order.ts         # float-gap reorder logic
 │
 └── resources/
@@ -454,10 +465,11 @@ BrowserWindow settings: `sandbox: true`, `contextIsolation: true`, `nodeIntegrat
   ```
   Populated on insert/update via triggers or explicit repo calls.
 
-### Dark Mode
-- `ui.store.ts` holds `darkMode: boolean`, persisted to `localStorage`.
-- On toggle: `document.documentElement.classList.toggle('dark', isDark)`.
+### Themes
+- `ui.store.ts` holds `theme: string` (one of: `light`, `dark`, `dim`, `warm`, `midnight`, `nord`, `forest`, `dusk`, `grey`), persisted to `localStorage`.
+- On change: sets `dark` class + optional `theme-{name}` class on `document.documentElement`.
 - Tailwind `darkMode: 'class'` in config.
+- Theme is pre-applied synchronously in `main.tsx` before React mounts to prevent a white flash on load.
 
 ### Keyboard Shortcuts
 - `useKeyboardShortcuts` hook via `document.addEventListener('keydown')`.
@@ -694,6 +706,35 @@ sync(session, config):
 - ✅ **Web sync was a no-op**: `trigger()`, `checkFirstLogin()`, and `completeMigration()` all had `if (!isElectron()) return` guards. Created `src/renderer/src/lib/webSync.ts` — a renderer-side sync engine that uses the `supabase` client singleton + `initStorage()` adapter directly. Implements the same pull/push/merge logic as `src/main/sync.ts`. Tracks `lastPullAt` and first-login state in `localStorage` per user. `sync.store.ts` now branches on `isElectron()` in all three methods.
 - ✅ **Storage race condition on web**: On app load, `initAuth()` fires `onAuthStateChange` (restoring session from localStorage) before `initStorage()` resolves, crashing `webCheckFirstLogin` with "Storage not initialized". Fixed by using `initStorage()` (idempotent, awaitable) instead of `getStorage()` inside `webSync.ts`.
 
+### Phase 9 — Encryption ✅
+
+**All data synced to Supabase is end-to-end encrypted with AES-256-GCM before leaving the device.**
+
+- ✅ **`src/renderer/src/lib/encryption.ts`**: `generateKey`, `exportKey`, `importKey`, `encrypt`, `decrypt`. Sentinel prefix `enc:iv.ciphertext` (base64). Legacy plaintext passes through on read (migrates on next write).
+- ✅ **`src/renderer/src/lib/keyManager.ts`**: `initEncryptionKey(userId)` — fetches from `user_keys` Supabase table; generates + inserts if absent; caches locally (`safeStorage` on Electron, `localStorage` on web). Detects key fingerprint mismatch (key changed on another device) — clears local data and re-pulls from cloud.
+- ✅ **`src/renderer/src/lib/keyRotation.ts`**: `rotateKey(userId)` — generates a new key, re-encrypts all local records, pushes new key + updated ciphertext to Supabase.
+- ✅ **`src/renderer/src/platform/encryptedAdapter.ts`**: Decorator around `IStorageAdapter`. Encrypts fields on write, decrypts on read. Passes through unmodified if key is not yet loaded.
+- ✅ **Supabase `user_keys` table**: `user_id` (PK), `key_data` (TEXT), RLS policy restricting to `auth.uid() = user_id`.
+
+### Phase 9 — Auth + Sync Post-Launch Fixes ✅
+
+- ✅ **White screen on load**: `App.tsx` returns `null` during auth initialization with no body background. Fixed by: (1) adding `background-color: var(--bg-app)` to `html, body, #root` in `main.css`; (2) pre-applying theme classes synchronously in `main.tsx` before React mounts, reading from `localStorage`.
+
+- ✅ **Supabase auth lock contention**: `onAuthStateChange` callback was `async`, making network requests (key init) while holding the `navigator.locks` auth lock. Supabase has a 5-second lock timeout that steals the lock if held too long, causing repeated "Lock was released because another request stole it" errors on session restore.
+  - Root cause detail: `skipAutoInitialize: true` in `createClient` is silently ignored in supabase-js v2.99.3 (`_initSupabaseAuthClient` doesn't destructure it), so `GoTrueClient` always calls `initialize()` from the constructor. `_recoverAndRefresh` fires `SIGNED_IN` while holding the lock.
+  - Fix: callback is now synchronous; all async work deferred via `setTimeout(0)` to escape the lock before running.
+
+- ✅ **Local deletes not propagating to Supabase (records reappearing)**: Store `remove()` functions only deleted from local IndexedDB. On next pull, Supabase still had the records, re-creating them locally.
+  - Fix: Added `webSoftDelete(table, id, userId)` in `webSync.ts` — sets `deleted_at` + `updated_at` on the Supabase row. All four store `remove()` functions now call this fire-and-forget after local delete (web only). The existing pull logic already skips rows with `deleted_at` set.
+
+- ✅ **"Reset from cloud" was completely broken**: `resetFromCloud` in `sync.store.ts` set `status: 'syncing'`, then called `trigger()` — but `trigger()` checks `if (status === 'syncing') return` at the top and exited immediately. Local data was cleared but nothing synced; status stuck as 'syncing' forever.
+  - Fix: `resetFromCloud` now calls `webResetFromCloud(session)` directly (bypasses the guard). `webResetFromCloud` is pull-only: clears local, removes `LAST_PULL_KEY`, does a full pull, does **not** push (prevents re-creating records deleted from Supabase). `FIRST_LOGIN_KEY` is preserved to avoid re-triggering the merge dialog.
+
+- ✅ **Settings — data management buttons**: Added two buttons to Settings → Data section:
+  - **Reset from cloud**: wipes local data and pulls a clean copy from Supabase. Pull-only (cloud wins). Safe on all devices; deleted records stay deleted.
+  - **Clear local data**: wipes local data only; next sync repopulates from cloud.
+  - Both use a two-step confirm UI pattern (click → confirm → running → done/error).
+
 ### Phase 10 — Testing ✅
 34. ✅ Vitest unit tests — `vitest@^3.2` added; `vitest.config.ts` at root; 51 tests in 2 files:
     - `utils/__tests__/recurrence.test.ts` — 18 tests covering non-recurring, daily (interval/endDate/count), weekly (byDay/interval), monthly, yearly
@@ -766,8 +807,13 @@ sync(session, config):
 - `src/renderer/src/components/layout/AppShell.tsx` — top header (search + settings + sync indicator), responsive 3-col layout, keyboard shortcuts, global new-reminder form overlay, sync error banner
 - `src/renderer/src/hooks/useKeyboardShortcuts.ts` — all keyboard shortcuts; registered once in AppShell
 - `src/renderer/src/utils/exportImport.ts` — export/import logic; relies on `getAllNotes()` for complete data export
-- `src/renderer/src/lib/webSync.ts` — renderer-side sync engine for web; mirrors `src/main/sync.ts`; uses Supabase client + `initStorage()` adapter; tracks state in `localStorage`
-- `src/renderer/src/store/sync.store.ts` — sync status, `lastSyncedAt`, first-login flow; branches on `isElectron()` for all sync operations
+- `src/renderer/src/lib/webSync.ts` — renderer-side sync engine for web; pull/push/merge logic; `webResetFromCloud` (pull-only reset); `webSoftDelete` (propagate local deletes to Supabase)
+- `src/renderer/src/lib/encryption.ts` — AES-256-GCM crypto primitives; sentinel prefix for legacy passthrough
+- `src/renderer/src/lib/keyManager.ts` — key fetch, cache, fingerprint change detection; clears local + re-pulls if key rotated on another device
+- `src/renderer/src/lib/keyRotation.ts` — key rotation: re-encrypt all local records, push new key to Supabase
+- `src/renderer/src/platform/encryptedAdapter.ts` — `IStorageAdapter` decorator; encrypts on write, decrypts on read
+- `src/renderer/src/store/auth.store.ts` — session management; calls `initEncryptionKey` after login; `onAuthStateChange` is sync (async work deferred via `setTimeout(0)` to avoid Supabase lock contention)
+- `src/renderer/src/store/sync.store.ts` — sync status, `lastSyncedAt`, first-login flow, `resetFromCloud`, `clearLocalData`; branches on `isElectron()` for all sync operations
 
 **Main process (Electron)**
 - `src/main/storage/db.ts` — SQLite init + migration runner; prerequisite for all IPC handlers

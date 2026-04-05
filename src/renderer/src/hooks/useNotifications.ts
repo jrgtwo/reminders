@@ -13,6 +13,7 @@ export function useNotifications(): void {
   const isElectron = typeof window !== 'undefined' && !!(window as any).electronAPI
   const reminders = useRemindersStore((s) => s.reminders)
   const fired = useRef(new Set<string>())
+  const swReg = useRef<ServiceWorkerRegistration | null>(null)
 
   useEffect(() => {
     if (isElectron) return
@@ -24,6 +25,18 @@ export function useNotifications(): void {
     async function init() {
       if (Notification.permission === 'default') {
         await Notification.requestPermission()
+      }
+      if (cancelled) return
+
+      // Register service worker so showNotification() works on mobile Chrome.
+      // Desktop falls back to new Notification() if SW is unavailable.
+      if ('serviceWorker' in navigator) {
+        try {
+          swReg.current = await navigator.serviceWorker.register('/sw.js')
+          await navigator.serviceWorker.ready
+        } catch {
+          // SW registration failed — will fall back to new Notification()
+        }
       }
       if (cancelled) return
 
@@ -43,9 +56,14 @@ export function useNotifications(): void {
           if (fired.current.has(key)) continue
           fired.current.add(key)
 
-          new Notification(r.title, {
-            body: r.description ?? `Reminder at ${time}`,
-          })
+          const title = r.title
+          const options = { body: r.description ?? `Reminder at ${time}` }
+
+          if (swReg.current) {
+            swReg.current.showNotification(title, options)
+          } else {
+            new Notification(title, options)
+          }
         }
       }
 

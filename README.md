@@ -29,9 +29,11 @@ Create named lists to organize related todos — shopping, work projects, person
 ### Sync across devices
 Sign in with your email (no password — just a magic link). Once signed in, everything syncs automatically across all your devices. The app works fully offline and syncs whenever you're connected. Your data is always saved locally first.
 
+All synced data is **end-to-end encrypted** with AES-256-GCM before it leaves your device. Your encryption key is stored in your account and never accessible to anyone else.
+
 ### Everything else
+- **9 themes** — Light, Dark, Dim, Warm, Midnight, Nord, Forest, Dusk, Grey
 - **Search** — find any reminder or todo instantly
-- **Dark mode** — easy on the eyes, remembered across sessions
 - **Export / Import** — back up everything to a JSON file, restore it any time
 - **Keyboard shortcuts** — navigate without touching the mouse
 
@@ -51,11 +53,17 @@ Sign in with your email (no password — just a magic link). Once signed in, eve
 
 ## Your data
 
-Everything is stored locally on your device. Signing in enables optional sync via the cloud — your local data is never deleted and the app works fully offline.
+Everything is stored locally on your device first. Signing in enables optional cloud sync — your local data is never deleted and the app works fully offline.
 
-**Export:** Settings → Export — saves a full backup of all your reminders, notes, and todos.
+All synced data is encrypted client-side with AES-256-GCM. The encryption key is generated on your first login, stored in your Supabase account (protected by row-level security), and cached locally for offline use. Supabase and anyone with database access see only ciphertext.
 
-**Import:** Settings → Import — restores from any previous backup without overwriting unrelated data.
+**Export:** Settings → Data → Export — saves a full backup of all your reminders, notes, and todos.
+
+**Import:** Settings → Data → Import — restores from any previous backup without overwriting unrelated data.
+
+**Reset from cloud:** Settings → Data → Reset from cloud — wipes local data and pulls a clean copy from the cloud. Use this if local data gets out of sync. This is a pull-only operation: nothing is pushed back, so records deleted from the cloud stay deleted.
+
+**Clear local data:** Settings → Data → Clear local data — wipes all data from this device without touching the cloud. The next sync will repopulate from the cloud.
 
 ---
 
