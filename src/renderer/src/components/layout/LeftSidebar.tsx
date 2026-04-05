@@ -203,7 +203,7 @@ export default function LeftSidebar() {
 
   return (
     <aside
-      className={`relative h-full flex flex-col border-r border-slate-300/60 dark:border-white/[0.07] overflow-hidden bg-[var(--bg-app)] transition-[width] duration-200 ${leftOpen ? 'shadow-[4px_0_16px_rgba(0,0,0,0.07)] dark:shadow-[4px_0_16px_rgba(0,0,0,0.3)]' : 'shadow-[2px_0_6px_rgba(0,0,0,0.04)] dark:shadow-[2px_0_6px_rgba(0,0,0,0.2)]'}`}
+      className="relative h-full flex flex-col border-r border-slate-300/60 dark:border-white/[0.07] overflow-hidden bg-[var(--bg-app)] transition-[width] duration-200"
       style={{ width: leftOpen ? width : 44 }}
     >
       {/* Header */}
@@ -227,7 +227,7 @@ export default function LeftSidebar() {
           <>
             {/* Overdue */}
             {overdue.length > 0 && (
-              <div className="border-b border-slate-200 dark:border-white/[0.07] pt-3 pb-2">
+              <div className="border-b-2 border-slate-200 dark:border-white/[0.07] pt-3 pb-2">
                 <CollapsibleSection label="Overdue" count={overdue.length} accent="red" open={reminderSections.overdue} onOpenChange={(v) => setReminderSection('overdue', v)}>
                   <div className="flex flex-col gap-1 pl-2">
                     {overdueYesterday.length > 0 && (
@@ -320,7 +320,7 @@ export default function LeftSidebar() {
 
       {/* Bottom nav */}
       {leftOpen && (
-        <div className="p-3 border-t border-slate-200 dark:border-white/[0.07] shrink-0">
+        <div className="p-3 border-t-2 border-slate-200 dark:border-white/[0.07] shrink-0">
           <button
             onClick={() => setNewReminderDate(todayDate().toString())}
             className="flex items-center justify-center gap-2 w-full text-[13px] font-medium text-slate-500 dark:text-white/50 hover:text-slate-800 dark:hover:text-white/80 bg-white dark:bg-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.1] px-3 py-2 rounded-lg transition-all"

@@ -226,14 +226,14 @@ export default function AppShell() {
         </div>
       )}
 
-      <div className="relative flex-1 overflow-hidden">
-        <div className="hidden lg:block absolute left-0 top-0 bottom-0 z-20">
+      <div className="flex flex-1 overflow-hidden">
+        <div className="hidden lg:flex shrink-0">
           <LeftSidebar />
         </div>
-        <main className="h-full overflow-auto bg-[var(--bg-app)] lg:pl-11 lg:pr-11">
+        <main className="flex-1 h-full overflow-auto bg-[var(--bg-app)]">
           <Outlet />
         </main>
-        <div className="hidden lg:block absolute right-0 top-0 bottom-0 z-20">
+        <div className="hidden lg:flex shrink-0">
           <RightSidebar />
         </div>
       </div>

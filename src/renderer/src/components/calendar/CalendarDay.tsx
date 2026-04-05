@@ -1,3 +1,4 @@
+import { useRef, useMemo, useLayoutEffect } from 'react'
 import { Temporal } from '@js-temporal/polyfill'
 import { Bell, Clock, Repeat, FileText, CheckSquare } from 'lucide-react'
 import { formatDayNum, isToday, isSameMonth } from '../../utils/dates'
@@ -32,6 +33,9 @@ interface Props {
   hasNote?: boolean
   isSelected: boolean
   isWeekend?: boolean
+  mouseClientX: number
+  mouseClientY: number
+  mouseActive: boolean
   onClick: () => void
   onReminderClick?: () => void
   onNoteClick?: () => void
@@ -47,6 +51,9 @@ export default function CalendarDay({
   hasNote,
   isSelected,
   isWeekend,
+  mouseClientX,
+  mouseClientY,
+  mouseActive,
   onClick,
   onReminderClick,
   onNoteClick,
@@ -57,6 +64,35 @@ export default function CalendarDay({
   const inMonth = isSameMonth(date, displayMonth)
   const colors = getEventColor(date)
 
+  const tileRef = useRef<HTMLButtonElement>(null)
+  const rectRef = useRef<DOMRect | null>(null)
+
+  useLayoutEffect(() => {
+    const update = () => {
+      if (tileRef.current) rectRef.current = tileRef.current.getBoundingClientRect()
+    }
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
+
+  const tilt = useMemo(() => {
+    if (!mouseActive || !rectRef.current) return { rx: 0, ry: 0 }
+    const r = rectRef.current
+    const cx = r.left + r.width / 2
+    const cy = r.top + r.height / 2
+    const dx = mouseClientX - cx
+    const dy = mouseClientY - cy
+    const dist = Math.sqrt(dx * dx + dy * dy)
+    const maxDist = 300
+    if (dist > maxDist) return { rx: 0, ry: 0 }
+    const influence = 1 - dist / maxDist
+    return {
+      rx: (dy / (r.height / 2)) * -7 * influence,
+      ry: (dx / (r.width / 2)) * 5 * influence,
+    }
+  }, [mouseActive, mouseClientX, mouseClientY])
+
   const cmp = Temporal.PlainDate.compare(date, Temporal.Now.plainDateISO())
   const todoChip = cmp < 0
     ? 'bg-[#e8a045]/[0.12] text-[#e8a045] dark:bg-[#e8a045]/[0.10] dark:text-[#e8a045]'
@@ -64,29 +100,30 @@ export default function CalendarDay({
 
   let bg: string
   if (todayDate) {
-    bg = 'bg-blue-50/60 dark:bg-[#6498c8]/[0.07]'
+    bg = 'bg-blue-50 dark:bg-[#6498c8]/[0.15]'
   } else if (isSelected) {
-    bg = 'bg-[var(--bg-surface)]'
+    bg = 'bg-white dark:bg-white/[0.10]'
   } else if (!inMonth) {
-    bg = 'bg-[var(--bg-surface-muted)]'
+    bg = 'bg-slate-50 dark:bg-white/[0.03]'
   } else {
-    bg = 'bg-[var(--bg-surface)]'
+    bg = 'bg-white dark:bg-white/[0.07]'
   }
 
   return (
     <button
+      ref={tileRef}
       onClick={onClick}
+      style={{ transform: `perspective(500px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)` }}
       className={[
         'relative flex flex-col items-start w-full text-left cursor-pointer rounded-lg overflow-hidden',
-        'transition-all duration-200',
-        isSelected ? 'z-10 opacity-100 brightness-110' : 'z-0 opacity-80 hover:z-10 hover:opacity-100 hover:brightness-110',
-        '[transform-origin:top_center]',
-        isSelected ? '[transform:perspective(600px)_rotateX(2deg)]' : 'hover:[transform:perspective(600px)_rotateX(2deg)]',
+        'transition-[opacity,box-shadow,filter] duration-200',
+        'border border-white/50 dark:border-white/[0.10]',
+        isSelected ? 'z-[10] opacity-100 brightness-110' : 'z-[2] opacity-80 hover:z-[10] hover:opacity-100 hover:brightness-110',
         tall ? 'p-3.5 gap-2' : 'p-1.5 gap-1 md:p-2 md:gap-1.5 lg:p-2.5 lg:gap-2',
         bg,
         isSelected
-          ? 'shadow-[0_2px_6px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.4),0_1px_3px_rgba(0,0,0,0.25)] outline outline-1 outline-slate-300/60 dark:outline-white/[0.1]'
-          : 'shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.4),0_1px_2px_rgba(0,0,0,0.3)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.4),0_1px_3px_rgba(0,0,0,0.25)]',
+          ? 'shadow-[0_4px_0_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_0_rgba(0,0,0,0.5),0_2px_4px_rgba(0,0,0,0.2)] outline outline-1 outline-slate-300/60 dark:outline-white/[0.1]'
+          : 'shadow-[0_3px_0_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-[0_3px_0_rgba(0,0,0,0.35),0_1px_2px_rgba(0,0,0,0.15)] hover:shadow-[0_4px_0_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_4px_0_rgba(0,0,0,0.5),0_2px_4px_rgba(0,0,0,0.2)]',
       ]
         .filter(Boolean)
         .join(' ')}

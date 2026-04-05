@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Temporal } from '@js-temporal/polyfill'
 import { getMonthGrid, isSameDay, parseDateStr } from '../../utils/dates'
@@ -78,6 +78,19 @@ export default function MonthView({ displayDate }: Props) {
     navigate(`/day/${dateStr}`, { state: { tab: 'todos' } })
   }
 
+  const gridRef = useRef<HTMLDivElement>(null)
+  const [glow, setGlow] = useState({ x: 50, y: 50, clientX: 0, clientY: 0, active: false })
+
+  function handleGridMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+    if (!gridRef.current) return
+    const rect = gridRef.current.getBoundingClientRect()
+    setGlow({ x: e.clientX - rect.left, y: e.clientY - rect.top, clientX: e.clientX, clientY: e.clientY, active: true })
+  }
+
+  function handleGridMouseLeave() {
+    setGlow((g) => ({ ...g, active: false }))
+  }
+
   return (
     <div className="flex flex-col flex-1 overflow-auto">
       {/* Day names */}
@@ -92,7 +105,17 @@ export default function MonthView({ displayDate }: Props) {
         ))}
       </div>
       {/* Grid */}
-      <div className="grid grid-cols-7 auto-rows-[80px] md:auto-rows-[110px] lg:auto-rows-[160px] gap-1 bg-[var(--bg-app)] p-1.5">
+      <div
+        ref={gridRef}
+        onMouseMove={handleGridMouseMove}
+        onMouseLeave={handleGridMouseLeave}
+        style={{
+          backgroundImage: glow.active
+            ? `radial-gradient(circle at ${glow.x}px ${glow.y}px, rgba(255,255,255,0.008) 0%, transparent 100px)`
+            : 'none',
+        }}
+        className="grid grid-cols-7 auto-rows-[80px] md:auto-rows-[110px] lg:auto-rows-[160px] gap-1 bg-[var(--bg-app)] p-1.5"
+      >
         {days.map((day) => (
           <CalendarDay
             key={day.toString()}
@@ -103,6 +126,9 @@ export default function MonthView({ displayDate }: Props) {
             hasNote={noteDates.includes(day.toString())}
             isSelected={isSameDay(day, selectedPlainDate)}
             isWeekend={day.dayOfWeek === 6 || day.dayOfWeek === 7}
+            mouseClientX={glow.clientX}
+            mouseClientY={glow.clientY}
+            mouseActive={glow.active}
             onClick={() => handleDayClick(day)}
             onReminderClick={() => handleReminderClick(day)}
             onNoteClick={() => handleNoteClick(day)}

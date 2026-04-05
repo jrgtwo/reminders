@@ -201,7 +201,7 @@ export default function RightSidebar() {
   return (
     <>
       <aside
-        className={`relative h-full flex flex-col border-l border-slate-300/60 dark:border-white/[0.07] overflow-hidden bg-[var(--bg-app)] transition-[width] duration-200 ${rightOpen ? 'shadow-[-4px_0_16px_rgba(0,0,0,0.07)] dark:shadow-[-4px_0_16px_rgba(0,0,0,0.3)]' : 'shadow-[-2px_0_6px_rgba(0,0,0,0.04)] dark:shadow-[-2px_0_6px_rgba(0,0,0,0.2)]'}`}
+        className="relative h-full flex flex-col border-l border-slate-300/60 dark:border-white/[0.07] overflow-hidden bg-[var(--bg-app)] transition-[width] duration-200"
         style={{ width: rightOpen ? width : 44 }}
       >
         {/* Header */}
@@ -259,7 +259,7 @@ export default function RightSidebar() {
 
               {/* Overdue */}
               {overdueDated.length > 0 && (
-                <div className="border-t border-slate-200 dark:border-white/[0.07] pt-1 pb-1">
+                <div className="border-t-2 border-slate-200 dark:border-white/[0.07] pt-1 pb-1">
                   <CollapsibleSection label="Overdue" count={overdueDated.length} accent="red">
                     <ul className="flex flex-col gap-1 px-2 pb-1 pt-1">
                       {overdueDated.map((t) => (
@@ -283,7 +283,7 @@ export default function RightSidebar() {
 
               {/* Upcoming */}
               {upcomingDated.length > 0 && (
-                <div className="border-t border-slate-200 dark:border-white/[0.07] pt-1 pb-1">
+                <div className="border-t-2 border-slate-200 dark:border-white/[0.07] pt-1 pb-1">
                   <CollapsibleSection label="Upcoming" count={upcomingDated.length}>
                     <ul className="flex flex-col gap-1 px-2 pb-1 pt-1">
                       {upcomingDated.map((t) => (
@@ -306,7 +306,7 @@ export default function RightSidebar() {
               )}
 
               {/* Lists — always visible so users can create their first list */}
-              <div className="border-t-4 border-slate-100 dark:border-white/[0.05] mt-1 pt-2 pb-2">
+              <div className="border-t-2 border-slate-200 dark:border-white/[0.07] mt-1 pt-2 pb-2">
                 <CollapsibleSection
                   label="Lists"
                   count={lists.length}
@@ -378,7 +378,7 @@ export default function RightSidebar() {
 
         {/* Bottom */}
         {rightOpen && (
-          <div className="p-3 border-t border-slate-200 dark:border-white/[0.07] shrink-0">
+          <div className="p-3 border-t-2 border-slate-200 dark:border-white/[0.07] shrink-0">
             <button
               onClick={() => { setEditing(null); setFormOpen(true) }}
               className="flex items-center justify-center gap-2 w-full text-[13px] font-medium text-slate-500 dark:text-white/50 hover:text-slate-800 dark:hover:text-white/80 bg-white dark:bg-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.1] px-3 py-2 rounded-lg transition-all"
