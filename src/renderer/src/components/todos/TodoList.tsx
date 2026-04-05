@@ -7,13 +7,13 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core'
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import type { Todo } from '../../types/models'
+import type { TodoListItem } from '../../types/models'
 import TodoItem from './TodoItem'
 
 interface Props {
-  todos: Todo[]
-  onToggle: (t: Todo) => void
-  onEdit: (t: Todo) => void
+  todos: TodoListItem[]
+  onToggle: (t: TodoListItem) => void
+  onEdit: (t: TodoListItem) => void
   onDelete: (id: string) => void
   onReorder: (orderedIds: string[]) => void
 }

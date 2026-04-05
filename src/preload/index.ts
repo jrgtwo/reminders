@@ -12,21 +12,19 @@ const api = {
     getByDate: (date: string) => ipcRenderer.invoke('notes:getByDate', date),
     save:      (n: unknown)   => ipcRenderer.invoke('notes:save', n),
   },
-  todos: {
-    getAll:   ()              => ipcRenderer.invoke('todos:getAll'),
-    save:     (t: unknown)    => ipcRenderer.invoke('todos:save', t),
-    delete:   (id: string)    => ipcRenderer.invoke('todos:delete', id),
-    reorder:  (ids: string[]) => ipcRenderer.invoke('todos:reorder', ids),
-  },
   todoFolders: {
     getAll:  ()             => ipcRenderer.invoke('todo_folders:getAll'),
     save:    (f: unknown)   => ipcRenderer.invoke('todo_folders:save', f),
     delete:  (id: string)  => ipcRenderer.invoke('todo_folders:delete', id),
   },
   todoLists: {
-    getAll:  ()             => ipcRenderer.invoke('todo_lists:getAll'),
-    save:    (l: unknown)   => ipcRenderer.invoke('todo_lists:save', l),
-    delete:  (id: string)  => ipcRenderer.invoke('todo_lists:delete', id),
+    getAll:           ()                              => ipcRenderer.invoke('todo_lists:getAll'),
+    save:             (l: unknown)                    => ipcRenderer.invoke('todo_lists:save', l),
+    delete:           (id: string)                    => ipcRenderer.invoke('todo_lists:delete', id),
+    getAllItemsForList:(listId: string)                => ipcRenderer.invoke('todo_lists:getAllItemsForList', listId),
+    saveItem:         (item: unknown)                 => ipcRenderer.invoke('todo_lists:saveItem', item),
+    deleteItem:       (id: string)                    => ipcRenderer.invoke('todo_lists:deleteItem', id),
+    reorderItems:     (listId: string, ids: string[]) => ipcRenderer.invoke('todo_lists:reorderItems', listId, ids),
   },
   auth: {
     openExternal: (url: string) => ipcRenderer.invoke('auth:openExternal', url),

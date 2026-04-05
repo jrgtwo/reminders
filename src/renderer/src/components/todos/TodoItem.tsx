@@ -2,13 +2,13 @@ import { useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Check, ChevronDown, ChevronRight, GripVertical, Pencil, Trash2 } from 'lucide-react'
-import type { Todo } from '../../types/models'
+import type { TodoListItem } from '../../types/models'
 import MarkdownView from '../ui/MarkdownView'
 
 interface Props {
-  todo: Todo
-  onToggle: (t: Todo) => void
-  onEdit: (t: Todo) => void
+  todo: TodoListItem
+  onToggle: (t: TodoListItem) => void
+  onEdit: (t: TodoListItem) => void
   onDelete: (id: string) => void
 }
 

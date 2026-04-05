@@ -1,18 +1,18 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, List, ArrowRight } from 'lucide-react'
 import { Temporal } from '@js-temporal/polyfill'
 import { parseDateStr, today } from '../utils/dates'
 import { getOccurrencesInRange } from '../utils/recurrence'
 import { useRemindersStore } from '../store/reminders.store'
-import { useTodosStore } from '../store/todos.store'
+import { useTodoListsStore } from '../store/todo_lists.store'
 import { useUIStore } from '../store/ui.store'
-import type { Reminder, Todo } from '../types/models'
+import type { Reminder, TodoList } from '../types/models'
 import NoteEditor from './notes/NoteEditor'
 import ReminderList from './reminders/ReminderList'
 import ReminderForm from './reminders/ReminderForm'
-import SortableTodoList from './todos/TodoList'
-import TodoForm from './todos/TodoForm'
+import ListForm from './lists/ListForm'
+import { useTodoFoldersStore } from '../store/todo_folders.store'
 
 function formatDayHeading(date: Temporal.PlainDate) {
   return {
@@ -43,10 +43,12 @@ export default function DayView() {
   const remove = useRemindersStore((s) => s.remove)
   const toggleComplete = useRemindersStore((s) => s.toggleComplete)
 
-  const todos = useTodosStore((s) => s.todos)
-  const saveTodo = useTodosStore((s) => s.save)
-  const removeTodo = useTodosStore((s) => s.remove)
-  const reorderTodos = useTodosStore((s) => s.reorder)
+  const lists = useTodoListsStore((s) => s.lists)
+  const loadLists = useTodoListsStore((s) => s.load)
+  const saveList = useTodoListsStore((s) => s.save)
+  const folders = useTodoFoldersStore((s) => s.folders)
+
+  useEffect(() => { loadLists() }, [loadLists])
 
   const triggerNewReminder = useUIStore((s) => s.triggerNewReminder)
   const setTriggerNewReminder = useUIStore((s) => s.setTriggerNewReminder)
@@ -62,10 +64,11 @@ export default function DayView() {
       setTab(stateTab)
     }
   }, [location.state])
+
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<Reminder | null>(null)
-  const [todoFormOpen, setTodoFormOpen] = useState(false)
-  const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
+  const [listFormOpen, setListFormOpen] = useState(false)
+  const [editingList, setEditingList] = useState<TodoList | null>(null)
 
   useEffect(() => {
     if (!triggerNewReminder) return
@@ -83,30 +86,16 @@ export default function DayView() {
     const cmp = Temporal.PlainDate.compare(plainDate, Temporal.Now.plainDateISO())
     if (cmp < 0) return { overdueReminders: dayReminders, upcomingReminders: [] }
     if (cmp > 0) return { overdueReminders: [], upcomingReminders: dayReminders }
-    // today — split by time
     const now = Temporal.Now.plainTimeISO()
     const overdue = dayReminders.filter((r) => r.time && Temporal.PlainTime.compare(Temporal.PlainTime.from(r.time), now) < 0)
     const upcoming = dayReminders.filter((r) => !r.time || Temporal.PlainTime.compare(Temporal.PlainTime.from(r.time), now) >= 0)
     return { overdueReminders: overdue, upcomingReminders: upcoming }
   }, [dayReminders, plainDate])
 
-  const incompleteTodos = useMemo(
-    () => todos.filter((t) => !t.completed && t.dueDate === dateStr),
-    [todos, dateStr],
+  const dayLists = useMemo(
+    () => lists.filter((l) => l.dueDate === dateStr).sort((a, b) => a.order - b.order),
+    [lists, dateStr],
   )
-  const completedTodayTodos = useMemo(
-    () => todos.filter((t) => t.completed && t.completedAt?.startsWith(dateStr)),
-    [todos, dateStr],
-  )
-  const dayTodos = useMemo(
-    () => [...incompleteTodos, ...completedTodayTodos].sort((a, b) => a.order - b.order),
-    [incompleteTodos, completedTodayTodos],
-  )
-
-  function handleToggleTodo(t: Todo) {
-    const now = new Date().toISOString()
-    saveTodo({ ...t, completed: !t.completed, completedAt: !t.completed ? now : undefined, updatedAt: now })
-  }
 
   const { weekday, rest } = formatDayHeading(plainDate)
   const status = getDayStatus(plainDate)
@@ -142,7 +131,7 @@ export default function DayView() {
         {([
           { id: 'notes',     label: 'Notes',     count: null },
           { id: 'reminders', label: 'Reminders', count: dayReminders.length, overdue: overdueReminders.length, upcoming: upcomingReminders.length },
-          { id: 'todos',     label: 'Todos',     count: incompleteTodos.length },
+          { id: 'todos',     label: 'Todos',     count: dayLists.length },
         ] as const).map(({ id, label, count, ...rest }) => (
           <button
             key={id}
@@ -199,22 +188,28 @@ export default function DayView() {
         <div>
           <div className="flex justify-end mb-3">
             <button
-              onClick={() => { setEditingTodo(null); setTodoFormOpen(true) }}
+              onClick={() => { setEditingList(null); setListFormOpen(true) }}
               className="text-[12px] font-medium text-[#6498c8] hover:opacity-80 transition-opacity"
             >
-              + Add
+              + New list
             </button>
           </div>
-          {dayTodos.length > 0 ? (
-            <SortableTodoList
-              todos={dayTodos}
-              onToggle={handleToggleTodo}
-              onEdit={(t) => { setEditingTodo(t); setTodoFormOpen(true) }}
-              onDelete={removeTodo}
-              onReorder={reorderTodos}
-            />
+          {dayLists.length > 0 ? (
+            <div className="flex flex-col gap-2">
+              {dayLists.map((l) => (
+                <button
+                  key={l.id}
+                  onClick={() => navigate(`/lists/${l.id}`)}
+                  className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-left bg-white dark:bg-white/[0.06] border border-slate-200/60 dark:border-white/[0.08] hover:bg-slate-50 dark:hover:bg-white/[0.09] transition-colors shadow-sm"
+                >
+                  <List size={15} className="shrink-0 text-[#6498c8]" />
+                  <span className="text-[14px] font-medium text-slate-800 dark:text-white/80 flex-1 truncate">{l.name}</span>
+                  <ArrowRight size={13} className="shrink-0 text-slate-300 dark:text-white/20" />
+                </button>
+              ))}
+            </div>
           ) : (
-            <p className="text-[13px] text-slate-400 dark:text-white/25">No todos yet.</p>
+            <p className="text-[13px] text-slate-400 dark:text-white/25">No lists for this day yet.</p>
           )}
         </div>
       )}
@@ -228,12 +223,17 @@ export default function DayView() {
         />
       )}
 
-      {todoFormOpen && (
-        <TodoForm
-          todo={editingTodo}
-          defaultDueDate={editingTodo ? undefined : dateStr}
-          onSave={async (t) => { await saveTodo(t); setTodoFormOpen(false) }}
-          onClose={() => setTodoFormOpen(false)}
+      {listFormOpen && (
+        <ListForm
+          list={editingList}
+          folders={folders}
+          defaultDueDate={dateStr}
+          onSave={async (l) => {
+            await saveList(l)
+            setListFormOpen(false)
+            navigate(`/lists/${l.id}`)
+          }}
+          onClose={() => setListFormOpen(false)}
         />
       )}
     </div>

@@ -3,8 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { ChevronLeft, List, Pencil } from 'lucide-react'
 import { useTodoListsStore } from '../../store/todo_lists.store'
 import { useTodoFoldersStore } from '../../store/todo_folders.store'
-import { useTodosStore } from '../../store/todos.store'
-import type { Todo, TodoList } from '../../types/models'
+import type { TodoListItem, TodoList } from '../../types/models'
 import SortableTodoList from '../todos/TodoList'
 import TodoForm from '../todos/TodoForm'
 import ListForm from './ListForm'
@@ -17,47 +16,52 @@ export default function ListsPage() {
   const lists = useTodoListsStore((s) => s.lists)
   const loadLists = useTodoListsStore((s) => s.load)
   const saveList = useTodoListsStore((s) => s.save)
+  const items = useTodoListsStore((s) => s.items)
+  const loadItems = useTodoListsStore((s) => s.loadItems)
+  const saveItem = useTodoListsStore((s) => s.saveItem)
+  const deleteItem = useTodoListsStore((s) => s.deleteItem)
+  const reorderItems = useTodoListsStore((s) => s.reorderItems)
 
-  const todos = useTodosStore((s) => s.todos)
-  const loadTodos = useTodosStore((s) => s.load)
-  const saveTodo = useTodosStore((s) => s.save)
-  const removeTodo = useTodosStore((s) => s.remove)
-  const reorderTodos = useTodosStore((s) => s.reorder)
-
-  const [todoFormOpen, setTodoFormOpen] = useState(false)
-  const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
+  const [itemFormOpen, setItemFormOpen] = useState(false)
+  const [editingItem, setEditingItem] = useState<TodoListItem | null>(null)
   const [renameOpen, setRenameOpen] = useState(false)
 
   useEffect(() => {
     loadLists()
-    loadTodos()
-  }, [loadLists, loadTodos])
+  }, [loadLists])
 
-  const selectedList = useMemo(() => lists.find((l) => l.id === listId) ?? null, [lists, listId])
+  useEffect(() => {
+    if (listId) loadItems(listId)
+  }, [listId, loadItems])
 
-  const listTodos = useMemo(
-    () => todos.filter((t) => t.listId === listId && !t.completed).sort((a, b) => a.order - b.order),
-    [todos, listId]
-  )
-  const completedListTodos = useMemo(
-    () => todos.filter((t) => t.listId === listId && t.completed).sort((a, b) => a.order - b.order),
-    [todos, listId]
+  const selectedList = useMemo<TodoList | null>(
+    () => lists.find((l) => l.id === listId) ?? null,
+    [lists, listId]
   )
 
-  function handleToggleTodo(t: Todo) {
+  const listItems = useMemo(
+    () => (listId ? (items.get(listId) ?? []).filter((i) => !i.completed).sort((a, b) => a.order - b.order) : []),
+    [items, listId]
+  )
+  const completedItems = useMemo(
+    () => (listId ? (items.get(listId) ?? []).filter((i) => i.completed).sort((a, b) => a.order - b.order) : []),
+    [items, listId]
+  )
+
+  function handleToggle(item: TodoListItem) {
     const now = new Date().toISOString()
-    saveTodo({ ...t, completed: !t.completed, completedAt: !t.completed ? now : undefined, updatedAt: now })
+    saveItem({ ...item, completed: !item.completed, completedAt: !item.completed ? now : undefined, updatedAt: now })
   }
 
   return (
     <div className="overflow-y-auto h-full">
       <div className="max-w-2xl mx-auto px-6 py-8">
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate(-1)}
           className="flex items-center gap-1 text-[12px] text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/60 transition-colors mb-6"
         >
           <ChevronLeft size={14} />
-          Calendar
+          Back
         </button>
 
         {!selectedList ? (
@@ -66,58 +70,67 @@ export default function ListsPage() {
             <p className="text-[13px]">Select a list</p>
           </div>
         ) : (
-        <>
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl text-slate-900 dark:text-white/80 tracking-tight" style={{ fontFamily: "'Bree Serif', serif" }}>
-            {selectedList.name}
-          </h1>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setRenameOpen(true)}
-              className="p-1.5 rounded-lg text-slate-400 dark:text-white/30 hover:text-slate-700 dark:hover:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
-            ><Pencil size={14} /></button>
-            <button
-              onClick={() => { setEditingTodo(null); setTodoFormOpen(true) }}
-              className="text-[12px] font-medium text-[#6498c8] hover:opacity-80 transition-opacity"
-            >+ Add</button>
-          </div>
-        </div>
-
-        {listTodos.length === 0 && completedListTodos.length === 0 ? (
-          <p className="text-[13px] text-slate-400 dark:text-white/25">No todos yet. Add one above.</p>
-        ) : (
           <>
-            <SortableTodoList
-              todos={listTodos}
-              onToggle={handleToggleTodo}
-              onEdit={(t) => { setEditingTodo(t); setTodoFormOpen(true) }}
-              onDelete={removeTodo}
-              onReorder={reorderTodos}
-            />
-            {completedListTodos.length > 0 && (
-              <div className="mt-4 border-t border-slate-100 dark:border-white/[0.05] pt-3">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 dark:text-white/25 mb-2">Done</p>
-                <SortableTodoList
-                  todos={completedListTodos}
-                  onToggle={handleToggleTodo}
-                  onEdit={(t) => { setEditingTodo(t); setTodoFormOpen(true) }}
-                  onDelete={removeTodo}
-                  onReorder={reorderTodos}
-                />
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-2xl text-slate-900 dark:text-white/80 tracking-tight" style={{ fontFamily: "'Bree Serif', serif" }}>
+                  {selectedList.name}
+                </h1>
+                {selectedList.dueDate && (
+                  <p className="text-[12px] text-slate-400 dark:text-white/30 mt-0.5">{selectedList.dueDate}</p>
+                )}
               </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setRenameOpen(true)}
+                  className="p-1.5 rounded-lg text-slate-400 dark:text-white/30 hover:text-slate-700 dark:hover:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
+                >
+                  <Pencil size={14} />
+                </button>
+                <button
+                  onClick={() => { setEditingItem(null); setItemFormOpen(true) }}
+                  className="text-[12px] font-medium text-[#6498c8] hover:opacity-80 transition-opacity"
+                >
+                  + Add
+                </button>
+              </div>
+            </div>
+
+            {listItems.length === 0 && completedItems.length === 0 ? (
+              <p className="text-[13px] text-slate-400 dark:text-white/25">No items yet. Add one above.</p>
+            ) : (
+              <>
+                <SortableTodoList
+                  todos={listItems}
+                  onToggle={handleToggle}
+                  onEdit={(i) => { setEditingItem(i); setItemFormOpen(true) }}
+                  onDelete={deleteItem}
+                  onReorder={(ids) => reorderItems(listId!, ids)}
+                />
+                {completedItems.length > 0 && (
+                  <div className="mt-4 border-t border-slate-100 dark:border-white/[0.05] pt-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 dark:text-white/25 mb-2">Done</p>
+                    <SortableTodoList
+                      todos={completedItems}
+                      onToggle={handleToggle}
+                      onEdit={(i) => { setEditingItem(i); setItemFormOpen(true) }}
+                      onDelete={deleteItem}
+                      onReorder={(ids) => reorderItems(listId!, ids)}
+                    />
+                  </div>
+                )}
+              </>
             )}
           </>
         )}
-        </>
-        )}
       </div>
 
-      {todoFormOpen && (
+      {itemFormOpen && listId && (
         <TodoForm
-          todo={editingTodo}
-          defaultListId={editingTodo ? undefined : listId}
-          onSave={async (t) => { await saveTodo(t); setTodoFormOpen(false); setEditingTodo(null) }}
-          onClose={() => { setTodoFormOpen(false); setEditingTodo(null) }}
+          item={editingItem}
+          listId={listId}
+          onSave={async (item) => { await saveItem(item); setItemFormOpen(false); setEditingItem(null) }}
+          onClose={() => { setItemFormOpen(false); setEditingItem(null) }}
         />
       )}
 

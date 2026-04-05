@@ -3,7 +3,7 @@ import { supabase } from './supabase'
 import { initStorage, getRawStorage } from '../platform'
 import { wasEncryptionKeyChanged, clearEncryptionKeyChangedFlag } from './keyManager'
 import type { IStorageAdapter } from '../platform/types'
-import type { Reminder, Note, Todo, TodoFolder, TodoList } from '../types/models'
+import type { Reminder, Note, TodoFolder, TodoList, TodoListItem } from '../types/models'
 
 const LAST_PULL_KEY = (userId: string) => `sync_last_pull_${userId}`
 const FIRST_LOGIN_KEY = (userId: string) => `sync_first_login_done_${userId}`
@@ -56,37 +56,6 @@ function rowToNote(row: any): Note {
   }
 }
 
-function todoToRow(t: Todo, userId: string) {
-  return {
-    id: t.id,
-    user_id: userId,
-    title: t.title,
-    description: t.description ?? null,
-    due_date: t.dueDate ?? null,
-    list_id: t.listId ?? null,
-    sort_order: t.order,
-    completed: t.completed ? 1 : 0,
-    completed_at: t.completedAt ?? null,
-    created_at: t.createdAt,
-    updated_at: t.updatedAt,
-  }
-}
-
-function rowToTodo(row: any, localOrder?: number): Todo {
-  return {
-    id: row.id,
-    title: row.title,
-    description: row.description ?? undefined,
-    dueDate: row.due_date ?? undefined,
-    listId: row.list_id ?? undefined,
-    order: localOrder ?? row.sort_order,
-    completed: !!row.completed,
-    completedAt: row.completed_at ?? undefined,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  }
-}
-
 function folderToRow(f: TodoFolder, userId: string) {
   return {
     id: f.id,
@@ -114,6 +83,7 @@ function listToRow(l: TodoList, userId: string) {
     user_id: userId,
     name: l.name,
     folder_id: l.folderId ?? null,
+    due_date: l.dueDate ?? null,
     sort_order: l.order,
     created_at: l.createdAt,
     updated_at: l.updatedAt,
@@ -125,7 +95,37 @@ function rowToList(row: any): TodoList {
     id: row.id,
     name: row.name,
     folderId: row.folder_id ?? undefined,
+    dueDate: row.due_date ?? undefined,
     order: row.sort_order,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
+function listItemToRow(i: TodoListItem, userId: string) {
+  return {
+    id: i.id,
+    user_id: userId,
+    list_id: i.listId,
+    title: i.title,
+    description: i.description ?? null,
+    sort_order: i.order,
+    completed: i.completed ? 1 : 0,
+    completed_at: i.completedAt ?? null,
+    created_at: i.createdAt,
+    updated_at: i.updatedAt,
+  }
+}
+
+function rowToListItem(row: any): TodoListItem {
+  return {
+    id: row.id,
+    listId: row.list_id,
+    title: row.title,
+    description: row.description ?? undefined,
+    order: row.sort_order,
+    completed: !!row.completed,
+    completedAt: row.completed_at ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
@@ -144,19 +144,19 @@ export async function webCheckFirstLogin(userId: string): Promise<{
 
   await initStorage()
   const adapter = getRawStorage()
-  const [reminders, notes, todos] = await Promise.all([
+  const [reminders, notes, lists] = await Promise.all([
     adapter.getReminders(),
     adapter.getAllNotes(),
-    adapter.getTodos(),
+    adapter.getTodoLists(),
   ])
-  const hasLocal = reminders.length + notes.length + todos.length > 0
+  const hasLocal = reminders.length + notes.length + lists.length > 0
 
-  const [{ count: rc }, { count: nc }, { count: tc }] = await Promise.all([
+  const [{ count: rc }, { count: nc }, { count: lc }] = await Promise.all([
     supabase.from('reminders').select('*', { count: 'exact', head: true }).eq('user_id', userId).is('deleted_at', null),
     supabase.from('notes').select('*', { count: 'exact', head: true }).eq('user_id', userId).is('deleted_at', null),
-    supabase.from('todos').select('*', { count: 'exact', head: true }).eq('user_id', userId).is('deleted_at', null),
+    supabase.from('todo_lists').select('*', { count: 'exact', head: true }).eq('user_id', userId).is('deleted_at', null),
   ])
-  const hasRemote = ((rc ?? 0) + (nc ?? 0) + (tc ?? 0)) > 0
+  const hasRemote = ((rc ?? 0) + (nc ?? 0) + (lc ?? 0)) > 0
 
   return { isFirstLogin: true, hasLocal, hasRemote }
 }
@@ -169,10 +169,6 @@ export function webMarkFirstLoginDone(userId: string): void {
 
 /**
  * Clear all local data and do a full pull from Supabase — no push.
- *
- * Skipping push is intentional: after clearAll local is empty, and we don't
- * want to re-upload any records that were (or should have been) deleted from
- * Supabase. This gives a clean "cloud wins" reset.
  */
 export async function webResetFromCloud(session: Session): Promise<{ lastSyncedAt: string }> {
   const userId = session.user.id
@@ -181,7 +177,6 @@ export async function webResetFromCloud(session: Session): Promise<{ lastSyncedA
 
   if (adapter.clearAll) await adapter.clearAll()
   localStorage.removeItem(LAST_PULL_KEY(userId))
-  // Do NOT remove FIRST_LOGIN_KEY — that would re-trigger the merge dialog.
 
   await pull(userId, null, adapter)
 
@@ -192,19 +187,8 @@ export async function webResetFromCloud(session: Session): Promise<{ lastSyncedA
 
 // --- Soft-delete propagation ---
 
-/**
- * Soft-delete a record in Supabase after it has been deleted locally.
- *
- * Without this, push would either ignore the deletion (record gone from local)
- * or re-create it on the next full pull. Setting deleted_at ensures:
- *  - Pull skips the record and removes it from any device that still has it
- *  - Push never upserts a record that is already soft-deleted server-side
- *
- * Call this after local delete. Fire-and-forget safe — catch at call site so
- * a network failure doesn't prevent the local operation from completing.
- */
 export async function webSoftDelete(
-  table: 'reminders' | 'todos' | 'todo_folders' | 'todo_lists',
+  table: 'reminders' | 'todo_folders' | 'todo_lists',
   id: string,
   userId: string
 ): Promise<void> {
@@ -223,8 +207,6 @@ export async function webSync(session: Session): Promise<{ lastSyncedAt: string 
   await initStorage()
   const adapter = getRawStorage()
 
-  // If the encryption key changed since last session, wipe stale local ciphertext
-  // so the subsequent full pull from Supabase lands cleanly.
   if (wasEncryptionKeyChanged(userId)) {
     console.log('[sync] encryption key changed — clearing local data for fresh pull')
     if (typeof adapter.clearAll === 'function') await adapter.clearAll()
@@ -292,28 +274,6 @@ async function pull(
     }
   }
 
-  // Todos
-  let todosQuery = supabase.from('todos').select('*').eq('user_id', userId)
-  if (lastPullAt) todosQuery = todosQuery.gt('updated_at', lastPullAt)
-  const { data: remoteTodos, error: tErr } = await todosQuery
-  if (tErr) throw tErr
-
-  const localTodos = await adapter.getTodos()
-  const localTodoMap = new Map(localTodos.map((t) => [t.id, t]))
-
-  for (const row of remoteTodos ?? []) {
-    if (row.deleted_at) {
-      if (localTodoMap.has(row.id)) await adapter.deleteTodo(row.id)
-      continue
-    }
-    const local = localTodoMap.get(row.id)
-    if (!local) {
-      await adapter.saveTodo(rowToTodo(row))
-    } else if (new Date(row.updated_at).getTime() >= new Date(local.updatedAt).getTime()) {
-      await adapter.saveTodo(rowToTodo(row, local.order))
-    }
-  }
-
   // Todo Folders
   let foldersQuery = supabase.from('todo_folders').select('*').eq('user_id', userId)
   if (lastPullAt) foldersQuery = foldersQuery.gt('updated_at', lastPullAt)
@@ -357,16 +317,33 @@ async function pull(
       await adapter.saveTodoList(rowToList(row))
     }
   }
+
+  // Todo List Items — table may not exist in all environments yet; skip gracefully
+  try {
+    let itemsQuery = supabase.from('todo_list_items').select('*').eq('user_id', userId)
+    if (lastPullAt) itemsQuery = itemsQuery.gt('updated_at', lastPullAt)
+    const { data: remoteItems, error: iErr } = await itemsQuery
+    if (!iErr) {
+      for (const row of remoteItems ?? []) {
+        if (row.deleted_at) {
+          await adapter.deleteTodoListItem(row.id)
+          continue
+        }
+        await adapter.saveTodoListItem(rowToListItem(row))
+      }
+    }
+  } catch {
+    // table not yet created — items are local-only until Supabase schema is updated
+  }
 }
 
 async function push(
   userId: string,
   adapter: IStorageAdapter
 ): Promise<void> {
-  const [reminders, notes, todos, folders, lists] = await Promise.all([
+  const [reminders, notes, folders, lists] = await Promise.all([
     adapter.getReminders(),
     adapter.getAllNotes(),
-    adapter.getTodos(),
     adapter.getTodoFolders(),
     adapter.getTodoLists(),
   ])
@@ -385,13 +362,6 @@ async function push(
     if (error) throw error
   }
 
-  if (todos.length) {
-    const { error } = await supabase.from('todos').upsert(
-      todos.map((t) => todoToRow(t, userId))
-    )
-    if (error) throw error
-  }
-
   if (folders.length) {
     const { error } = await supabase.from('todo_folders').upsert(
       folders.map((f) => folderToRow(f, userId))
@@ -404,5 +374,20 @@ async function push(
       lists.map((l) => listToRow(l, userId))
     )
     if (error) throw error
+  }
+
+  // Push items — table may not exist yet; skip gracefully
+  try {
+    const allItems: TodoListItem[] = (
+      await Promise.all(lists.map((l) => adapter.getTodoListItems(l.id)))
+    ).flat()
+    if (allItems.length) {
+      const { error } = await supabase.from('todo_list_items').upsert(
+        allItems.map((i) => listItemToRow(i, userId))
+      )
+      if (error && (error as any).code !== 'PGRST205') throw error
+    }
+  } catch (e: any) {
+    if (e?.code !== 'PGRST205') throw e
   }
 }

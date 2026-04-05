@@ -2,7 +2,7 @@ import { forwardRef, useState } from 'react'
 import { Search, Bell, CheckSquare, FileText } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useSearch } from '../../hooks/useSearch'
-import type { Reminder, Todo, Note } from '../../types/models'
+import type { Reminder, TodoListItem, Note } from '../../types/models'
 import { parseDateStr } from '../../utils/dates'
 
 function formatNoteDate(dateStr: string): string {
@@ -15,7 +15,7 @@ const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
   const results = useSearch(query)
   const navigate = useNavigate()
 
-  const hasResults = results.reminders.length > 0 || results.todos.length > 0 || results.notes.length > 0
+  const hasResults = results.reminders.length > 0 || results.items.length > 0 || results.notes.length > 0
   const open = query.trim().length > 0 && hasResults
 
   function handleReminderClick(r: Reminder) {
@@ -23,15 +23,9 @@ const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
     navigate(`/day/${r.date}`, { state: { tab: 'reminders' } })
   }
 
-  function handleTodoClick(t: Todo) {
+  function handleItemClick(i: TodoListItem) {
     setQuery('')
-    if (t.listId) {
-      navigate(`/lists/${t.listId}`)
-    } else if (t.dueDate) {
-      navigate(`/day/${t.dueDate}`, { state: { tab: 'todos' } })
-    } else {
-      navigate('/anytime')
-    }
+    navigate(`/lists/${i.listId}`)
   }
 
   function handleNoteClick(n: Note) {
@@ -84,24 +78,23 @@ const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
             </>
           )}
 
-          {results.todos.length > 0 && (
+          {results.items.length > 0 && (
             <>
               <div className="px-3 py-1.5 text-xs font-semibold text-gray-400 dark:text-white/30 uppercase tracking-wide border-b border-gray-100 dark:border-white/[0.07]">
                 Todos
               </div>
-              {results.todos.map((t) => (
+              {results.items.map((i) => (
                 <button
-                  key={t.id}
-                  onClick={() => handleTodoClick(t)}
+                  key={i.id}
+                  onClick={() => handleItemClick(i)}
                   className="flex items-center gap-3 w-full px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-white/[0.07] transition-all"
                 >
                   <CheckSquare
                     size={14}
-                    className={`shrink-0 ${t.completed ? 'text-gray-300 dark:text-white/20' : 'text-[#6498c8]'}`}
+                    className={`shrink-0 ${i.completed ? 'text-gray-300 dark:text-white/20' : 'text-[#6498c8]'}`}
                   />
                   <div className="min-w-0">
-                    <p className={`text-sm truncate ${t.completed ? 'line-through text-gray-400 dark:text-white/30' : 'text-gray-900 dark:text-white/80'}`}>{t.title}</p>
-                    {t.dueDate && <p className="text-xs text-gray-400 dark:text-white/30">{t.dueDate}</p>}
+                    <p className={`text-sm truncate ${i.completed ? 'line-through text-gray-400 dark:text-white/30' : 'text-gray-900 dark:text-white/80'}`}>{i.title}</p>
                   </div>
                 </button>
               ))}

@@ -1,54 +1,32 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import {
-  ChevronDown, ChevronUp, ChevronRight,
-  Plus, ArrowRight, List, FolderOpen,
-} from 'lucide-react'
+import { ChevronDown, ChevronRight, Plus, ArrowRight, List, FolderOpen } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useTodosStore } from '../../store/todos.store'
 import { useTodoFoldersStore } from '../../store/todo_folders.store'
 import { useTodoListsStore } from '../../store/todo_lists.store'
-import { today, parseDateStr } from '../../utils/dates'
-import type { Todo, TodoFolder, TodoList } from '../../types/models'
-import SortableTodoList from '../todos/TodoList'
-import TodoForm from '../todos/TodoForm'
-import FolderForm from '../lists/FolderForm'
+import type { TodoFolder, TodoList } from '../../types/models'
 import ListForm from '../lists/ListForm'
+import FolderForm from '../lists/FolderForm'
 
-function formatOverdueDate(dateStr: string): string {
-  const t = today()
-  const d = parseDateStr(dateStr)
-  const diff = d.until(t, { largestUnit: 'days' }).days
-  if (diff === 1) return 'Yesterday'
-  if (diff < 7) return `${diff} days ago`
-  return d.toLocaleString('en-US', { month: 'short', day: 'numeric' })
-}
+// --- Collapsible section helper ---
 
-function formatUpcomingDate(dateStr: string): string {
-  const t = today()
-  const d = parseDateStr(dateStr)
-  const diff = t.until(d, { largestUnit: 'days' }).days
-  if (diff === 0) return 'Today'
-  if (diff === 1) return 'Tomorrow'
-  return d.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-}
-
-function CollapsibleSection({ label, count, accent = 'blue', defaultOpen = false, children, headerExtra }: {
-  label: string; count: number; accent?: 'blue' | 'red' | 'slate'; defaultOpen?: boolean
-  children: ReactNode; headerExtra?: ReactNode
+function CollapsibleSection({ label, count, accent = 'blue', defaultOpen = true, children, headerExtra }: {
+  label: string
+  count?: number
+  accent?: 'blue' | 'slate'
+  defaultOpen?: boolean
+  children: ReactNode
+  headerExtra?: ReactNode
 }) {
   const [open, setOpen] = useState(defaultOpen)
-  const labelCls = accent === 'red'
-    ? 'text-red-500 dark:text-[#e8a045]'
-    : accent === 'slate'
+  const labelCls = accent === 'slate'
     ? 'text-slate-400 dark:text-white/30'
     : 'text-blue-500 dark:text-[#6498c8]'
-  const countCls = accent === 'red'
-    ? 'text-red-500 dark:text-[#e8a045] bg-red-50 dark:bg-[#e8a045]/[0.08]'
-    : accent === 'slate'
+  const countCls = accent === 'slate'
     ? 'text-slate-400 dark:text-white/30 bg-slate-100 dark:bg-white/[0.05]'
     : 'text-blue-500 dark:text-[#6498c8] bg-blue-50 dark:bg-[#6498c8]/[0.08]'
-  const chevronCls = accent === 'red' ? 'text-[#e8a045]/60' : accent === 'slate' ? 'text-slate-300 dark:text-white/20' : 'text-[#6498c8]/60'
+  const chevronCls = accent === 'slate' ? 'text-slate-300 dark:text-white/20' : 'text-[#6498c8]/60'
+
   return (
     <div>
       <div className="flex items-center gap-1 px-4 py-1.5">
@@ -57,8 +35,12 @@ function CollapsibleSection({ label, count, accent = 'blue', defaultOpen = false
           className="flex items-center gap-2 flex-1 text-left hover:opacity-80 transition-opacity"
         >
           <span className={`text-[10px] font-bold uppercase tracking-wide flex-1 ${labelCls}`}>{label}</span>
-          {count > 0 && <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${countCls}`}>{count}</span>}
-          {open ? <ChevronUp size={11} className={chevronCls} /> : <ChevronDown size={11} className={chevronCls} />}
+          {count !== undefined && count > 0 && (
+            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${countCls}`}>{count}</span>
+          )}
+          {open
+            ? <ChevronDown size={11} className={chevronCls} />
+            : <ChevronRight size={11} className={chevronCls} />}
         </button>
         {headerExtra}
       </div>
@@ -67,15 +49,146 @@ function CollapsibleSection({ label, count, accent = 'blue', defaultOpen = false
   )
 }
 
+// --- List nav item ---
+
+function ListNavItem({ l, active, indent = false }: { l: TodoList; active: boolean; indent?: boolean }) {
+  const navigate = useNavigate()
+  return (
+    <button
+      onClick={() => navigate(`/lists/${l.id}`)}
+      className={`flex items-center gap-2 w-full py-1.5 transition-colors text-left ${indent ? 'pl-8 pr-4' : 'px-4'} ${
+        active ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.12]' : 'hover:bg-slate-50 dark:hover:bg-white/[0.03]'
+      }`}
+    >
+      <List size={11} className={active ? 'shrink-0 text-[#6498c8]' : 'shrink-0 text-slate-400 dark:text-white/25'} />
+      <span className={`text-[13px] truncate flex-1 ${active ? 'font-medium text-[#6498c8]' : 'text-slate-600 dark:text-white/60'}`}>
+        {l.name}
+      </span>
+      <ArrowRight size={11} className="shrink-0 text-slate-300 dark:text-white/20" />
+    </button>
+  )
+}
+
+// --- Date hierarchy helpers ---
+
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December']
+
+type DayMap = Record<string, TodoList[]>          // day string → lists
+type MonthMap = Record<string, DayMap>             // month string → days
+type YearMap = Record<string, MonthMap>            // year string → months
+
+function buildDateTree(lists: TodoList[]): YearMap {
+  const tree: YearMap = {}
+  for (const l of lists) {
+    if (!l.dueDate) continue
+    const [year, month, day] = l.dueDate.split('-')
+    if (!tree[year]) tree[year] = {}
+    if (!tree[year][month]) tree[year][month] = {}
+    if (!tree[year][month][day]) tree[year][month][day] = []
+    tree[year][month][day].push(l)
+  }
+  return tree
+}
+
+// --- Date section component ---
+
+function DateSection({ lists, activeListId, onNewListForDate }: {
+  lists: TodoList[]
+  activeListId?: string
+  onNewListForDate: (date: string) => void
+}) {
+  const tree = useMemo(() => buildDateTree(lists), [lists])
+  const years = Object.keys(tree).sort((a, b) => b.localeCompare(a))
+
+  const [collapsedYears, setCollapsedYears] = useState<Set<string>>(new Set())
+  const [collapsedMonths, setCollapsedMonths] = useState<Set<string>>(new Set())
+
+  if (years.length === 0) {
+    return <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2">No date-based lists yet</p>
+  }
+
+  return (
+    <>
+      {years.map((year) => {
+        const yearCollapsed = collapsedYears.has(year)
+        const months = Object.keys(tree[year]).sort((a, b) => b.localeCompare(a))
+        return (
+          <div key={year}>
+            <button
+              onClick={() => setCollapsedYears((prev) => {
+                const next = new Set(prev)
+                next.has(year) ? next.delete(year) : next.add(year)
+                return next
+              })}
+              className="flex items-center gap-1.5 w-full px-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
+            >
+              {yearCollapsed
+                ? <ChevronRight size={10} className="text-slate-300 dark:text-white/20 shrink-0" />
+                : <ChevronDown size={10} className="text-slate-300 dark:text-white/20 shrink-0" />}
+              <span className="text-[11px] font-bold text-slate-500 dark:text-white/40 uppercase tracking-wide">{year}</span>
+            </button>
+
+            {!yearCollapsed && months.map((month) => {
+              const monthKey = `${year}-${month}`
+              const monthCollapsed = collapsedMonths.has(monthKey)
+              const days = Object.keys(tree[year][month]).sort((a, b) => b.localeCompare(a))
+              const monthName = MONTH_NAMES[parseInt(month, 10) - 1]
+
+              return (
+                <div key={month}>
+                  <button
+                    onClick={() => setCollapsedMonths((prev) => {
+                      const next = new Set(prev)
+                      next.has(monthKey) ? next.delete(monthKey) : next.add(monthKey)
+                      return next
+                    })}
+                    className="flex items-center gap-1.5 w-full pl-6 pr-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
+                  >
+                    {monthCollapsed
+                      ? <ChevronRight size={9} className="text-slate-300 dark:text-white/20 shrink-0" />
+                      : <ChevronDown size={9} className="text-slate-300 dark:text-white/20 shrink-0" />}
+                    <span className="text-[11px] font-semibold text-slate-400 dark:text-white/30">{monthName}</span>
+                  </button>
+
+                  {!monthCollapsed && days.map((day) => {
+                    const dayLists = tree[year][month][day]
+                    const dateStr = `${year}-${month}-${day}`
+                    return (
+                      <div key={day}>
+                        <div className="flex items-center pl-10 pr-4 py-0.5">
+                          <span className="text-[11px] font-semibold text-slate-400 dark:text-white/25 flex-1">
+                            {parseInt(day, 10)}
+                          </span>
+                          <button
+                            onClick={() => onNewListForDate(dateStr)}
+                            className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                            title={`New list for ${dateStr}`}
+                          >
+                            <Plus size={10} />
+                          </button>
+                        </div>
+                        {dayLists.map((l) => (
+                          <ListNavItem key={l.id} l={l} active={activeListId === l.id} indent />
+                        ))}
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            })}
+          </div>
+        )
+      })}
+    </>
+  )
+}
+
+// --- Main component ---
+
 export default function TodosPage() {
   const navigate = useNavigate()
   const location = useLocation()
-
-  const todos = useTodosStore((s) => s.todos)
-  const load = useTodosStore((s) => s.load)
-  const save = useTodosStore((s) => s.save)
-  const remove = useTodosStore((s) => s.remove)
-  const reorder = useTodosStore((s) => s.reorder)
 
   const folders = useTodoFoldersStore((s) => s.folders)
   const loadFolders = useTodoFoldersStore((s) => s.load)
@@ -85,78 +198,53 @@ export default function TodosPage() {
   const loadLists = useTodoListsStore((s) => s.load)
   const saveList = useTodoListsStore((s) => s.save)
 
-  const [formOpen, setFormOpen] = useState(false)
-  const [editing, setEditing] = useState<Todo | null>(null)
-  const [folderFormOpen, setFolderFormOpen] = useState(false)
-  const [editingFolder, setEditingFolder] = useState<TodoFolder | null>(null)
   const [listFormOpen, setListFormOpen] = useState(false)
   const [editingList, setEditingList] = useState<TodoList | null>(null)
+  const [newListDefaultDate, setNewListDefaultDate] = useState<string | undefined>()
   const [newListFolderId, setNewListFolderId] = useState<string | undefined>()
+  const [folderFormOpen, setFolderFormOpen] = useState(false)
+  const [editingFolder, setEditingFolder] = useState<TodoFolder | null>(null)
   const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    load()
-    loadFolders()
     loadLists()
-  }, [load, loadFolders, loadLists])
+    loadFolders()
+  }, [loadLists, loadFolders])
 
   const activeListId = location.pathname.startsWith('/lists/')
     ? location.pathname.slice('/lists/'.length)
     : undefined
 
-  const todayStr = useMemo(() => today().toString(), [])
-  const globalIncomplete = useMemo(() => todos.filter((t) => !t.completed && !t.dueDate && !t.listId), [todos])
-  const globalComplete = useMemo(() => todos.filter((t) => t.completed && !t.dueDate && !t.listId), [todos])
-  const overdueDated = useMemo(
-    () => todos.filter((t) => !t.completed && t.dueDate && t.dueDate < todayStr)
-      .sort((a, b) => b.dueDate!.localeCompare(a.dueDate!)),
-    [todos, todayStr],
+  const adHocLists = useMemo(
+    () => lists.filter((l) => !l.dueDate).sort((a, b) => a.order - b.order),
+    [lists]
   )
-  const upcomingDated = useMemo(
-    () => todos.filter((t) => !t.completed && t.dueDate && t.dueDate >= todayStr)
-      .sort((a, b) => a.dueDate!.localeCompare(b.dueDate!)),
-    [todos, todayStr],
+  const dateLists = useMemo(
+    () => lists.filter((l) => !!l.dueDate),
+    [lists]
   )
-
-  const sortedFolders = useMemo(() => [...folders].sort((a, b) => a.order - b.order), [folders])
-  const standaloneLists = useMemo(() => lists.filter((l) => !l.folderId).sort((a, b) => a.order - b.order), [lists])
-
-  const todoCount = globalIncomplete.length + overdueDated.length + upcomingDated.length
-
-  function listIncompleteCount(listId: string) {
-    return todos.filter((t) => t.listId === listId && !t.completed).length
-  }
+  const standaloneLists = useMemo(
+    () => adHocLists.filter((l) => !l.folderId),
+    [adHocLists]
+  )
+  const sortedFolders = useMemo(
+    () => [...folders].sort((a, b) => a.order - b.order),
+    [folders]
+  )
 
   function toggleFolder(id: string) {
     setCollapsedFolders((prev) => {
       const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
+      next.has(id) ? next.delete(id) : next.add(id)
       return next
     })
   }
 
-  function handleToggle(t: Todo) {
-    const now = new Date().toISOString()
-    save({ ...t, completed: !t.completed, completedAt: !t.completed ? now : undefined, updatedAt: now })
-  }
-
-  function ListItem({ l, indent = false }: { l: TodoList; indent?: boolean }) {
-    const count = listIncompleteCount(l.id)
-    const active = activeListId === l.id
-    return (
-      <button
-        onClick={() => navigate(`/lists/${l.id}`)}
-        className={`flex items-center gap-2 w-full py-1.5 transition-colors text-left ${indent ? 'pl-8 pr-4' : 'px-4'} ${
-          active ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.12]' : 'hover:bg-slate-50 dark:hover:bg-white/[0.03]'
-        }`}
-      >
-        <List size={11} className={active ? 'shrink-0 text-[#6498c8]' : 'shrink-0 text-slate-400 dark:text-white/25'} />
-        <span className={`text-[13px] truncate flex-1 ${active ? 'font-medium text-[#6498c8]' : 'text-slate-600 dark:text-white/60'}`}>{l.name}</span>
-        {count > 0 && <span className="text-[10px] font-bold text-[#6498c8]/70 tabular-nums shrink-0">{count}</span>}
-        <ArrowRight size={11} className="shrink-0 text-slate-300 dark:text-white/20" />
-      </button>
-    )
+  function openNewList(opts: { folderId?: string; dueDate?: string } = {}) {
+    setEditingList(null)
+    setNewListDefaultDate(opts.dueDate)
+    setNewListFolderId(opts.folderId)
+    setListFormOpen(true)
   }
 
   return (
@@ -164,104 +252,21 @@ export default function TodosPage() {
       <div className="flex flex-col h-full bg-[var(--bg-app)]">
         {/* Header */}
         <div className="flex items-center px-4 py-3 border-b border-black/10 dark:border-white/[0.07]">
-          <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-white/40 flex-1">Todos</span>
-          {todoCount > 0 && (
-            <span className="text-[11px] font-bold text-blue-400 tabular-nums mr-2">{todoCount}</span>
-          )}
+          <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-white/40 flex-1">Lists</span>
         </div>
 
-        {/* Content */}
         <div className="flex-1 overflow-y-auto">
-          {/* Anytime */}
-          {(globalIncomplete.length > 0 || globalComplete.length > 0) && (
-            <div className="py-1">
-              <CollapsibleSection label="Anytime" count={globalIncomplete.length} defaultOpen={true} headerExtra={
-                <button onClick={() => navigate('/anytime')} className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors" title="Open Anytime"><ArrowRight size={11} /></button>
-              }>
-                <div className="px-2 pb-1">
-                  <SortableTodoList
-                    todos={globalIncomplete}
-                    onToggle={handleToggle}
-                    onEdit={(t) => { setEditing(t); setFormOpen(true) }}
-                    onDelete={remove}
-                    onReorder={reorder}
-                  />
-                  {globalComplete.length > 0 && (
-                    <div className="mt-1 border-t border-slate-100 dark:border-white/[0.05] pt-2 pb-1">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 dark:text-white/30 px-2 mb-1">Done</p>
-                      <SortableTodoList
-                        todos={globalComplete}
-                        onToggle={handleToggle}
-                        onEdit={(t) => { setEditing(t); setFormOpen(true) }}
-                        onDelete={remove}
-                        onReorder={reorder}
-                      />
-                    </div>
-                  )}
-                </div>
-              </CollapsibleSection>
-            </div>
-          )}
 
-          {/* Overdue */}
-          {overdueDated.length > 0 && (
-            <div className="border-t border-slate-200 dark:border-white/[0.07] pt-1 pb-1">
-              <CollapsibleSection label="Overdue" count={overdueDated.length} accent="red">
-                <ul className="flex flex-col gap-1 px-2 pb-1 pt-1">
-                  {overdueDated.map((t) => (
-                    <li key={t.id}>
-                      <button
-                        onClick={() => navigate(`/day/${t.dueDate}`, { state: { tab: 'todos' } })}
-                        className="flex items-center gap-1 w-full px-3 py-2 rounded-xl bg-white dark:bg-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.07] transition-colors text-left"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <div className="text-[11px] font-semibold text-[#e8a045]/80 mb-0.5">{formatOverdueDate(t.dueDate!)}</div>
-                          <div className="text-[13px] font-medium text-slate-700 dark:text-white/75 truncate">{t.title}</div>
-                        </div>
-                        <ArrowRight size={13} className="shrink-0 text-slate-300 dark:text-white/20" />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </CollapsibleSection>
-            </div>
-          )}
-
-          {/* Upcoming */}
-          {upcomingDated.length > 0 && (
-            <div className="border-t border-slate-200 dark:border-white/[0.07] pt-1 pb-1">
-              <CollapsibleSection label="Upcoming" count={upcomingDated.length}>
-                <ul className="flex flex-col gap-1 px-2 pb-1 pt-1">
-                  {upcomingDated.map((t) => (
-                    <li key={t.id}>
-                      <button
-                        onClick={() => navigate(`/day/${t.dueDate}`, { state: { tab: 'todos' } })}
-                        className="flex items-center gap-1 w-full px-3 py-2 rounded-xl bg-white dark:bg-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.07] transition-colors text-left"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <div className="text-[11px] font-semibold text-[#6498c8]/80 mb-0.5">{formatUpcomingDate(t.dueDate!)}</div>
-                          <div className="text-[13px] font-medium text-slate-700 dark:text-white/75 truncate">{t.title}</div>
-                        </div>
-                        <ArrowRight size={13} className="shrink-0 text-slate-300 dark:text-white/20" />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </CollapsibleSection>
-            </div>
-          )}
-
-          {/* Lists — always visible so users can create their first list */}
-          <div className="border-t border-slate-200 dark:border-white/[0.07] pt-1 pb-2">
+          {/* Ad-hoc section */}
+          <div className="py-1">
             <CollapsibleSection
-              label="Lists"
-              count={lists.length}
-              accent="slate"
+              label="My Lists"
+              count={adHocLists.length}
               defaultOpen={true}
               headerExtra={
                 <div className="flex items-center gap-0.5 shrink-0">
                   <button
-                    onClick={() => { setEditingList(null); setNewListFolderId(undefined); setListFormOpen(true) }}
+                    onClick={() => openNewList()}
                     className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
                     title="New list"
                   ><Plus size={11} /></button>
@@ -273,12 +278,18 @@ export default function TodosPage() {
                 </div>
               }
             >
-              {lists.length === 0 && folders.length === 0 && (
+              {adHocLists.length === 0 && folders.length === 0 && (
                 <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2">No lists yet</p>
               )}
-              {standaloneLists.map((l) => <ListItem key={l.id} l={l} />)}
+
+              {/* Standalone lists */}
+              {standaloneLists.map((l) => (
+                <ListNavItem key={l.id} l={l} active={activeListId === l.id} />
+              ))}
+
+              {/* Folder groups */}
               {sortedFolders.map((folder) => {
-                const folderLists = lists.filter((l) => l.folderId === folder.id).sort((a, b) => a.order - b.order)
+                const folderLists = adHocLists.filter((l) => l.folderId === folder.id)
                 const collapsed = collapsedFolders.has(folder.id)
                 return (
                   <div key={folder.id}>
@@ -290,37 +301,62 @@ export default function TodosPage() {
                         ? <ChevronRight size={10} className="text-slate-300 dark:text-white/20 shrink-0" />
                         : <ChevronDown size={10} className="text-slate-300 dark:text-white/20 shrink-0" />}
                       <FolderOpen size={11} className="text-slate-400 dark:text-white/25 shrink-0" />
-                      <span className="text-[11px] font-semibold text-slate-400 dark:text-white/30 uppercase tracking-wide truncate">{folder.name}</span>
+                      <span className="text-[11px] font-semibold text-slate-400 dark:text-white/30 uppercase tracking-wide truncate flex-1">
+                        {folder.name}
+                      </span>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); openNewList({ folderId: folder.id }) }}
+                        className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                        title="New list in folder"
+                      ><Plus size={10} /></button>
                     </button>
-                    {!collapsed && folderLists.map((l) => <ListItem key={l.id} l={l} indent />)}
+                    {!collapsed && folderLists.map((l) => (
+                      <ListNavItem key={l.id} l={l} active={activeListId === l.id} indent />
+                    ))}
                   </div>
                 )
               })}
             </CollapsibleSection>
           </div>
 
-          {todos.length === 0 && lists.length === 0 && folders.length === 0 && (
-            <p className="text-[12px] text-slate-400 dark:text-white/25 text-center py-8 leading-relaxed">No todos yet</p>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="p-3 border-t border-slate-200 dark:border-white/[0.07] shrink-0">
-          <button
-            onClick={() => { setEditing(null); setFormOpen(true) }}
-            className="flex items-center justify-center gap-2 w-full text-[13px] font-medium text-slate-500 dark:text-white/50 hover:text-slate-800 dark:hover:text-white/80 bg-white dark:bg-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.1] px-3 py-2 rounded-lg transition-all"
-          >
-            <Plus size={13} />
-            Add Todo
-          </button>
+          {/* Date-based section */}
+          <div className="border-t border-slate-200 dark:border-white/[0.07] pt-1 pb-2">
+            <CollapsibleSection
+              label="By Date"
+              count={dateLists.length}
+              accent="slate"
+              defaultOpen={true}
+              headerExtra={
+                <button
+                  onClick={() => openNewList()}
+                  className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                  title="New date-based list"
+                ><Plus size={11} /></button>
+              }
+            >
+              <DateSection
+                lists={dateLists}
+                activeListId={activeListId}
+                onNewListForDate={(date) => openNewList({ dueDate: date })}
+              />
+            </CollapsibleSection>
+          </div>
         </div>
       </div>
 
-      {formOpen && (
-        <TodoForm
-          todo={editing}
-          onSave={(t) => { save(t); setFormOpen(false); setEditing(null) }}
-          onClose={() => { setFormOpen(false); setEditing(null) }}
+      {listFormOpen && (
+        <ListForm
+          list={editingList}
+          folders={folders}
+          defaultFolderId={newListFolderId}
+          defaultDueDate={newListDefaultDate}
+          onSave={async (l) => {
+            await saveList(l)
+            setListFormOpen(false)
+            setEditingList(null)
+            navigate(`/lists/${l.id}`)
+          }}
+          onClose={() => { setListFormOpen(false); setEditingList(null) }}
         />
       )}
 
@@ -329,21 +365,6 @@ export default function TodosPage() {
           folder={editingFolder}
           onSave={async (f) => { await saveFolder(f); setFolderFormOpen(false); setEditingFolder(null) }}
           onClose={() => { setFolderFormOpen(false); setEditingFolder(null) }}
-        />
-      )}
-
-      {listFormOpen && (
-        <ListForm
-          list={editingList}
-          folders={folders}
-          defaultFolderId={newListFolderId}
-          onSave={async (l) => {
-            await saveList(l)
-            setListFormOpen(false)
-            setEditingList(null)
-            navigate(`/lists/${l.id}`)
-          }}
-          onClose={() => { setListFormOpen(false); setEditingList(null) }}
         />
       )}
     </>

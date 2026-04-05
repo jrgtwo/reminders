@@ -9,7 +9,7 @@ import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts'
 import { usePageTracking } from '../../hooks/usePageTracking'
 import { useUIStore } from '../../store/ui.store'
 import { useRemindersStore } from '../../store/reminders.store'
-import { useTodosStore } from '../../store/todos.store'
+import { useTodoListsStore } from '../../store/todo_lists.store'
 import { useNotesStore } from '../../store/notes.store'
 import { useAuthStore } from '../../store/auth.store'
 import { useSyncStore } from '../../store/sync.store'
@@ -42,7 +42,7 @@ export default function AppShell() {
   const setNewReminderDate = useUIStore((s) => s.setNewReminderDate)
   const saveReminder = useRemindersStore((s) => s.save)
   const reminders = useRemindersStore((s) => s.reminders)
-  const todos = useTodosStore((s) => s.todos)
+  const lists = useTodoListsStore((s) => s.lists)
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn)
 
   const overdueCount = useMemo(() => {
@@ -65,7 +65,7 @@ export default function AppShell() {
     return count
   }, [reminders])
 
-  const todoCount = todos.filter((t) => !t.completed && !(t.listId && !t.dueDate)).length
+  const todoCount = lists.length
   const syncStatus = useSyncStore((s) => s.status)
   const lastSyncedAt = useSyncStore((s) => s.lastSyncedAt)
 

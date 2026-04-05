@@ -4,7 +4,6 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { registerReminderHandlers } from './ipc/reminders'
 import { registerNoteHandlers } from './ipc/notes'
-import { registerTodoHandlers } from './ipc/todos'
 import { registerTodoFolderHandlers } from './ipc/todo_folders'
 import { registerTodoListHandlers } from './ipc/todo_lists'
 import { registerWindowHandlers } from './ipc/window'
@@ -88,7 +87,6 @@ app.whenReady().then(() => {
   registerWindowHandlers()
   registerReminderHandlers()
   registerNoteHandlers()
-  registerTodoHandlers()
   registerTodoFolderHandlers()
   registerTodoListHandlers()
   registerAuthHandlers()

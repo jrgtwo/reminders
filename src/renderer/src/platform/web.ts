@@ -1,9 +1,9 @@
 import { openDB, deleteDB, type IDBPDatabase } from 'idb'
 import type { IStorageAdapter } from './types'
-import type { Reminder, Note, Todo, TodoFolder, TodoList } from '../types/models'
+import type { Reminder, Note, TodoFolder, TodoList, TodoListItem } from '../types/models'
 
 const DB_NAME = 'reminders-app'
-const DB_VERSION = 2
+const DB_VERSION = 3
 
 export class WebAdapter implements IStorageAdapter {
   private db!: IDBPDatabase
@@ -32,11 +32,14 @@ export class WebAdapter implements IStorageAdapter {
           lists.createIndex('order', 'order')
         }
       }
+      if (oldVersion < 3) {
+        if (!db.objectStoreNames.contains('todo_list_items')) {
+          const items = db.createObjectStore('todo_list_items', { keyPath: 'id' })
+          items.createIndex('listId', 'listId')
+        }
+      }
     }
 
-    // Race openDB against a 3-second timeout. If another tab is holding the
-    // connection open and blocking the upgrade, wipe and recreate — Supabase
-    // is the source of truth so local data loss is recoverable via sync.
     const race = await Promise.race([
       openDB(DB_NAME, DB_VERSION, { upgrade }).then((db) => ({ ok: true as const, db })),
       new Promise<{ ok: false }>((resolve) => setTimeout(() => resolve({ ok: false }), 3000)),
@@ -78,34 +81,6 @@ export class WebAdapter implements IStorageAdapter {
     return n
   }
 
-  async getTodos(): Promise<Todo[]> {
-    return this.db.getAllFromIndex('todos', 'order')
-  }
-
-  async saveTodo(t: Todo): Promise<Todo> {
-    await this.db.put('todos', t)
-    return t
-  }
-
-  async deleteTodo(id: string): Promise<void> {
-    await this.db.delete('todos', id)
-  }
-
-  async reorderTodos(orderedIds: string[]): Promise<void> {
-    const tx = this.db.transaction('todos', 'readwrite')
-    const all = await tx.store.getAll()
-    const map = new Map(all.map((t: Todo) => [t.id, t]))
-    for (let i = 0; i < orderedIds.length; i++) {
-      const todo = map.get(orderedIds[i])
-      if (todo) {
-        todo.order = (i + 1) * 1000
-        todo.updatedAt = new Date().toISOString()
-        await tx.store.put(todo)
-      }
-    }
-    await tx.done
-  }
-
   async getTodoFolders(): Promise<TodoFolder[]> {
     return this.db.getAllFromIndex('todo_folders', 'order')
   }
@@ -132,8 +107,38 @@ export class WebAdapter implements IStorageAdapter {
     await this.db.delete('todo_lists', id)
   }
 
+  async getTodoListItems(listId: string): Promise<TodoListItem[]> {
+    const all = await this.db.getAllFromIndex('todo_list_items', 'listId', listId)
+    return all.sort((a: TodoListItem, b: TodoListItem) => a.order - b.order)
+  }
+
+  async saveTodoListItem(item: TodoListItem): Promise<TodoListItem> {
+    await this.db.put('todo_list_items', item)
+    return item
+  }
+
+  async deleteTodoListItem(id: string): Promise<void> {
+    await this.db.delete('todo_list_items', id)
+  }
+
+  async reorderTodoListItems(listId: string, orderedIds: string[]): Promise<void> {
+    const tx = this.db.transaction('todo_list_items', 'readwrite')
+    const now = new Date().toISOString()
+    await Promise.all(
+      orderedIds.map(async (id, i) => {
+        const item = await tx.store.get(id)
+        if (item && item.listId === listId) {
+          item.order = (i + 1) * 1000
+          item.updatedAt = now
+          await tx.store.put(item)
+        }
+      })
+    )
+    await tx.done
+  }
+
   async clearAll(): Promise<void> {
-    const stores = ['reminders', 'notes', 'todos', 'todo_folders', 'todo_lists'] as const
+    const stores = ['reminders', 'notes', 'todos', 'todo_folders', 'todo_lists', 'todo_list_items'] as const
     const tx = this.db.transaction([...stores], 'readwrite')
     await Promise.all(stores.map((name) => tx.objectStore(name).clear()))
     await tx.done

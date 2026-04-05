@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { useAuthStore } from './auth.store'
 import { useRemindersStore } from './reminders.store'
 import { useNotesStore } from './notes.store'
-import { useTodosStore } from './todos.store'
+import { useTodoListsStore } from './todo_lists.store'
 import { webSync, webCheckFirstLogin, webMarkFirstLoginDone, webResetFromCloud } from '../lib/webSync'
 import { capture } from '../lib/analytics'
 
@@ -62,7 +62,7 @@ export const useSyncStore = create<SyncState>((set, get) => ({
       await Promise.all([
         useRemindersStore.getState().load(),
         useNotesStore.getState().loadNoteDates(),
-        useTodosStore.getState().load(),
+        useTodoListsStore.getState().load(),
       ])
     } catch (err) {
       console.error('[sync] trigger failed:', err)
@@ -141,7 +141,7 @@ export const useSyncStore = create<SyncState>((set, get) => ({
       await Promise.all([
         useRemindersStore.getState().load(),
         useNotesStore.getState().loadNoteDates(),
-        useTodosStore.getState().load(),
+        useTodoListsStore.getState().load(),
       ])
     } catch (err) {
       console.error('[sync] resetFromCloud failed:', err)
@@ -164,7 +164,7 @@ export const useSyncStore = create<SyncState>((set, get) => ({
       await Promise.all([
         useRemindersStore.getState().load(),
         useNotesStore.getState().loadNoteDates(),
-        useTodosStore.getState().load(),
+        useTodoListsStore.getState().load(),
       ])
     } catch (err) {
       console.error('[sync] clearLocalData failed:', err)

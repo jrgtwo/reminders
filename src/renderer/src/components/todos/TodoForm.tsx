@@ -1,23 +1,20 @@
 import { useState } from 'react'
-import type { Todo } from '../../types/models'
+import type { TodoListItem } from '../../types/models'
 import Button from '../ui/Button'
 import Dialog from '../ui/Dialog'
 import Input from '../ui/Input'
 
 interface Props {
-  todo: Todo | null
-  defaultDueDate?: string
-  defaultListId?: string
-  onSave: (t: Todo) => Promise<void>
+  item: TodoListItem | null
+  listId: string
+  onSave: (item: TodoListItem) => Promise<void>
   onClose: () => void
 }
 
-export default function TodoForm({ todo, defaultDueDate, defaultListId, onSave, onClose }: Props) {
-  const isNew = !todo
-  const [title, setTitle] = useState(todo?.title ?? '')
-  const [description, setDescription] = useState(todo?.description ?? '')
-  const [dueDate, setDueDate] = useState(todo?.dueDate ?? defaultDueDate ?? '')
-  const listId = todo?.listId ?? defaultListId
+export default function TodoForm({ item, listId, onSave, onClose }: Props) {
+  const isNew = !item
+  const [title, setTitle] = useState(item?.title ?? '')
+  const [description, setDescription] = useState(item?.description ?? '')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -29,46 +26,35 @@ export default function TodoForm({ todo, defaultDueDate, defaultListId, onSave, 
     }
     setSaving(true)
     const now = new Date().toISOString()
-    const t: Todo = {
-      id: todo?.id ?? crypto.randomUUID(),
+    const newItem: TodoListItem = {
+      id: item?.id ?? crypto.randomUUID(),
+      listId,
       title: title.trim(),
       description: description.trim() || undefined,
-      dueDate: dueDate || undefined,
-      listId,
-      order: todo?.order ?? Date.now(),
-      completed: todo?.completed ?? false,
-      completedAt: todo?.completedAt,
-      createdAt: todo?.createdAt ?? now,
+      order: item?.order ?? Date.now(),
+      completed: item?.completed ?? false,
+      completedAt: item?.completedAt,
+      createdAt: item?.createdAt ?? now,
       updatedAt: now,
     }
     try {
-      await onSave(t)
+      await onSave(newItem)
     } catch {
-      setError('Failed to save todo')
+      setError('Failed to save')
       setSaving(false)
     }
   }
 
   return (
-    <Dialog title={isNew ? 'New Todo' : 'Edit Todo'} onClose={onClose}>
+    <Dialog title={isNew ? 'New Item' : 'Edit Item'} onClose={onClose}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <Input
           label="Title"
           value={title}
-          onChange={(e) => {
-            setTitle(e.target.value)
-            setError('')
-          }}
+          onChange={(e) => { setTitle(e.target.value); setError('') }}
           placeholder="What needs to be done?"
           autoFocus
           error={error}
-        />
-
-        <Input
-          label="Due date (optional)"
-          type="date"
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
         />
 
         <div className="flex flex-col gap-1">
@@ -86,11 +72,9 @@ export default function TodoForm({ todo, defaultDueDate, defaultListId, onSave, 
         </div>
 
         <div className="flex justify-end gap-2 pt-2 border-t border-gray-200 dark:border-[var(--border)]">
-          <Button type="button" variant="ghost" onClick={onClose}>
-            Cancel
-          </Button>
+          <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
           <Button type="submit" disabled={saving}>
-            {saving ? 'Saving…' : isNew ? 'Add Todo' : 'Save Changes'}
+            {saving ? 'Saving…' : isNew ? 'Add Item' : 'Save Changes'}
           </Button>
         </div>
       </form>

@@ -1,5 +1,5 @@
 import type { IStorageAdapter } from './types'
-import type { Reminder, Note, Todo, TodoFolder, TodoList } from '../types/models'
+import type { Reminder, Note, TodoFolder, TodoList, TodoListItem } from '../types/models'
 import { encrypt, decrypt } from '../lib/encryption'
 
 export class EncryptedAdapter implements IStorageAdapter {
@@ -84,33 +84,6 @@ export class EncryptedAdapter implements IStorageAdapter {
     return { ...n, content: await this.dec(n.content) }
   }
 
-  // --- Todos ---
-
-  async getTodos(): Promise<Todo[]> {
-    return Promise.all((await this.inner.getTodos()).map((t) => this.decT(t)))
-  }
-
-  async saveTodo(t: Todo): Promise<Todo> {
-    const saved = await this.inner.saveTodo(await this.encT(t))
-    return this.decT(saved)
-  }
-
-  deleteTodo(id: string): Promise<void> {
-    return this.inner.deleteTodo(id)
-  }
-
-  reorderTodos(orderedIds: string[]): Promise<void> {
-    return this.inner.reorderTodos(orderedIds)
-  }
-
-  private async encT(t: Todo): Promise<Todo> {
-    return { ...t, title: await this.enc(t.title), description: await this.enc(t.description) }
-  }
-
-  private async decT(t: Todo): Promise<Todo> {
-    return { ...t, title: await this.dec(t.title), description: await this.dec(t.description) }
-  }
-
   // --- Todo Folders ---
 
   async getTodoFolders(): Promise<TodoFolder[]> {
@@ -147,5 +120,32 @@ export class EncryptedAdapter implements IStorageAdapter {
 
   private async decL(l: TodoList): Promise<TodoList> {
     return { ...l, name: await this.dec(l.name) }
+  }
+
+  // --- Todo List Items ---
+
+  async getTodoListItems(listId: string): Promise<TodoListItem[]> {
+    return Promise.all((await this.inner.getTodoListItems(listId)).map((i) => this.decI(i)))
+  }
+
+  async saveTodoListItem(item: TodoListItem): Promise<TodoListItem> {
+    const saved = await this.inner.saveTodoListItem(await this.encI(item))
+    return this.decI(saved)
+  }
+
+  deleteTodoListItem(id: string): Promise<void> {
+    return this.inner.deleteTodoListItem(id)
+  }
+
+  reorderTodoListItems(listId: string, orderedIds: string[]): Promise<void> {
+    return this.inner.reorderTodoListItems(listId, orderedIds)
+  }
+
+  private async encI(item: TodoListItem): Promise<TodoListItem> {
+    return { ...item, title: await this.enc(item.title), description: await this.enc(item.description) }
+  }
+
+  private async decI(item: TodoListItem): Promise<TodoListItem> {
+    return { ...item, title: await this.dec(item.title), description: await this.dec(item.description) }
   }
 }

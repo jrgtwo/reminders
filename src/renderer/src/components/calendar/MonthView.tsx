@@ -6,9 +6,9 @@ import { getOccurrencesInRange } from '../../utils/recurrence'
 import CalendarDay from './CalendarDay'
 import { useRemindersStore } from '../../store/reminders.store'
 import { useNotesStore } from '../../store/notes.store'
-import { useTodosStore } from '../../store/todos.store'
+import { useTodoListsStore } from '../../store/todo_lists.store'
 import { useUIStore } from '../../store/ui.store'
-import type { Reminder, Todo } from '../../types/models'
+import type { Reminder } from '../../types/models'
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -20,7 +20,7 @@ export default function MonthView({ displayDate }: Props) {
   const navigate = useNavigate()
   const reminders = useRemindersStore((s) => s.reminders)
   const noteDates = useNotesStore((s) => s.noteDates)
-  const todos = useTodosStore((s) => s.todos)
+  const lists = useTodoListsStore((s) => s.lists)
   const selectedDate = useUIStore((s) => s.selectedDate)
   const setSelectedDate = useUIStore((s) => s.setSelectedDate)
 
@@ -39,18 +39,14 @@ export default function MonthView({ displayDate }: Props) {
     return map
   }, [reminders, days])
 
-  const todosByDate = useMemo(() => {
-    const gridStart = days[0].toString()
-    const gridEnd = days[days.length - 1].toString()
-    const map: Record<string, Todo[]> = {}
-    for (const t of todos) {
-      if (!t.dueDate || t.completed) continue
-      if (t.dueDate < gridStart || t.dueDate > gridEnd) continue
-      if (!map[t.dueDate]) map[t.dueDate] = []
-      map[t.dueDate].push(t)
+  const listCountByDate = useMemo(() => {
+    const map: Record<string, number> = {}
+    for (const l of lists) {
+      if (!l.dueDate) continue
+      map[l.dueDate] = (map[l.dueDate] ?? 0) + 1
     }
     return map
-  }, [todos, days])
+  }, [lists])
 
   const selectedPlainDate = useMemo(() => parseDateStr(selectedDate), [selectedDate])
 
@@ -79,12 +75,12 @@ export default function MonthView({ displayDate }: Props) {
   }
 
   const gridRef = useRef<HTMLDivElement>(null)
-  const [glow, setGlow] = useState({ x: 50, y: 50, clientX: 0, clientY: 0, active: false })
+  const [glow, setGlow] = useState({ x: 50, y: 50, active: false })
 
   function handleGridMouseMove(e: React.MouseEvent<HTMLDivElement>) {
     if (!gridRef.current) return
     const rect = gridRef.current.getBoundingClientRect()
-    setGlow({ x: e.clientX - rect.left, y: e.clientY - rect.top, clientX: e.clientX, clientY: e.clientY, active: true })
+    setGlow({ x: e.clientX - rect.left, y: e.clientY - rect.top, active: true })
   }
 
   function handleGridMouseLeave() {
@@ -93,18 +89,13 @@ export default function MonthView({ displayDate }: Props) {
 
   return (
     <div className="flex flex-col flex-1 overflow-auto">
-      {/* Day names */}
       <div className="grid grid-cols-7 border-b border-slate-200/60 dark:border-white/[0.06] bg-[var(--bg-app)]">
         {DAY_NAMES.map((name) => (
-          <div
-            key={name}
-            className="py-2.5 text-center text-[12px] font-semibold text-slate-400 dark:text-white/35"
-          >
+          <div key={name} className="py-2.5 text-center text-[12px] font-semibold text-slate-400 dark:text-white/35">
             {name}
           </div>
         ))}
       </div>
-      {/* Grid */}
       <div
         ref={gridRef}
         onMouseMove={handleGridMouseMove}
@@ -112,7 +103,7 @@ export default function MonthView({ displayDate }: Props) {
         style={{
           backgroundImage: glow.active
             ? `radial-gradient(circle at ${glow.x}px ${glow.y}px, rgba(255,255,255,0.008) 0%, transparent 100px)`
-            : 'none',
+            : 'none'
         }}
         className="grid grid-cols-7 auto-rows-[80px] md:auto-rows-[110px] lg:auto-rows-[160px] gap-1 bg-[var(--bg-app)] p-1.5"
       >
@@ -122,13 +113,9 @@ export default function MonthView({ displayDate }: Props) {
             date={day}
             displayMonth={displayDate}
             reminders={remindersByDate[day.toString()] ?? []}
-            todos={todosByDate[day.toString()] ?? []}
+            listCount={listCountByDate[day.toString()] ?? 0}
             hasNote={noteDates.includes(day.toString())}
             isSelected={isSameDay(day, selectedPlainDate)}
-            isWeekend={day.dayOfWeek === 6 || day.dayOfWeek === 7}
-            mouseClientX={glow.clientX}
-            mouseClientY={glow.clientY}
-            mouseActive={glow.active}
             onClick={() => handleDayClick(day)}
             onReminderClick={() => handleReminderClick(day)}
             onNoteClick={() => handleNoteClick(day)}

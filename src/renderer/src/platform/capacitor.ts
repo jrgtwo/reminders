@@ -1,5 +1,5 @@
 import type { IStorageAdapter } from './types'
-  import type { Reminder, Note, Todo, TodoFolder, TodoList } from '../types/models'
+  import type { Reminder, Note, TodoFolder, TodoList, TodoListItem } from '../types/models'
 
   // Stub — satisfies the interface but is not yet implemented.
   // Complete this in Phase 10 using @capacitor-community/sqlite.
@@ -17,11 +17,6 @@ import type { IStorageAdapter } from './types'
     getNoteByDate(_date: string): Promise<Note | null> { return this.notImplemented() }
     saveNote(_n: Note): Promise<Note> { return this.notImplemented() }
 
-    getTodos(): Promise<Todo[]> { return this.notImplemented() }
-    saveTodo(_t: Todo): Promise<Todo> { return this.notImplemented() }
-    deleteTodo(_id: string): Promise<void> { return this.notImplemented() }
-    reorderTodos(_orderedIds: string[]): Promise<void> { return this.notImplemented() }
-
     getTodoFolders(): Promise<TodoFolder[]> { return this.notImplemented() }
     saveTodoFolder(_f: TodoFolder): Promise<TodoFolder> { return this.notImplemented() }
     deleteTodoFolder(_id: string): Promise<void> { return this.notImplemented() }
@@ -29,4 +24,9 @@ import type { IStorageAdapter } from './types'
     getTodoLists(): Promise<TodoList[]> { return this.notImplemented() }
     saveTodoList(_l: TodoList): Promise<TodoList> { return this.notImplemented() }
     deleteTodoList(_id: string): Promise<void> { return this.notImplemented() }
+
+    getTodoListItems(_listId: string): Promise<TodoListItem[]> { return this.notImplemented() }
+    saveTodoListItem(_i: TodoListItem): Promise<TodoListItem> { return this.notImplemented() }
+    deleteTodoListItem(_id: string): Promise<void> { return this.notImplemented() }
+    reorderTodoListItems(_listId: string, _orderedIds: string[]): Promise<void> { return this.notImplemented() }
   }

@@ -73,7 +73,22 @@ const MIGRATIONS = [
     deleted_at TEXT,
     last_synced_at TEXT
   );
-  ALTER TABLE todos ADD COLUMN list_id TEXT;`
+  ALTER TABLE todos ADD COLUMN list_id TEXT;`,
+  // MIGRATIONS[4]
+  `ALTER TABLE todo_lists ADD COLUMN due_date TEXT;
+  CREATE TABLE IF NOT EXISTS todo_list_items (
+    id TEXT PRIMARY KEY,
+    list_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    sort_order REAL NOT NULL DEFAULT 0,
+    completed INTEGER NOT NULL DEFAULT 0,
+    completed_at TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    deleted_at TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_todo_list_items_list ON todo_list_items(list_id, sort_order);`
 ]
 
 export function getDb(): Database.Database {
