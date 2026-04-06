@@ -141,11 +141,13 @@ function CollapsibleSection({
 function DateSection({
   lists,
   activeListId,
-  onNewListForDate
+  onNewListForDate,
+  onDeleteList
 }: {
   lists: TodoList[]
   activeListId?: string
   onNewListForDate: (date: string) => void
+  onDeleteList: (id: string) => void
 }) {
   const tree = useMemo(() => buildDateTree(lists), [lists])
   const years = Object.keys(tree).sort((a, b) => b.localeCompare(a))
@@ -242,7 +244,7 @@ function DateSection({
                               </button>
                             </div>
                             {dayLists.map((l) => (
-                              <ListNavItem key={l.id} l={l} active={activeListId === l.id} indent />
+                              <ListNavItem key={l.id} l={l} active={activeListId === l.id} indent onDelete={onDeleteList} />
                             ))}
                           </div>
                         )
@@ -260,11 +262,13 @@ function DateSection({
 function DateNoteSection({
   notes,
   activeNoteId,
-  onNewNoteForDate
+  onNewNoteForDate,
+  onDeleteNote
 }: {
   notes: Note[]
   activeNoteId?: string
   onNewNoteForDate: (date: string) => void
+  onDeleteNote: (id: string) => void
 }) {
   const tree = useMemo(() => buildNoteDateTree(notes), [notes])
   const years = Object.keys(tree).sort((a, b) => b.localeCompare(a))
@@ -365,6 +369,7 @@ function DateNoteSection({
                                 n={n}
                                 active={activeNoteId === n.id}
                                 indent
+                                onDelete={onDeleteNote}
                               />
                             ))}
                           </div>
@@ -383,71 +388,102 @@ function DateNoteSection({
 function ListNavItem({
   l,
   active,
-  indent = false
+  indent = false,
+  onDelete
 }: {
   l: TodoList
   active: boolean
   indent?: boolean
+  onDelete: (id: string) => void
 }) {
   const navigate = useNavigate()
   return (
-    <button
-      onClick={() => navigate(`/lists/${l.id}`)}
-      className={`flex items-center gap-2 w-full py-1.5 transition-colors text-left ${indent ? 'pl-8 pr-4' : 'px-4'} ${
+    <div
+      className={`group flex items-center gap-2 w-full py-1.5 transition-colors ${indent ? 'pl-8 pr-2' : 'pl-4 pr-2'} ${
         active
           ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.12]'
           : 'hover:bg-slate-50 dark:hover:bg-white/[0.03]'
       }`}
     >
-      <List
-        size={11}
-        className={
-          active ? 'shrink-0 text-[#6498c8]' : 'shrink-0 text-slate-400 dark:text-white/25'
-        }
-      />
-      <span
-        className={`text-[13px] truncate flex-1 ${active ? 'font-medium text-[#6498c8]' : 'text-slate-600 dark:text-white/60'}`}
+      <button
+        onClick={() => navigate(`/lists/${l.id}`)}
+        className="flex items-center gap-2 flex-1 min-w-0 text-left"
       >
-        {l.name}
-      </span>
-      <ArrowRight size={11} className="shrink-0 text-slate-300 dark:text-white/20" />
-    </button>
+        <List
+          size={11}
+          className={
+            active ? 'shrink-0 text-[#6498c8]' : 'shrink-0 text-slate-400 dark:text-white/25'
+          }
+        />
+        <span
+          className={`text-[13px] truncate flex-1 ${active ? 'font-medium text-[#6498c8]' : 'text-slate-600 dark:text-white/60'}`}
+        >
+          {l.name}
+        </span>
+      </button>
+      <button
+        onClick={() => onDelete(l.id)}
+        className="shrink-0 p-1 rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+        title="Delete list"
+      >
+        <Trash2 size={9} />
+      </button>
+    </div>
   )
 }
 
 function NoteNavItem({
   n,
   active,
-  indent = false
+  indent = false,
+  onDelete,
+  onDragStart,
+  onDragEnd,
 }: {
   n: Note
   active: boolean
   indent?: boolean
+  onDelete: (id: string) => void
+  onDragStart?: (id: string) => void
+  onDragEnd?: () => void
 }) {
   const navigate = useNavigate()
   const title = n.title || 'Untitled'
   return (
-    <button
-      onClick={() => navigate(`/notes/${n.id}`)}
-      className={`flex items-center gap-2 w-full py-1.5 transition-colors text-left ${indent ? 'pl-8 pr-4' : 'px-4'} ${
+    <div
+      draggable={!!onDragStart}
+      onDragStart={(e) => { e.dataTransfer.setData('noteId', n.id); onDragStart?.(n.id) }}
+      onDragEnd={() => onDragEnd?.()}
+      className={`group flex items-center gap-2 w-full py-1.5 transition-colors ${onDragStart ? 'cursor-grab active:cursor-grabbing' : ''} ${indent ? 'pl-8 pr-2' : 'pl-4 pr-2'} ${
         active
           ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.12]'
           : 'hover:bg-slate-50 dark:hover:bg-white/[0.03]'
       }`}
     >
-      <FileText
-        size={11}
-        className={
-          active ? 'shrink-0 text-[#6498c8]' : 'shrink-0 text-slate-400 dark:text-white/25'
-        }
-      />
-      <span
-        className={`text-[13px] truncate flex-1 ${active ? 'font-medium text-[#6498c8]' : 'text-slate-600 dark:text-white/60'}`}
+      <button
+        onClick={() => navigate(`/notes/${n.id}`)}
+        className="flex items-center gap-2 flex-1 min-w-0 text-left"
       >
-        {title}
-      </span>
-      <ArrowRight size={11} className="shrink-0 text-slate-300 dark:text-white/20" />
-    </button>
+        <FileText
+          size={11}
+          className={
+            active ? 'shrink-0 text-[#6498c8]' : 'shrink-0 text-slate-400 dark:text-white/25'
+          }
+        />
+        <span
+          className={`text-[13px] truncate flex-1 ${active ? 'font-medium text-[#6498c8]' : 'text-slate-600 dark:text-white/60'}`}
+        >
+          {title}
+        </span>
+      </button>
+      <button
+        onClick={() => onDelete(n.id)}
+        className="shrink-0 p-1 rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+        title="Delete note"
+      >
+        <Trash2 size={9} />
+      </button>
+    </div>
   )
 }
 
@@ -460,10 +496,12 @@ export default function RightSidebar() {
   const folders = useTodoFoldersStore((s) => s.folders)
   const loadFolders = useTodoFoldersStore((s) => s.load)
   const saveFolder = useTodoFoldersStore((s) => s.save)
+  const removeFolder = useTodoFoldersStore((s) => s.remove)
 
   const lists = useTodoListsStore((s) => s.lists)
   const loadLists = useTodoListsStore((s) => s.load)
   const saveList = useTodoListsStore((s) => s.save)
+  const removeList = useTodoListsStore((s) => s.remove)
 
   const noteFolders = useNoteFoldersStore((s) => s.folders)
   const loadNoteFolders = useNoteFoldersStore((s) => s.load)
@@ -509,6 +547,8 @@ export default function RightSidebar() {
   const [newListDueDate, setNewListDueDate] = useState<string | undefined>()
   const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set())
   const [collapsedNoteFolders, setCollapsedNoteFolders] = useState<Set<string>>(new Set())
+  const [draggingNoteId, setDraggingNoteId] = useState<string | null>(null)
+  const [noteDropTarget, setNoteDropTarget] = useState<string | 'standalone' | null>(null)
   const [noteFolderFormOpen, setNoteFolderFormOpen] = useState(false)
   const [editingNoteFolder, setEditingNoteFolder] = useState<
     import('../../types/models').NoteFolder | null
@@ -579,6 +619,22 @@ export default function RightSidebar() {
     [allNotes]
   )
 
+  function handleDeleteFolder(id: string) {
+    const folder = folders.find((f) => f.id === id)
+    if (!folder) return
+    const folderLists = adHocLists.filter((l) => l.folderId === id)
+    if (folderLists.length > 0) {
+      if (
+        !window.confirm(
+          `This folder has ${folderLists.length} list(s). Delete the folder? Lists will become standalone.`
+        )
+      ) {
+        return
+      }
+    }
+    removeFolder(id)
+  }
+
   function openNewNoteFolder() {
     setEditingNoteFolder(null)
     setNoteFolderFormOpen(true)
@@ -604,6 +660,23 @@ export default function RightSidebar() {
       folderNotes.forEach((n) => deleteNote(n.id))
     }
     removeNoteFolder(id)
+  }
+
+  function handleNoteDrop(targetFolderId: string | undefined) {
+    if (!draggingNoteId) return
+    const note = allNotes.get(draggingNoteId)
+    if (!note || note.folderId === targetFolderId) return
+    saveNote({ ...note, folderId: targetFolderId, updatedAt: new Date().toISOString() })
+    setDraggingNoteId(null)
+    setNoteDropTarget(null)
+  }
+
+  function handleDeleteList(id: string) {
+    removeList(id)
+  }
+
+  function handleDeleteNote(id: string) {
+    deleteNote(id)
   }
 
   function handleNewNote(folderId?: string) {
@@ -687,7 +760,7 @@ export default function RightSidebar() {
                     </p>
                   )}
                   {standaloneLists.map((l) => (
-                    <ListNavItem key={l.id} l={l} active={activeListId === l.id} />
+                    <ListNavItem key={l.id} l={l} active={activeListId === l.id} onDelete={handleDeleteList} />
                   ))}
                   {sortedFolders.map((folder) => {
                     const folderLists = adHocLists.filter((l) => l.folderId === folder.id)
@@ -711,24 +784,46 @@ export default function RightSidebar() {
                           )}
                           <FolderOpen
                             size={11}
-                            className="text-slate-400 dark:text-white/25 shrink-0"
+                            className="text-blue-400 dark:text-blue-500/70 shrink-0"
                           />
-                          <span className="text-[11px] font-semibold text-slate-400 dark:text-white/30 uppercase tracking-wide truncate flex-1">
+                          <span className="text-[11px] font-semibold text-slate-400 dark:text-white/30 uppercase tracking-wide truncate flex-1 text-left">
                             {folder.name}
                           </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setEditingFolder(folder)
+                              setFolderFormOpen(true)
+                            }}
+                            className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                            title="Rename folder"
+                          >
+                            <Pencil size={9} />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDeleteFolder(folder.id)
+                            }}
+                            className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors"
+                            title="Delete folder"
+                          >
+                            <Trash2 size={9} />
+                          </button>
                           <button
                             onClick={(e) => {
                               e.stopPropagation()
                               openNewList({ folderId: folder.id })
                             }}
                             className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                            title="New list in folder"
                           >
                             <Plus size={10} />
                           </button>
                         </button>
                         {!collapsed &&
                           folderLists.map((l) => (
-                            <ListNavItem key={l.id} l={l} active={activeListId === l.id} indent />
+                            <ListNavItem key={l.id} l={l} active={activeListId === l.id} indent onDelete={handleDeleteList} />
                           ))}
                       </div>
                     )
@@ -758,6 +853,7 @@ export default function RightSidebar() {
                       lists={dateLists}
                       activeListId={activeListId}
                       onNewListForDate={(date) => openNewList({ dueDate: date })}
+                      onDeleteList={handleDeleteList}
                     />
                   </CollapsibleSection>
                 </div>
@@ -802,9 +898,19 @@ export default function RightSidebar() {
                   )}
 
                   {/* Standalone ad-hoc notes (no folder, no date) */}
-                  {standaloneNotes.map((n) => (
-                    <NoteNavItem key={n.id} n={n} active={activeNoteId === n.id} />
-                  ))}
+                  <div
+                    onDragOver={(e) => { if (draggingNoteId) { e.preventDefault(); setNoteDropTarget('standalone') } }}
+                    onDragLeave={() => setNoteDropTarget(null)}
+                    onDrop={(e) => { e.preventDefault(); handleNoteDrop(undefined) }}
+                    className={`transition-colors rounded mx-1 ${noteDropTarget === 'standalone' ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.08] ring-1 ring-[#6498c8]/30' : ''}`}
+                  >
+                    {standaloneNotes.map((n) => (
+                      <NoteNavItem key={n.id} n={n} active={activeNoteId === n.id} onDelete={handleDeleteNote} onDragStart={setDraggingNoteId} onDragEnd={() => { setDraggingNoteId(null); setNoteDropTarget(null) }} />
+                    ))}
+                    {noteDropTarget === 'standalone' && standaloneNotes.length === 0 && (
+                      <p className="text-[11px] text-[#6498c8]/60 px-4 py-2">Drop here to remove from folder</p>
+                    )}
+                  </div>
 
                   {/* Folder groups */}
                   {noteFolders.map((folder) => {
@@ -812,11 +918,18 @@ export default function RightSidebar() {
                       (n) => n.folderId === folder.id
                     )
                     const collapsed = collapsedNoteFolders.has(folder.id)
+                    const isDropTarget = noteDropTarget === folder.id
                     return (
-                      <div key={folder.id}>
-                        <button
+                      <div
+                        key={folder.id}
+                        onDragOver={(e) => { if (draggingNoteId) { e.preventDefault(); setNoteDropTarget(folder.id) } }}
+                        onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setNoteDropTarget(null) }}
+                        onDrop={(e) => { e.preventDefault(); handleNoteDrop(folder.id) }}
+                        className={`rounded mx-1 transition-colors ${isDropTarget ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.08] ring-1 ring-[#6498c8]/30' : ''}`}
+                      >
+                        <div
                           onClick={() => toggleNoteFolder(folder.id)}
-                          className="flex items-center gap-1.5 w-full px-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
+                          className="flex items-center gap-1.5 w-full px-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors cursor-pointer rounded"
                         >
                           {collapsed ? (
                             <ChevronRight
@@ -831,7 +944,7 @@ export default function RightSidebar() {
                           )}
                           <FolderOpen
                             size={11}
-                            className="text-blue-400 dark:text-blue-500/70 shrink-0"
+                            className={`shrink-0 transition-colors ${isDropTarget ? 'text-[#6498c8]' : 'text-blue-400 dark:text-blue-500/70'}`}
                           />
                           <span className="text-[11px] font-semibold text-slate-400 dark:text-white/30 uppercase tracking-wide truncate flex-1 text-left">
                             {folder.name}
@@ -866,10 +979,10 @@ export default function RightSidebar() {
                           >
                             <Plus size={10} />
                           </button>
-                        </button>
+                        </div>
                         {!collapsed &&
                           folderNotes.map((n) => (
-                            <NoteNavItem key={n.id} n={n} active={activeNoteId === n.id} indent />
+                            <NoteNavItem key={n.id} n={n} active={activeNoteId === n.id} indent onDelete={handleDeleteNote} onDragStart={setDraggingNoteId} onDragEnd={() => { setDraggingNoteId(null); setNoteDropTarget(null) }} />
                           ))}
                       </div>
                     )
@@ -909,6 +1022,7 @@ export default function RightSidebar() {
                             saveNote(note)
                             navigate(`/notes/${note.id}`)
                           }}
+                          onDeleteNote={handleDeleteNote}
                         />
                       </CollapsibleSection>
                     </div>
