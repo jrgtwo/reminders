@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { FileText, FolderOpen, Plus, Calendar } from 'lucide-react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { FileText, FolderOpen, Plus, Calendar, ArrowLeft } from 'lucide-react'
 import { useNotesStore } from '../../store/notes.store'
 import { useNoteFoldersStore } from '../../store/note_folders.store'
 import type { Note, NoteFolder } from '../../types/models'
@@ -128,10 +128,14 @@ function DateGroup({
 
 export default function NotesPage() {
   const navigate = useNavigate()
+  const { folderId: folderIdParam } = useParams<{ folderId?: string }>()
+
   const notes = useNotesStore((s) => s.notes)
   const folders = useNoteFoldersStore((s) => s.folders)
   const loadNotes = useNotesStore((s) => s.loadNotes)
   const loadFolders = useNoteFoldersStore((s) => s.load)
+  const saveNote = useNotesStore((s) => s.saveNote)
+  const saveFolder = useNoteFoldersStore((s) => s.save)
   const [noteFolderFormOpen, setNoteFolderFormOpen] = useState(false)
 
   useEffect(() => {
@@ -139,12 +143,28 @@ export default function NotesPage() {
     loadFolders()
   }, [loadNotes, loadFolders])
 
+  function handleNewNote(folderId?: string) {
+    const now = new Date()
+    const note = {
+      id: crypto.randomUUID(),
+      content: '',
+      folderId,
+      displayOrder: notes.size,
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString()
+    }
+    saveNote(note)
+    navigate(`/notes/${note.id}`)
+  }
+
   const sortedFolders = useMemo(
     () => [...folders].sort((a, b) => a.displayOrder - b.displayOrder),
     [folders]
   )
 
-  const adHocNotes = useMemo(
+  const activeFolder = folderIdParam ? folders.find((f) => f.id === folderIdParam) : null
+
+  const folderNotes = useMemo(
     () => Array.from(notes.values()).filter((n) => n.folderId && !n.date),
     [notes]
   )
@@ -156,7 +176,7 @@ export default function NotesPage() {
 
   const notesByFolder = useMemo(() => {
     const map = new Map<string, Note[]>()
-    for (const note of adHocNotes) {
+    for (const note of folderNotes) {
       if (!note.folderId) continue
       const existing = map.get(note.folderId) || []
       existing.push(note)
@@ -166,7 +186,7 @@ export default function NotesPage() {
       )
     }
     return map
-  }, [adHocNotes])
+  }, [folderNotes])
 
   const notesByDate = useMemo(() => {
     const map = new Map<string, Note[]>()
@@ -185,10 +205,20 @@ export default function NotesPage() {
   const recentNotes = useMemo(
     () =>
       Array.from(notes.values())
-        .filter((n) => !n.date || n.folderId)
         .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
         .slice(0, 10),
     [notes]
+  )
+
+  // When filtered to a specific folder, show only those notes
+  const filteredNotes = useMemo(
+    () =>
+      folderIdParam
+        ? Array.from(notes.values())
+            .filter((n) => n.folderId === folderIdParam)
+            .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+        : null,
+    [notes, folderIdParam]
   )
 
   const totalNotes = notes.size
@@ -196,21 +226,32 @@ export default function NotesPage() {
   return (
     <div className="h-full flex flex-col bg-[var(--bg-app)]">
       <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-white/[0.07]">
-        <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Notes</h1>
+        <div className="flex items-center gap-2">
+          {folderIdParam && (
+            <button
+              onClick={() => navigate('/notes')}
+              className="p-1 rounded text-slate-400 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+            >
+              <ArrowLeft size={16} />
+            </button>
+          )}
+          <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+            {activeFolder ? activeFolder.name : 'Notes'}
+          </h1>
+        </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-slate-500 dark:text-white/40">{totalNotes} notes</span>
+          {!folderIdParam && (
+            <button
+              onClick={() => setNoteFolderFormOpen(true)}
+              className="p-2 rounded-lg text-slate-500 dark:text-white/40 hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-slate-700 dark:hover:text-white/60 transition-colors"
+              title="New folder"
+            >
+              <FolderOpen size={16} />
+            </button>
+          )}
           <button
-            onClick={() => {
-              navigate('/notes')
-              setNoteFolderFormOpen(true)
-            }}
-            className="p-2 rounded-lg text-slate-500 dark:text-white/40 hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-slate-700 dark:hover:text-white/60 transition-colors"
-            title="New folder"
-          >
-            <FolderOpen size={16} />
-          </button>
-          <button
-            onClick={() => navigate('/notes/new')}
+            onClick={() => handleNewNote(folderIdParam)}
             className="p-2 rounded-lg bg-[#6498c8] text-white hover:bg-[#5a8ab8] transition-colors"
             title="New note"
           >
@@ -221,78 +262,109 @@ export default function NotesPage() {
 
       <div className="flex-1 overflow-y-auto p-4">
         <div className="space-y-6">
-          {/* Folders */}
-          {sortedFolders.length > 0 && (
+          {/* Folder-filtered view */}
+          {folderIdParam && filteredNotes !== null && (
             <div>
-              <h2 className="text-xs font-semibold text-slate-500 dark:text-white/40 uppercase tracking-wide mb-2">
-                Folders
-              </h2>
-              <div className="space-y-1">
-                {sortedFolders.map((folder) => (
-                  <FolderItem
-                    key={folder.id}
-                    folder={folder}
-                    notes={notesByFolder.get(folder.id) || []}
-                    onClick={(folderId) => navigate(`/notes/folder/${folderId}`)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Recent notes */}
-          {recentNotes.length > 0 && (
-            <div>
-              <h2 className="text-xs font-semibold text-slate-500 dark:text-white/40 uppercase tracking-wide mb-2">
-                Recent
-              </h2>
-              <div className="space-y-1">
-                {recentNotes.map((note) => (
-                  <NoteListItem
-                    key={note.id}
-                    note={note}
-                    onClick={(id) => navigate(`/notes/${id}`)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Date-based notes */}
-          {Array.from(notesByDate.entries())
-            .sort((a, b) => b[0].localeCompare(a[0]))
-            .slice(0, 10).length > 0 && (
-            <div>
-              <h2 className="text-xs font-semibold text-slate-500 dark:text-white/40 uppercase tracking-wide mb-2">
-                By Date
-              </h2>
-              <div className="space-y-1">
-                {Array.from(notesByDate.entries())
-                  .sort((a, b) => b[0].localeCompare(a[0]))
-                  .slice(0, 10)
-                  .map(([date, dateNotes]) => (
-                    <DateGroup
-                      key={date}
-                      date={date}
-                      notes={dateNotes}
-                      onClick={(d) => navigate(`/day/${d}`)}
+              {filteredNotes.length === 0 ? (
+                <div className="text-center py-8">
+                  <FileText size={28} className="text-slate-300 dark:text-white/15 mx-auto mb-2" />
+                  <p className="text-sm text-slate-500 dark:text-white/40 mb-3">No notes in this folder</p>
+                  <Button onClick={() => handleNewNote(folderIdParam)} variant="primary">
+                    <Plus size={14} className="mr-1" />
+                    New Note
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {filteredNotes.map((note) => (
+                    <NoteListItem
+                      key={note.id}
+                      note={note}
+                      onClick={(id) => navigate(`/notes/${id}`)}
                     />
                   ))}
-              </div>
+                </div>
+              )}
             </div>
           )}
 
-          {totalNotes === 0 && (
-            <div className="text-center py-12">
-              <FileText size={32} className="text-slate-300 dark:text-white/15 mx-auto mb-3" />
-              <p className="text-sm text-slate-500 dark:text-white/40 mb-4">
-                No notes yet. Create your first note to get started.
-              </p>
-              <Button onClick={() => navigate('/notes/new')} variant="primary">
-                <Plus size={14} className="mr-1" />
-                New Note
-              </Button>
-            </div>
+          {/* Full overview (not filtered by folder) */}
+          {!folderIdParam && (
+            <>
+              {/* Folders */}
+              {sortedFolders.length > 0 && (
+                <div>
+                  <h2 className="text-xs font-semibold text-slate-500 dark:text-white/40 uppercase tracking-wide mb-2">
+                    Folders
+                  </h2>
+                  <div className="space-y-1">
+                    {sortedFolders.map((folder) => (
+                      <FolderItem
+                        key={folder.id}
+                        folder={folder}
+                        notes={notesByFolder.get(folder.id) || []}
+                        onClick={(folderId) => navigate(`/notes/folder/${folderId}`)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Recent notes */}
+              {recentNotes.length > 0 && (
+                <div>
+                  <h2 className="text-xs font-semibold text-slate-500 dark:text-white/40 uppercase tracking-wide mb-2">
+                    Recent
+                  </h2>
+                  <div className="space-y-1">
+                    {recentNotes.map((note) => (
+                      <NoteListItem
+                        key={note.id}
+                        note={note}
+                        onClick={(id) => navigate(`/notes/${id}`)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Date-based notes */}
+              {Array.from(notesByDate.entries())
+                .sort((a, b) => b[0].localeCompare(a[0]))
+                .slice(0, 10).length > 0 && (
+                <div>
+                  <h2 className="text-xs font-semibold text-slate-500 dark:text-white/40 uppercase tracking-wide mb-2">
+                    By Date
+                  </h2>
+                  <div className="space-y-1">
+                    {Array.from(notesByDate.entries())
+                      .sort((a, b) => b[0].localeCompare(a[0]))
+                      .slice(0, 10)
+                      .map(([date, dateNotes]) => (
+                        <DateGroup
+                          key={date}
+                          date={date}
+                          notes={dateNotes}
+                          onClick={(d) => navigate(`/day/${d}`)}
+                        />
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {totalNotes === 0 && (
+                <div className="text-center py-12">
+                  <FileText size={32} className="text-slate-300 dark:text-white/15 mx-auto mb-3" />
+                  <p className="text-sm text-slate-500 dark:text-white/40 mb-4">
+                    No notes yet. Create your first note to get started.
+                  </p>
+                  <Button onClick={() => handleNewNote()} variant="primary">
+                    <Plus size={14} className="mr-1" />
+                    New Note
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -301,7 +373,7 @@ export default function NotesPage() {
         <NoteFolderForm
           folder={null}
           onSave={async (folder) => {
-            await loadFolders().then(() => folder.id)
+            await saveFolder(folder)
             setNoteFolderFormOpen(false)
           }}
           onClose={() => setNoteFolderFormOpen(false)}

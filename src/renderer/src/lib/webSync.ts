@@ -238,7 +238,7 @@ export async function webResetFromCloud(session: Session): Promise<{ lastSyncedA
 // --- Soft-delete propagation ---
 
 export async function webSoftDelete(
-  table: 'reminders' | 'todo_folders' | 'todo_lists',
+  table: 'reminders' | 'notes' | 'note_folders' | 'todo_folders' | 'todo_lists',
   id: string,
   userId: string
 ): Promise<void> {

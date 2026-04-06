@@ -58,6 +58,8 @@ export const useNotesStore = create<NotesState>()(
         s.notes.set(saved.id, saved)
       })
       capture('note_saved', { content_length: saved.content.length })
+      const { useSyncStore } = await import('./sync.store')
+      useSyncStore.getState().trigger()
     },
 
     deleteNote: async (id) => {
@@ -66,6 +68,16 @@ export const useNotesStore = create<NotesState>()(
       set((s) => {
         s.notes.delete(id)
       })
+      const { useSyncStore } = await import('./sync.store')
+      useSyncStore.getState().trigger()
+      if (!(window as any).electronAPI) {
+        const { useAuthStore } = await import('./auth.store')
+        const userId = useAuthStore.getState().user?.id
+        if (userId) {
+          const { webSoftDelete } = await import('../lib/webSync')
+          webSoftDelete('notes', id, userId).catch(console.error)
+        }
+      }
     },
 
     clearNotes: () => {

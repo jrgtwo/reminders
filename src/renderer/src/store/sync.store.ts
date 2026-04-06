@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { useAuthStore } from './auth.store'
 import { useRemindersStore } from './reminders.store'
 import { useNotesStore } from './notes.store'
+import { useNoteFoldersStore } from './note_folders.store'
 import { useTodoListsStore } from './todo_lists.store'
 import {
   webSync,
@@ -67,6 +68,7 @@ export const useSyncStore = create<SyncState>((set, get) => ({
       await Promise.all([
         useRemindersStore.getState().load(),
         useNotesStore.getState().loadNotes(),
+        useNoteFoldersStore.getState().load(),
         useTodoListsStore.getState().load()
       ])
     } catch (err) {
@@ -146,6 +148,7 @@ export const useSyncStore = create<SyncState>((set, get) => ({
       await Promise.all([
         useRemindersStore.getState().load(),
         useNotesStore.getState().loadNotes(),
+        useNoteFoldersStore.getState().load(),
         useTodoListsStore.getState().load()
       ])
     } catch (err) {
@@ -169,6 +172,7 @@ export const useSyncStore = create<SyncState>((set, get) => ({
       await Promise.all([
         useRemindersStore.getState().load(),
         useNotesStore.getState().loadNotes(),
+        useNoteFoldersStore.getState().load(),
         useTodoListsStore.getState().load()
       ])
     } catch (err) {

@@ -107,15 +107,18 @@ export class WebAdapter implements IStorageAdapter {
   }
 
   async getNotesByFolder(folderId: string): Promise<Note[]> {
-    return this.db.getAllFromIndex('notes', 'folder_id', folderId)
+    const all = await this.db.getAll('notes')
+    return all.filter((n) => n.folderId === folderId)
   }
 
   async getNotesByDate(date: string): Promise<Note[]> {
-    return this.db.getAllFromIndex('notes', 'due_date', date)
+    const all = await this.db.getAll('notes')
+    return all.filter((n) => n.date === date)
   }
 
   async getAllNoteFolders(): Promise<NoteFolder[]> {
-    return this.db.getAllFromIndex('note_folders', 'display_order')
+    const folders = await this.db.getAll('note_folders')
+    return folders.sort((a, b) => a.displayOrder - b.displayOrder)
   }
 
   async saveNoteFolder(f: NoteFolder): Promise<NoteFolder> {

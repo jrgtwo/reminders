@@ -27,12 +27,16 @@ export const useNoteFoldersStore = create<NoteFoldersState>()(
         if (idx >= 0) s.folders[idx] = saved
         else s.folders.push(saved)
       })
+      const { useSyncStore } = await import('./sync.store')
+      useSyncStore.getState().trigger()
     },
 
     remove: async (id) => {
       const { getStorage } = await import('../platform')
       await getStorage().deleteNoteFolder(id)
       set((s) => { s.folders = s.folders.filter((f) => f.id !== id) })
+      const { useSyncStore } = await import('./sync.store')
+      useSyncStore.getState().trigger()
       if (!(window as any).electronAPI) {
         const { useAuthStore } = await import('./auth.store')
         const userId = useAuthStore.getState().user?.id
