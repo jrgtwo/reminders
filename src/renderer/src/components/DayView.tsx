@@ -1,8 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
-import { ArrowLeft, List, ArrowRight, Trash2 } from 'lucide-react'
+import { ArrowLeft, List, ArrowRight, Trash2, Edit3 } from 'lucide-react'
 import { Temporal } from '@js-temporal/polyfill'
-import { MilkdownProvider } from '@milkdown/react'
 import { parseDateStr, today } from '../utils/dates'
 import { getOccurrencesInRange } from '../utils/recurrence'
 import { useRemindersStore } from '../store/reminders.store'
@@ -14,7 +13,7 @@ import ReminderForm from './reminders/ReminderForm'
 import ListForm from './lists/ListForm'
 import { useTodoFoldersStore } from '../store/todo_folders.store'
 import { useNotesStore } from '../store/notes.store'
-import { EditorWithToolbar } from './notes/NoteEditor'
+import NoteEditor from './notes/NoteEditor'
 
 function formatDayHeading(date: Temporal.PlainDate) {
   return {
@@ -210,15 +209,7 @@ export default function DayView() {
         <div>
           {(() => {
             const existingNotes = Array.from(notes.values()).filter((n) => n.date === dateStr)
-            const [currentNoteId, setCurrentNoteId] = useState<string | null>(null)
-
-            useEffect(() => {
-              if (currentNoteId === null && existingNotes.length > 0) {
-                setCurrentNoteId(existingNotes[0].id)
-              }
-            }, [existingNotes, currentNoteId])
-
-            const currentNote = currentNoteId ? notes.get(currentNoteId) : undefined
+            const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
 
             const handleNew = () => {
               const now = new Date()
@@ -232,18 +223,21 @@ export default function DayView() {
                 updatedAt: now.toISOString()
               }
               saveNote(newNote)
-              setCurrentNoteId(newNote.id)
+              setEditingNoteId(newNote.id)
             }
 
             const handleNoteChange = (updatedNote: Note) => {
               saveNote(updatedNote)
             }
 
-            const handleDelete = () => {
-              if (!currentNote) return
+            const handleDelete = (noteId: string) => {
+              const note = notes.get(noteId)
+              if (!note) return
               if (window.confirm('Delete this note?')) {
-                deleteNote(currentNote.id)
-                setCurrentNoteId(null)
+                deleteNote(noteId)
+                if (editingNoteId === noteId) {
+                  setEditingNoteId(null)
+                }
               }
             }
 
@@ -267,51 +261,65 @@ export default function DayView() {
               )
             }
 
+            const editingNote = editingNoteId ? notes.get(editingNoteId) : undefined
+
+            if (editingNoteId && editingNote) {
+              return (
+                <NoteEditor
+                  note={editingNote}
+                  onChange={handleNoteChange}
+                  onDelete={() => handleDelete(editingNoteId)}
+                  onBack={() => setEditingNoteId(null)}
+                />
+              )
+            }
+
             return (
-              <div className="mb-8 min-h-[400px] bg-white/[0.03] dark:bg-white/[0.03]">
-                {currentNote && (
-                  <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100 dark:border-white/[0.05]">
-                    <select
-                      value={currentNoteId || ''}
-                      onChange={(e) => setCurrentNoteId(e.target.value)}
-                      className="flex-1 text-lg font-semibold text-gray-900 dark:text-gray-100 bg-transparent border-none focus:outline-none focus:ring-0 px-0"
-                    >
-                      {existingNotes.map((note) => (
-                        <option key={note.id} value={note.id}>
-                          {note.title || 'Untitled'}
-                        </option>
-                      ))}
-                    </select>
+              <div className="mb-8 flex flex-col gap-2">
+                {existingNotes.map((note) => (
+                  <button
+                    key={note.id}
+                    onClick={() => setEditingNoteId(note.id)}
+                    className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-left bg-white dark:bg-white/[0.06] border border-slate-200/60 dark:border-white/[0.08] hover:bg-slate-50 dark:hover:bg-white/[0.09] transition-colors shadow-sm group"
+                  >
+                    <Edit3 size={15} className="shrink-0 text-[#6498c8]" />
+                    <div className="flex-1 min-w-0">
+                      {note.title ? (
+                        <div className="text-[14px] font-medium text-slate-800 dark:text-white/80 truncate">
+                          {note.title}
+                        </div>
+                      ) : (
+                        <div className="text-[13px] text-slate-400 dark:text-white/35 italic">
+                          Untitled
+                        </div>
+                      )}
+                      {note.content && (
+                        <div className="text-[12px] text-slate-400 dark:text-white/25 mt-0.5 truncate">
+                          {note.content.replace(/[#*`>\[\]]/g, '').slice(0, 100)}
+                          {note.content.length > 100 ? '...' : ''}
+                        </div>
+                      )}
+                    </div>
+                    <ArrowRight size={13} className="shrink-0 text-slate-300 dark:text-white/20" />
                     <button
-                      onClick={handleDelete}
-                      className="w-8 h-8 flex items-center justify-center rounded text-gray-600 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDelete(note.id)
+                      }}
+                      className="opacity-0 group-hover:opacity-100 w-8 h-8 flex items-center justify-center rounded text-gray-600 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                       title="Delete note"
                     >
                       <Trash2 size={16} />
                     </button>
-                    <button
-                      onClick={handleNew}
-                      className="w-8 h-8 flex items-center justify-center rounded text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[var(--bg-elevated)] transition-colors"
-                      title="New note"
-                    >
-                      <span className="text-xl leading-none">+</span>
-                    </button>
-                  </div>
-                )}
-                <MilkdownProvider key={currentNote?.id || 'new'}>
-                  <EditorWithToolbar
-                    initialContent={currentNote?.content || ''}
-                    onChange={(md) => {
-                      if (currentNoteId) {
-                        handleNoteChange({
-                          ...currentNote!,
-                          content: md,
-                          updatedAt: new Date().toISOString()
-                        })
-                      }
-                    }}
-                  />
-                </MilkdownProvider>
+                  </button>
+                ))}
+                <button
+                  onClick={handleNew}
+                  className="flex items-center gap-2 w-full px-4 py-3 rounded-xl text-left bg-transparent border border-dashed border-slate-300 dark:border-white/[0.06] hover:border-[#6498c8] dark:hover:border-[#6498c8] text-[#6498c8] dark:text-[#6498c8] text-[13px] font-medium transition-colors"
+                >
+                  <span className="text-lg leading-none">+</span>
+                  Add note
+                </button>
               </div>
             )
           })()}
