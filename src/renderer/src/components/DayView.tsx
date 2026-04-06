@@ -261,57 +261,59 @@ export default function DayView() {
               )
             }
 
-            const editingNote = editingNoteId ? notes.get(editingNoteId) : undefined
-
-            if (editingNoteId && editingNote) {
-              return (
-                <NoteEditor
-                  note={editingNote}
-                  onChange={handleNoteChange}
-                  onDelete={() => handleDelete(editingNoteId)}
-                  onBack={() => setEditingNoteId(null)}
-                />
-              )
-            }
-
             return (
               <div className="mb-8 flex flex-col gap-2">
                 {existingNotes.map((note) => (
-                  <button
-                    key={note.id}
-                    onClick={() => setEditingNoteId(note.id)}
-                    className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-left bg-white dark:bg-white/[0.06] border border-slate-200/60 dark:border-white/[0.08] hover:bg-slate-50 dark:hover:bg-white/[0.09] transition-colors shadow-sm group"
-                  >
-                    <Edit3 size={15} className="shrink-0 text-[#6498c8]" />
-                    <div className="flex-1 min-w-0">
-                      {note.title ? (
-                        <div className="text-[14px] font-medium text-slate-800 dark:text-white/80 truncate">
-                          {note.title}
-                        </div>
-                      ) : (
-                        <div className="text-[13px] text-slate-400 dark:text-white/35 italic">
-                          Untitled
-                        </div>
-                      )}
-                      {note.content && (
-                        <div className="text-[12px] text-slate-400 dark:text-white/25 mt-0.5 truncate">
-                          {note.content.replace(/[#*`>\[\]]/g, '').slice(0, 100)}
-                          {note.content.length > 100 ? '...' : ''}
-                        </div>
-                      )}
-                    </div>
-                    <ArrowRight size={13} className="shrink-0 text-slate-300 dark:text-white/20" />
+                  <div key={note.id}>
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleDelete(note.id)
-                      }}
-                      className="opacity-0 group-hover:opacity-100 w-8 h-8 flex items-center justify-center rounded text-gray-600 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                      title="Delete note"
+                      onClick={() => setEditingNoteId(note.id === editingNoteId ? null : note.id)}
+                      className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-left bg-white dark:bg-white/[0.06] border border-slate-200/60 dark:border-white/[0.08] hover:bg-slate-50 dark:hover:bg-white/[0.09] transition-colors shadow-sm group"
                     >
-                      <Trash2 size={16} />
+                      <Edit3
+                        size={15}
+                        className={`shrink-0 transition-colors ${note.id === editingNoteId ? 'text-[#6498c8]' : 'text-slate-400 dark:text-white/35'}`}
+                      />
+                      <div className="flex-1 min-w-0">
+                        {note.title ? (
+                          <div className="text-[14px] font-medium text-slate-800 dark:text-white/80 truncate">
+                            {note.title}
+                          </div>
+                        ) : (
+                          <div className="text-[13px] text-slate-400 dark:text-white/35 italic">
+                            Untitled
+                          </div>
+                        )}
+                        {note.content && (
+                          <div className="text-[12px] text-slate-400 dark:text-white/25 mt-0.5 truncate">
+                            {note.content.replace(/[#*`>\[\]]/g, '').slice(0, 100)}
+                            {note.content.length > 100 ? '...' : ''}
+                          </div>
+                        )}
+                      </div>
+                      <ArrowRight
+                        size={13}
+                        className={`shrink-0 text-slate-300 dark:text-white/20 transition-transform ${note.id === editingNoteId ? 'rotate-90' : ''}`}
+                      />
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDelete(note.id)
+                        }}
+                        className="opacity-0 group-hover:opacity-100 w-8 h-8 flex items-center justify-center rounded text-gray-600 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                        title="Delete note"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </button>
-                  </button>
+                    {note.id === editingNoteId && (
+                      <NoteEditor
+                        note={note}
+                        onChange={handleNoteChange}
+                        onDelete={() => handleDelete(note.id)}
+                        onBack={() => setEditingNoteId(null)}
+                      />
+                    )}
+                  </div>
                 ))}
                 <button
                   onClick={handleNew}
