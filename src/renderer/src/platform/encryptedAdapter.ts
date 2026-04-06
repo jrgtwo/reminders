@@ -1,11 +1,18 @@
 import type { IStorageAdapter } from './types'
-import type { Reminder, Note, TodoFolder, TodoList, TodoListItem } from '../types/models'
+import type {
+  Reminder,
+  Note,
+  NoteFolder,
+  TodoFolder,
+  TodoList,
+  TodoListItem
+} from '../types/models'
 import { encrypt, decrypt } from '../lib/encryption'
 
 export class EncryptedAdapter implements IStorageAdapter {
   constructor(
     private inner: IStorageAdapter,
-    private getKey: () => CryptoKey | null,
+    private getKey: () => CryptoKey | null
   ) {}
 
   // --- Helpers ---
@@ -66,8 +73,8 @@ export class EncryptedAdapter implements IStorageAdapter {
     return Promise.all((await this.inner.getAllNotes()).map((n) => this.decN(n)))
   }
 
-  async getNoteByDate(date: string): Promise<Note | null> {
-    const n = await this.inner.getNoteByDate(date)
+  async getNoteById(id: string): Promise<Note | null> {
+    const n = await this.inner.getNoteById(id)
     return n ? this.decN(n) : null
   }
 
@@ -76,12 +83,38 @@ export class EncryptedAdapter implements IStorageAdapter {
     return this.decN(saved)
   }
 
+  async deleteNote(id: string): Promise<void> {
+    await this.inner.deleteNote(id)
+  }
+
+  async getNotesByFolder(folderId: string): Promise<Note[]> {
+    return Promise.all((await this.inner.getNotesByFolder(folderId)).map((n) => this.decN(n)))
+  }
+
+  async getNotesByDate(date: string): Promise<Note[]> {
+    return Promise.all((await this.inner.getNotesByDate(date)).map((n) => this.decN(n)))
+  }
+
   private async encN(n: Note): Promise<Note> {
     return { ...n, content: await this.enc(n.content) }
   }
 
   private async decN(n: Note): Promise<Note> {
     return { ...n, content: await this.dec(n.content) }
+  }
+
+  // --- Note Folders ---
+
+  async getAllNoteFolders(): Promise<NoteFolder[]> {
+    return await this.inner.getAllNoteFolders()
+  }
+
+  async saveNoteFolder(f: NoteFolder): Promise<NoteFolder> {
+    return await this.inner.saveNoteFolder(f)
+  }
+
+  async deleteNoteFolder(id: string): Promise<void> {
+    await this.inner.deleteNoteFolder(id)
   }
 
   // --- Todo Folders ---
@@ -142,10 +175,18 @@ export class EncryptedAdapter implements IStorageAdapter {
   }
 
   private async encI(item: TodoListItem): Promise<TodoListItem> {
-    return { ...item, title: await this.enc(item.title), description: await this.enc(item.description) }
+    return {
+      ...item,
+      title: await this.enc(item.title),
+      description: await this.enc(item.description)
+    }
   }
 
   private async decI(item: TodoListItem): Promise<TodoListItem> {
-    return { ...item, title: await this.dec(item.title), description: await this.dec(item.description) }
+    return {
+      ...item,
+      title: await this.dec(item.title),
+      description: await this.dec(item.description)
+    }
   }
 }

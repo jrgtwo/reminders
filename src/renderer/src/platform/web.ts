@@ -1,9 +1,16 @@
 import { openDB, deleteDB, type IDBPDatabase } from 'idb'
 import type { IStorageAdapter } from './types'
-import type { Reminder, Note, TodoFolder, TodoList, TodoListItem } from '../types/models'
+import type {
+  Reminder,
+  Note,
+  NoteFolder,
+  TodoFolder,
+  TodoList,
+  TodoListItem
+} from '../types/models'
 
 const DB_NAME = 'reminders-app'
-const DB_VERSION = 3
+const DB_VERSION = 4
 
 export class WebAdapter implements IStorageAdapter {
   private db!: IDBPDatabase
@@ -38,11 +45,25 @@ export class WebAdapter implements IStorageAdapter {
           items.createIndex('listId', 'listId')
         }
       }
+      if (oldVersion < 4) {
+        if (db.objectStoreNames.contains('notes')) {
+          db.deleteObjectStore('notes')
+        }
+        if (!db.objectStoreNames.contains('notes')) {
+          const noteStore = db.createObjectStore('notes', { keyPath: 'id' })
+          noteStore.createIndex('folder_id', 'folder_id')
+          noteStore.createIndex('due_date', 'due_date')
+        }
+        if (!db.objectStoreNames.contains('note_folders')) {
+          const noteFolders = db.createObjectStore('note_folders', { keyPath: 'id' })
+          noteFolders.createIndex('display_order', 'display_order')
+        }
+      }
     }
 
     const race = await Promise.race([
       openDB(DB_NAME, DB_VERSION, { upgrade }).then((db) => ({ ok: true as const, db })),
-      new Promise<{ ok: false }>((resolve) => setTimeout(() => resolve({ ok: false }), 3000)),
+      new Promise<{ ok: false }>((resolve) => setTimeout(() => resolve({ ok: false }), 3000))
     ])
 
     if (race.ok) return race.db
@@ -72,13 +93,38 @@ export class WebAdapter implements IStorageAdapter {
     return this.db.getAll('notes')
   }
 
-  async getNoteByDate(date: string): Promise<Note | null> {
-    return (await this.db.get('notes', date)) ?? null
+  async getNoteById(id: string): Promise<Note | null> {
+    return (await this.db.get('notes', id)) ?? null
   }
 
   async saveNote(n: Note): Promise<Note> {
     await this.db.put('notes', n)
     return n
+  }
+
+  async deleteNote(id: string): Promise<void> {
+    await this.db.delete('notes', id)
+  }
+
+  async getNotesByFolder(folderId: string): Promise<Note[]> {
+    return this.db.getAllFromIndex('notes', 'folder_id', folderId)
+  }
+
+  async getNotesByDate(date: string): Promise<Note[]> {
+    return this.db.getAllFromIndex('notes', 'due_date', date)
+  }
+
+  async getAllNoteFolders(): Promise<NoteFolder[]> {
+    return this.db.getAllFromIndex('note_folders', 'display_order')
+  }
+
+  async saveNoteFolder(f: NoteFolder): Promise<NoteFolder> {
+    await this.db.put('note_folders', f)
+    return f
+  }
+
+  async deleteNoteFolder(id: string): Promise<void> {
+    await this.db.delete('note_folders', id)
   }
 
   async getTodoFolders(): Promise<TodoFolder[]> {
@@ -138,7 +184,15 @@ export class WebAdapter implements IStorageAdapter {
   }
 
   async clearAll(): Promise<void> {
-    const stores = ['reminders', 'notes', 'todos', 'todo_folders', 'todo_lists', 'todo_list_items'] as const
+    const stores = [
+      'reminders',
+      'notes',
+      'note_folders',
+      'todos',
+      'todo_folders',
+      'todo_lists',
+      'todo_list_items'
+    ] as const
     const tx = this.db.transaction([...stores], 'readwrite')
     await Promise.all(stores.map((name) => tx.objectStore(name).clear()))
     await tx.done

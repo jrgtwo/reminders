@@ -10,7 +10,6 @@ import { usePageTracking } from '../../hooks/usePageTracking'
 import { useUIStore } from '../../store/ui.store'
 import { useRemindersStore } from '../../store/reminders.store'
 import { useTodoListsStore } from '../../store/todo_lists.store'
-import { useNotesStore } from '../../store/notes.store'
 import { useAuthStore } from '../../store/auth.store'
 import { useSyncStore } from '../../store/sync.store'
 import { getOccurrencesInRange } from '../../utils/recurrence'
@@ -34,9 +33,6 @@ export default function AppShell() {
   const setLeftOpen = useUIStore((s) => s.setLeftOpen)
   const setRightOpen = useUIStore((s) => s.setRightOpen)
   const setReminderSection = useUIStore((s) => s.setReminderSection)
-  const loadAllNotes = useNotesStore((s) => s.loadAllNotes)
-
-  useEffect(() => { loadAllNotes() }, [loadAllNotes])
 
   const newReminderDate = useUIStore((s) => s.newReminderDate)
   const setNewReminderDate = useUIStore((s) => s.setNewReminderDate)
@@ -86,14 +82,27 @@ export default function AppShell() {
     <div className="flex flex-col h-screen bg-[var(--bg-app)] text-slate-900 dark:text-slate-100 relative overflow-hidden">
       {/* Top header */}
       <header className="relative flex flex-col border-b border-black/30 dark:border-black/60 shrink-0 bg-[var(--bg-header)]">
-
         {/* Full-width (lg+): single row, 3-col grid so search is truly centered */}
         <div className="hidden lg:grid lg:grid-cols-3 lg:items-center px-4 h-16">
           {/* Left: brand + stats */}
           <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/')} className="flex flex-col leading-none shrink-0 hover:opacity-80 transition-opacity" style={{ fontFamily: "'Inter', sans-serif" }}>
-              <span className="text-[11px] text-white/40 tracking-[0.2em] uppercase font-medium" style={{ fontFamily: "'Bree Serif', serif", fontWeight: 400 }}>Reminder</span>
-              <span className="text-[28px] text-white/80 tracking-tight -mt-0.5" style={{ fontFamily: "'Bree Serif', serif", fontWeight: 400 }}>Today</span>
+            <button
+              onClick={() => navigate('/')}
+              className="flex flex-col leading-none shrink-0 hover:opacity-80 transition-opacity"
+              style={{ fontFamily: "'Inter', sans-serif" }}
+            >
+              <span
+                className="text-[11px] text-white/40 tracking-[0.2em] uppercase font-medium"
+                style={{ fontFamily: "'Bree Serif', serif", fontWeight: 400 }}
+              >
+                Reminder
+              </span>
+              <span
+                className="text-[28px] text-white/80 tracking-tight -mt-0.5"
+                style={{ fontFamily: "'Bree Serif', serif", fontWeight: 400 }}
+              >
+                Today
+              </span>
             </button>
             <div className="flex items-center gap-3">
               <button
@@ -108,8 +117,16 @@ export default function AppShell() {
                 }}
                 className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
               >
-                <span className={`text-[11px] font-bold tabular-nums ${overdueCount > 0 ? 'text-[#e8a045]' : 'text-white/25'}`}>{overdueCount}</span>
-                <span className={`text-[11px] ${overdueCount > 0 ? 'text-[#e8a045]/70' : 'text-white/20'}`}>overdue</span>
+                <span
+                  className={`text-[11px] font-bold tabular-nums ${overdueCount > 0 ? 'text-[#e8a045]' : 'text-white/25'}`}
+                >
+                  {overdueCount}
+                </span>
+                <span
+                  className={`text-[11px] ${overdueCount > 0 ? 'text-[#e8a045]/70' : 'text-white/20'}`}
+                >
+                  overdue
+                </span>
               </button>
               <button
                 onClick={() => {
@@ -123,12 +140,34 @@ export default function AppShell() {
                 }}
                 className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
               >
-                <span className={`text-[11px] font-bold tabular-nums ${upcomingCount > 0 ? 'text-[#6498c8]' : 'text-white/25'}`}>{upcomingCount}</span>
-                <span className={`text-[11px] ${upcomingCount > 0 ? 'text-[#6498c8]/70' : 'text-white/20'}`}>upcoming</span>
+                <span
+                  className={`text-[11px] font-bold tabular-nums ${upcomingCount > 0 ? 'text-[#6498c8]' : 'text-white/25'}`}
+                >
+                  {upcomingCount}
+                </span>
+                <span
+                  className={`text-[11px] ${upcomingCount > 0 ? 'text-[#6498c8]/70' : 'text-white/20'}`}
+                >
+                  upcoming
+                </span>
               </button>
-              <button onClick={() => { if (window.innerWidth >= 1024) setRightOpen(true); else navigate('/todos') }} className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
-                <span className={`text-[11px] font-bold tabular-nums ${todoCount > 0 ? 'text-blue-400' : 'text-white/25'}`}>{todoCount}</span>
-                <span className={`text-[11px] ${todoCount > 0 ? 'text-blue-400/70' : 'text-white/20'}`}>todos</span>
+              <button
+                onClick={() => {
+                  if (window.innerWidth >= 1024) setRightOpen(true)
+                  else navigate('/todos')
+                }}
+                className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+              >
+                <span
+                  className={`text-[11px] font-bold tabular-nums ${todoCount > 0 ? 'text-blue-400' : 'text-white/25'}`}
+                >
+                  {todoCount}
+                </span>
+                <span
+                  className={`text-[11px] ${todoCount > 0 ? 'text-blue-400/70' : 'text-white/20'}`}
+                >
+                  todos
+                </span>
               </button>
             </div>
           </div>
@@ -169,9 +208,23 @@ export default function AppShell() {
         <div className="lg:hidden flex flex-col">
           {/* Row 1: brand + sync + settings */}
           <div className="flex items-center justify-between px-4 h-14 border-b border-white/[0.06]">
-            <button onClick={() => navigate('/')} className="flex flex-col leading-none hover:opacity-80 transition-opacity" style={{ fontFamily: "'Inter', sans-serif" }}>
-              <span className="text-[10px] text-white/40 tracking-[0.2em] uppercase font-medium" style={{ fontFamily: "'Bree Serif', serif", fontWeight: 400 }}>Reminder</span>
-              <span className="text-[22px] text-white/80 tracking-tight -mt-0.5" style={{ fontFamily: "'Bree Serif', serif", fontWeight: 400 }}>Today</span>
+            <button
+              onClick={() => navigate('/')}
+              className="flex flex-col leading-none hover:opacity-80 transition-opacity"
+              style={{ fontFamily: "'Inter', sans-serif" }}
+            >
+              <span
+                className="text-[10px] text-white/40 tracking-[0.2em] uppercase font-medium"
+                style={{ fontFamily: "'Bree Serif', serif", fontWeight: 400 }}
+              >
+                Reminder
+              </span>
+              <span
+                className="text-[22px] text-white/80 tracking-tight -mt-0.5"
+                style={{ fontFamily: "'Bree Serif', serif", fontWeight: 400 }}
+              >
+                Today
+              </span>
             </button>
             <div className="flex items-center gap-2">
               {isLoggedIn && (
@@ -207,7 +260,6 @@ export default function AppShell() {
             </div>
           </div>
         </div>
-
       </header>
 
       {/* Sync error banner */}

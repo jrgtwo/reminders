@@ -1,15 +1,17 @@
 import { getStorage } from '../platform'
 import { useRemindersStore } from '../store/reminders.store'
 import { useTodoListsStore } from '../store/todo_lists.store'
-import type { Reminder, Note, TodoList, TodoListItem } from '../types/models'
+import { useNoteFoldersStore } from '../store/note_folders.store'
+import type { Reminder, Note, NoteFolder, TodoList, TodoListItem } from '../types/models'
 
-const SCHEMA_VERSION = 2
+const SCHEMA_VERSION = 3
 
 interface ExportData {
   schemaVersion: number
   exportedAt: string
   reminders: Reminder[]
   notes: Note[]
+  noteFolders: NoteFolder[]
   lists: TodoList[]
   items: TodoListItem[]
 }
@@ -17,18 +19,20 @@ interface ExportData {
 async function buildExportData(): Promise<string> {
   const storage = getStorage()
   const lists = await storage.getTodoLists()
-  const [reminders, notes, allItems] = await Promise.all([
+  const [reminders, notes, noteFolders, allItems] = await Promise.all([
     storage.getReminders(),
     storage.getAllNotes(),
-    Promise.all(lists.map((l) => storage.getTodoListItems(l.id))).then((arr) => arr.flat()),
+    storage.getAllNoteFolders(),
+    Promise.all(lists.map((l) => storage.getTodoListItems(l.id))).then((arr) => arr.flat())
   ])
   const data: ExportData = {
     schemaVersion: SCHEMA_VERSION,
     exportedAt: new Date().toISOString(),
     reminders,
     notes,
+    noteFolders,
     lists,
-    items: allItems,
+    items: allItems
   }
   return JSON.stringify(data, null, 2)
 }
@@ -90,6 +94,7 @@ export async function importFromFile(): Promise<{ success: boolean; message: str
     !data.schemaVersion ||
     !Array.isArray(data.reminders) ||
     !Array.isArray(data.notes) ||
+    !Array.isArray(data.noteFolders) ||
     !Array.isArray(data.lists)
   ) {
     return { success: false, message: 'Invalid export file format' }
@@ -101,15 +106,17 @@ export async function importFromFile(): Promise<{ success: boolean; message: str
     const storage = getStorage()
     for (const r of data.reminders) await storage.saveReminder(r)
     for (const n of data.notes) await storage.saveNote(n)
+    for (const f of data.noteFolders) await storage.saveNoteFolder(f)
     for (const l of data.lists) await storage.saveTodoList(l)
     for (const i of items) await storage.saveTodoListItem(i)
 
     await useRemindersStore.getState().load()
     await useTodoListsStore.getState().load()
+    await useNoteFoldersStore.getState().load()
 
     return {
       success: true,
-      message: `Imported ${data.reminders.length} reminders, ${data.notes.length} notes, ${data.lists.length} lists, ${items.length} items`,
+      message: `Imported ${data.reminders.length} reminders, ${data.notes.length} notes, ${data.noteFolders.length} note folders, ${data.lists.length} lists, ${items.length} items`
     }
   } catch {
     return { success: false, message: 'Import failed — error saving data' }

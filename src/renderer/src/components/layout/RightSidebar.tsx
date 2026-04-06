@@ -9,14 +9,17 @@ import {
   Plus,
   ArrowRight,
   List,
-  FolderOpen
+  FolderOpen,
+  FileText
 } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useTodoFoldersStore } from '../../store/todo_folders.store'
 import { useTodoListsStore } from '../../store/todo_lists.store'
+import { useNotesStore } from '../../store/notes.store'
+import { useNoteFoldersStore } from '../../store/note_folders.store'
 import { useUIStore } from '../../store/ui.store'
 
-import type { TodoFolder, TodoList } from '../../types/models'
+import type { TodoFolder, TodoList, Note } from '../../types/models'
 import FolderForm from '../lists/FolderForm'
 import ListForm from '../lists/ListForm'
 
@@ -269,6 +272,42 @@ function ListNavItem({
   )
 }
 
+function NoteNavItem({
+  n,
+  active,
+  indent = false
+}: {
+  n: Note
+  active: boolean
+  indent?: boolean
+}) {
+  const navigate = useNavigate()
+  const title = n.title || 'Untitled'
+  return (
+    <button
+      onClick={() => navigate(`/notes/${n.id}`)}
+      className={`flex items-center gap-2 w-full py-1.5 transition-colors text-left ${indent ? 'pl-8 pr-4' : 'px-4'} ${
+        active
+          ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.12]'
+          : 'hover:bg-slate-50 dark:hover:bg-white/[0.03]'
+      }`}
+    >
+      <FileText
+        size={11}
+        className={
+          active ? 'shrink-0 text-[#6498c8]' : 'shrink-0 text-slate-400 dark:text-white/25'
+        }
+      />
+      <span
+        className={`text-[13px] truncate flex-1 ${active ? 'font-medium text-[#6498c8]' : 'text-slate-600 dark:text-white/60'}`}
+      >
+        {title}
+      </span>
+      <ArrowRight size={11} className="shrink-0 text-slate-300 dark:text-white/20" />
+    </button>
+  )
+}
+
 export default function RightSidebar() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -282,6 +321,16 @@ export default function RightSidebar() {
   const lists = useTodoListsStore((s) => s.lists)
   const loadLists = useTodoListsStore((s) => s.load)
   const saveList = useTodoListsStore((s) => s.save)
+
+  const noteFolders = useNoteFoldersStore((s) => s.folders)
+  const loadNoteFolders = useNoteFoldersStore((s) => s.load)
+  const saveNoteFolder = useNoteFoldersStore((s) => s.save)
+  const removeNoteFolder = useNoteFoldersStore((s) => s.remove)
+
+  const allNotes = useNotesStore((s) => s.notes)
+  const loadNotes = useNotesStore((s) => s.loadNotes)
+  const saveNote = useNotesStore((s) => s.saveNote)
+  const deleteNote = useNotesStore((s) => s.deleteNote)
 
   const [width, setWidth] = useState(256)
   const dragging = useRef(false)
@@ -316,14 +365,24 @@ export default function RightSidebar() {
   const [newListFolderId, setNewListFolderId] = useState<string | undefined>()
   const [newListDueDate, setNewListDueDate] = useState<string | undefined>()
   const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set())
+  const [collapsedNoteFolders, setCollapsedNoteFolders] = useState<Set<string>>(new Set())
+  const [noteFolderFormOpen, setNoteFolderFormOpen] = useState(false)
+  const [editingNoteFolder, setEditingNoteFolder] = useState<
+    import('../../types/models').NoteFolder | null
+  >(null)
 
   useEffect(() => {
     loadFolders()
     loadLists()
-  }, [loadFolders, loadLists])
+    loadNoteFolders()
+    loadNotes()
+  }, [loadFolders, loadLists, loadNoteFolders, loadNotes])
 
   const activeListId = location.pathname.startsWith('/lists/')
     ? location.pathname.slice('/lists/'.length)
+    : undefined
+  const activeNoteId = location.pathname.startsWith('/notes/')
+    ? location.pathname.split('/notes/')[1]?.split('/')[0]
     : undefined
 
   const adHocLists = useMemo(
@@ -333,10 +392,21 @@ export default function RightSidebar() {
   const dateLists = useMemo(() => lists.filter((l) => !!l.dueDate), [lists])
 
   const standaloneLists = useMemo(() => adHocLists.filter((l) => !l.folderId), [adHocLists])
-  const sortedFolders = useMemo(() => [...folders].sort((a, b) => a.order - b.order), [folders])
+  const sortedFolders = useMemo(
+    () => [...folders].sort((a, b) => a.displayOrder - b.displayOrder),
+    [folders]
+  )
 
   function toggleFolder(id: string) {
     setCollapsedFolders((prev) => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  function toggleNoteFolder(id: string) {
+    setCollapsedNoteFolders((prev) => {
       const next = new Set(prev)
       next.has(id) ? next.delete(id) : next.add(id)
       return next
@@ -351,6 +421,50 @@ export default function RightSidebar() {
   }
 
   const listCount = lists.length
+
+  const noteFolderCount = noteFolders.length
+  const noteCount = allNotes.size
+
+  function openNewNoteFolder() {
+    setEditingNoteFolder(null)
+    setNoteFolderFormOpen(true)
+  }
+
+  function openEditNoteFolder(folder: import('../../types/models').NoteFolder) {
+    setEditingNoteFolder(folder)
+    setNoteFolderFormOpen(true)
+  }
+
+  function handleDeleteNoteFolder(id: string) {
+    const folder = noteFolders.find((f) => f.id === id)
+    if (!folder) return
+    const folderNotes = Array.from(allNotes.values()).filter((n) => n.folderId === id)
+    if (folderNotes.length > 0) {
+      if (
+        !window.confirm(
+          `This folder has ${folderNotes.length} note(s). Delete the folder and all its notes?`
+        )
+      ) {
+        return
+      }
+      folderNotes.forEach((n) => deleteNote(n.id))
+    }
+    removeNoteFolder(id)
+  }
+
+  function handleNewNote(folderId?: string) {
+    const now = new Date()
+    const note = {
+      id: crypto.randomUUID(),
+      content: '',
+      folderId,
+      displayOrder: allNotes.size,
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString()
+    }
+    saveNote(note)
+    navigate(`/notes/${note.id}`)
+  }
 
   return (
     <>
@@ -500,6 +614,96 @@ export default function RightSidebar() {
                   No lists yet
                 </p>
               )}
+
+              {/* Notes section */}
+              <div
+                className={`py-1 ${noteCount > 0 ? 'border-t border-slate-200 dark:border-white/[0.07]' : ''}`}
+              >
+                <CollapsibleSection
+                  label="Notes"
+                  count={noteCount}
+                  accent="blue"
+                  defaultOpen={false}
+                  headerExtra={
+                    <div className="flex items-center gap-0.5 shrink-0">
+                      <button
+                        onClick={() => handleNewNote(undefined)}
+                        className="p-1 rounded text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors"
+                        title="New note"
+                      >
+                        <Plus size={11} />
+                      </button>
+                      <button
+                        onClick={openNewNoteFolder}
+                        className="p-1 rounded text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors"
+                        title="New folder"
+                      >
+                        <FolderOpen size={11} />
+                      </button>
+                    </div>
+                  }
+                >
+                  {noteFolders.length === 0 &&
+                    Array.from(allNotes.values()).filter((n) => n.date).length === 0 && (
+                      <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2">
+                        No notes yet
+                      </p>
+                    )}
+                  {noteFolders.map((folder) => {
+                    const folderNotes = Array.from(allNotes.values()).filter(
+                      (n) => n.folderId === folder.id
+                    )
+                    const collapsed = collapsedNoteFolders.has(folder.id)
+                    return (
+                      <div key={folder.id}>
+                        <button
+                          onClick={() => toggleNoteFolder(folder.id)}
+                          className="flex items-center gap-1.5 w-full px-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
+                        >
+                          {collapsed ? (
+                            <ChevronRight
+                              size={10}
+                              className="text-slate-300 dark:text-white/20 shrink-0"
+                            />
+                          ) : (
+                            <ChevronDown
+                              size={10}
+                              className="text-slate-300 dark:text-white/20 shrink-0"
+                            />
+                          )}
+                          <FolderOpen
+                            size={11}
+                            className="text-blue-400 dark:text-blue-500/70 shrink-0"
+                          />
+                          <span className="text-[11px] font-semibold text-slate-400 dark:text-white/30 uppercase tracking-wide truncate flex-1 text-left">
+                            {folder.name}
+                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleNewNote(folder.id)
+                            }}
+                            className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                          >
+                            <Plus size={10} />
+                          </button>
+                        </button>
+                        {!collapsed &&
+                          folderNotes.map((n) => (
+                            <NoteNavItem key={n.id} n={n} active={activeNoteId === n.id} indent />
+                          ))}
+                      </div>
+                    )
+                  })}
+                  {Array.from(allNotes.values())
+                    .filter((n) => n.date && !n.folderId)
+                    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+                    .slice(0, 5)
+                    .map((n) => (
+                      <NoteNavItem key={n.id} n={n} active={activeNoteId === n.id} />
+                    ))}
+                </CollapsibleSection>
+              </div>
             </>
           )}
 

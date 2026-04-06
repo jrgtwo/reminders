@@ -5,7 +5,12 @@ import { identifyUser, resetUser } from './lib/analytics'
 import { Analytics } from '@vercel/analytics/react'
 import { useSyncStore } from './store/sync.store'
 import FirstLoginDialog from './components/sync/FirstLoginDialog'
-import { RouterProvider, createMemoryRouter, createBrowserRouter, useNavigate } from 'react-router-dom'
+import {
+  RouterProvider,
+  createMemoryRouter,
+  createBrowserRouter,
+  useNavigate
+} from 'react-router-dom'
 import { Temporal } from '@js-temporal/polyfill'
 import { initStorage } from './platform'
 import { useUIStore } from './store/ui.store'
@@ -21,6 +26,8 @@ import SettingsPage from './components/settings/SettingsPage'
 import RemindersPage from './components/mobile/RemindersPage'
 import TodosPage from './components/mobile/TodosPage'
 import ListsPage from './components/lists/ListsPage'
+import NoteView from './components/notes/NoteView'
+import NotesPage from './components/pages/NotesPage'
 import {
   addMonths,
   subMonths,
@@ -28,7 +35,7 @@ import {
   subWeeks,
   getWeekDays,
   today,
-  parseDateStr,
+  parseDateStr
 } from './utils/dates'
 
 function CalendarPage() {
@@ -38,16 +45,16 @@ function CalendarPage() {
   const currentView = useUIStore((s) => s.currentView)
   const setView = useUIStore((s) => s.setView)
   const load = useRemindersStore((s) => s.load)
-  const loadNoteDates = useNotesStore((s) => s.loadNoteDates)
+  const loadNotes = useNotesStore((s) => s.loadNotes)
 
   const [displayDate, setDisplayDate] = useState<Temporal.PlainDate>(() =>
-    parseDateStr(selectedDateStr),
+    parseDateStr(selectedDateStr)
   )
 
   useEffect(() => {
     load()
-    loadNoteDates()
-  }, [load, loadNoteDates])
+    loadNotes()
+  }, [load, loadNotes])
 
   const view: 'month' | 'week' = currentView === 'week' ? 'week' : 'month'
   const weekDays = useMemo(() => getWeekDays(displayDate), [displayDate])
@@ -69,11 +76,11 @@ function CalendarPage() {
         onPrev={handlePrev}
         onNext={handleNext}
         onToday={() => {
-            const t = today()
-            setDisplayDate(t)
-            setSelectedDate(t.toString())
-            navigate(`/day/${t.toString()}`)
-          }}
+          const t = today()
+          setDisplayDate(t)
+          setSelectedDate(t.toString())
+          navigate(`/day/${t.toString()}`)
+        }}
         onViewChange={(v) => setView(v)}
       />
       {view === 'month' ? (
@@ -99,17 +106,18 @@ const routes = [
       { path: 'todos', element: <TodosPage /> },
       { path: 'lists/:listId', element: <ListsPage /> },
       { path: 'settings', element: <SettingsPage /> },
-    ],
-  },
+      { path: 'notes', element: <NotesPage /> },
+      { path: 'notes/:id', element: <NoteView /> },
+      { path: 'notes/folder/:folderId', element: <NotesPage /> }
+    ]
+  }
 ]
 
 const isElectronOrCapacitor =
   typeof window !== 'undefined' &&
   (!!(window as any).electronAPI || !!(window as any).Capacitor?.isNativePlatform?.())
 
-const router = isElectronOrCapacitor
-  ? createMemoryRouter(routes)
-  : createBrowserRouter(routes)
+const router = isElectronOrCapacitor ? createMemoryRouter(routes) : createBrowserRouter(routes)
 
 export default function App() {
   const [ready, setReady] = useState(false)
@@ -123,15 +131,19 @@ export default function App() {
 
   useEffect(() => {
     setTheme(theme)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
-    initStorage().then(() => setReady(true)).catch(() => setReady(true))
-    initAuth().then(() => setAuthReady(true)).catch((err) => {
-      console.error('[auth] init failed:', err)
-      setAuthReady(true)  // unblock the render — isLoggedIn will be false, showing SignInPage
-    })
+    initStorage()
+      .then(() => setReady(true))
+      .catch(() => setReady(true))
+    initAuth()
+      .then(() => setAuthReady(true))
+      .catch((err) => {
+        console.error('[auth] init failed:', err)
+        setAuthReady(true) // unblock the render — isLoggedIn will be false, showing SignInPage
+      })
     initSync()
   }, [])
 

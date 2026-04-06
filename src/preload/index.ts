@@ -9,8 +9,16 @@ const api = {
   },
   notes: {
     getAll: () => ipcRenderer.invoke('notes:getAll'),
+    getById: (id: string) => ipcRenderer.invoke('notes:getById', id),
     getByDate: (date: string) => ipcRenderer.invoke('notes:getByDate', date),
-    save: (n: unknown) => ipcRenderer.invoke('notes:save', n)
+    getByFolder: (folderId: string) => ipcRenderer.invoke('notes:getByFolder', folderId),
+    save: (n: unknown) => ipcRenderer.invoke('notes:save', n),
+    delete: (id: string) => ipcRenderer.invoke('notes:delete', id)
+  },
+  noteFolders: {
+    getAll: () => ipcRenderer.invoke('noteFolders:getAll'),
+    save: (f: unknown) => ipcRenderer.invoke('noteFolders:save', f),
+    delete: (id: string) => ipcRenderer.invoke('noteFolders:delete', id)
   },
   todoFolders: {
     getAll: () => ipcRenderer.invoke('todo_folders:getAll'),

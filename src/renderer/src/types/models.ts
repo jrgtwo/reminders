@@ -21,8 +21,21 @@ export interface Reminder {
 }
 
 export interface Note {
-  date: string
+  id: string
+  title?: string
   content: string
+  folderId?: string
+  date?: string
+  displayOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface NoteFolder {
+  id: string
+  name: string
+  displayOrder: number
+  createdAt: string
   updatedAt: string
 }
 
@@ -37,8 +50,8 @@ export interface TodoFolder {
 export interface TodoList {
   id: string
   name: string
-  folderId?: string  // ad-hoc lists only; mutually exclusive with dueDate
-  dueDate?: string   // YYYY-MM-DD; date-based lists only
+  folderId?: string // ad-hoc lists only; mutually exclusive with dueDate
+  dueDate?: string // YYYY-MM-DD; date-based lists only
   order: number
   createdAt: string
   updatedAt: string

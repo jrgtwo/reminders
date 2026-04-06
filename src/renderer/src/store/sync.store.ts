@@ -3,7 +3,12 @@ import { useAuthStore } from './auth.store'
 import { useRemindersStore } from './reminders.store'
 import { useNotesStore } from './notes.store'
 import { useTodoListsStore } from './todo_lists.store'
-import { webSync, webCheckFirstLogin, webMarkFirstLoginDone, webResetFromCloud } from '../lib/webSync'
+import {
+  webSync,
+  webCheckFirstLogin,
+  webMarkFirstLoginDone,
+  webResetFromCloud
+} from '../lib/webSync'
 import { capture } from '../lib/analytics'
 
 type SyncStatus = 'idle' | 'syncing' | 'error'
@@ -27,13 +32,13 @@ interface SyncState {
 
 const supabaseConfig = {
   supabaseUrl: import.meta.env.VITE_SUPABASE_URL as string,
-  supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY as string,
+  supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY as string
 }
 
 const isElectron = () => !!(window as any).electronAPI
 
-const SYNC_INTERVAL_MS = 30_000  // poll every 30s while tab is visible
-const SYNC_COOLDOWN_MS = 15_000  // skip visibility trigger if last sync was recent
+const SYNC_INTERVAL_MS = 30_000 // poll every 30s while tab is visible
+const SYNC_COOLDOWN_MS = 15_000 // skip visibility trigger if last sync was recent
 
 export const useSyncStore = create<SyncState>((set, get) => ({
   status: 'idle',
@@ -61,8 +66,8 @@ export const useSyncStore = create<SyncState>((set, get) => ({
       capture('sync_completed', { last_synced_at: result.lastSyncedAt })
       await Promise.all([
         useRemindersStore.getState().load(),
-        useNotesStore.getState().loadNoteDates(),
-        useTodoListsStore.getState().load(),
+        useNotesStore.getState().loadNotes(),
+        useTodoListsStore.getState().load()
       ])
     } catch (err) {
       console.error('[sync] trigger failed:', err)
@@ -140,8 +145,8 @@ export const useSyncStore = create<SyncState>((set, get) => ({
       }
       await Promise.all([
         useRemindersStore.getState().load(),
-        useNotesStore.getState().loadNoteDates(),
-        useTodoListsStore.getState().load(),
+        useNotesStore.getState().loadNotes(),
+        useTodoListsStore.getState().load()
       ])
     } catch (err) {
       console.error('[sync] resetFromCloud failed:', err)
@@ -163,8 +168,8 @@ export const useSyncStore = create<SyncState>((set, get) => ({
       }
       await Promise.all([
         useRemindersStore.getState().load(),
-        useNotesStore.getState().loadNoteDates(),
-        useTodoListsStore.getState().load(),
+        useNotesStore.getState().loadNotes(),
+        useTodoListsStore.getState().load()
       ])
     } catch (err) {
       console.error('[sync] clearLocalData failed:', err)

@@ -43,12 +43,27 @@ export class SyncEngine {
       (db.prepare('SELECT COUNT(*) as n FROM todos WHERE deleted_at IS NULL').get() as any).n
 
     const sb = this.getClient(config)
-    await sb.auth.setSession({ access_token: session.access_token, refresh_token: session.refresh_token })
+    await sb.auth.setSession({
+      access_token: session.access_token,
+      refresh_token: session.refresh_token
+    })
 
     const [{ count: rc }, { count: nc }, { count: tc }] = await Promise.all([
-      sb.from('reminders').select('*', { count: 'exact', head: true }).eq('user_id', userId).is('deleted_at', null),
-      sb.from('notes').select('*', { count: 'exact', head: true }).eq('user_id', userId).is('deleted_at', null),
-      sb.from('todos').select('*', { count: 'exact', head: true }).eq('user_id', userId).is('deleted_at', null),
+      sb
+        .from('reminders')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .is('deleted_at', null),
+      sb
+        .from('notes')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .is('deleted_at', null),
+      sb
+        .from('todos')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .is('deleted_at', null)
     ])
     const remoteCount = (rc ?? 0) + (nc ?? 0) + (tc ?? 0)
 
@@ -57,7 +72,9 @@ export class SyncEngine {
 
   markFirstLoginDone(userId: string): void {
     getDb()
-      .prepare('INSERT INTO sync_meta (user_id, last_pull_at) VALUES (?, NULL) ON CONFLICT(user_id) DO NOTHING')
+      .prepare(
+        'INSERT INTO sync_meta (user_id, last_pull_at) VALUES (?, NULL) ON CONFLICT(user_id) DO NOTHING'
+      )
       .run(userId)
   }
 
@@ -112,15 +129,27 @@ export class SyncEngine {
           `INSERT OR IGNORE INTO reminders
             (id, title, description, date, time, recurrence, completed_dates, created_at, updated_at, deleted_at, last_synced_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-        ).run(r.id, r.title, r.description, r.date, r.time, r.recurrence, r.completed_dates,
-              r.created_at, r.updated_at, r.deleted_at, r.updated_at)
+        ).run(
+          r.id,
+          r.title,
+          r.description,
+          r.date,
+          r.time,
+          r.recurrence,
+          r.completed_dates,
+          r.created_at,
+          r.updated_at,
+          r.deleted_at,
+          r.updated_at
+        )
       } else {
         const remoteTs = new Date(r.updated_at).getTime()
         const localTs = new Date(local.updated_at).getTime()
 
         if (r.deleted_at && !local.deleted_at) {
-          db.prepare('UPDATE reminders SET deleted_at = ?, updated_at = ?, last_synced_at = ? WHERE id = ?')
-            .run(r.deleted_at, r.updated_at, r.updated_at, r.id)
+          db.prepare(
+            'UPDATE reminders SET deleted_at = ?, updated_at = ?, last_synced_at = ? WHERE id = ?'
+          ).run(r.deleted_at, r.updated_at, r.updated_at, r.id)
         } else if (remoteTs >= localTs) {
           const localDates: string[] = JSON.parse(local.completed_dates ?? '[]')
           const remoteDates: string[] = JSON.parse(r.completed_dates ?? '[]')
@@ -128,16 +157,28 @@ export class SyncEngine {
           db.prepare(
             `UPDATE reminders SET title = ?, description = ?, date = ?, time = ?, recurrence = ?,
               completed_dates = ?, updated_at = ?, deleted_at = ?, last_synced_at = ? WHERE id = ?`
-          ).run(r.title, r.description, r.date, r.time, r.recurrence,
-                merged, r.updated_at, r.deleted_at, r.updated_at, r.id)
+          ).run(
+            r.title,
+            r.description,
+            r.date,
+            r.time,
+            r.recurrence,
+            merged,
+            r.updated_at,
+            r.deleted_at,
+            r.updated_at,
+            r.id
+          )
         } else {
           // Local is newer — still union completedDates
           const localDates: string[] = JSON.parse(local.completed_dates ?? '[]')
           const remoteDates: string[] = JSON.parse(r.completed_dates ?? '[]')
           const merged = [...new Set([...localDates, ...remoteDates])]
           if (merged.length !== localDates.length) {
-            db.prepare('UPDATE reminders SET completed_dates = ? WHERE id = ?')
-              .run(JSON.stringify(merged), r.id)
+            db.prepare('UPDATE reminders SET completed_dates = ? WHERE id = ?').run(
+              JSON.stringify(merged),
+              r.id
+            )
           }
         }
       }
@@ -150,21 +191,75 @@ export class SyncEngine {
     if (nErr) throw nErr
 
     for (const n of notes ?? []) {
-      const local = db.prepare('SELECT * FROM notes WHERE date = ?').get(n.date) as any
+      const local = db.prepare('SELECT * FROM notes WHERE id = ?').get(n.id) as any
       if (!local) {
         db.prepare(
-          'INSERT OR IGNORE INTO notes (date, content, updated_at, deleted_at, last_synced_at) VALUES (?, ?, ?, ?, ?)'
-        ).run(n.date, n.content, n.updated_at, n.deleted_at, n.updated_at)
+          `INSERT OR IGNORE INTO notes
+            (id, title, content, folder_id, due_date, display_order, created_at, updated_at, deleted_at, last_synced_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ).run(
+          n.id,
+          n.title,
+          n.content,
+          n.folder_id,
+          n.due_date,
+          n.display_order,
+          n.created_at,
+          n.updated_at,
+          n.deleted_at,
+          n.updated_at
+        )
       } else {
         const remoteTs = new Date(n.updated_at).getTime()
         const localTs = new Date(local.updated_at).getTime()
         if (n.deleted_at && !local.deleted_at) {
-          db.prepare('UPDATE notes SET deleted_at = ?, updated_at = ?, last_synced_at = ? WHERE date = ?')
-            .run(n.deleted_at, n.updated_at, n.updated_at, n.date)
+          db.prepare(
+            'UPDATE notes SET deleted_at = ?, updated_at = ?, last_synced_at = ? WHERE id = ?'
+          ).run(n.deleted_at, n.updated_at, n.updated_at, n.id)
         } else if (remoteTs >= localTs) {
           db.prepare(
-            'UPDATE notes SET content = ?, updated_at = ?, deleted_at = ?, last_synced_at = ? WHERE date = ?'
-          ).run(n.content, n.updated_at, n.deleted_at, n.updated_at, n.date)
+            `UPDATE notes SET title = ?, content = ?, folder_id = ?, due_date = ?, display_order = ?,
+              updated_at = ?, deleted_at = ?, last_synced_at = ? WHERE id = ?`
+          ).run(
+            n.title,
+            n.content,
+            n.folder_id,
+            n.due_date,
+            n.display_order,
+            n.updated_at,
+            n.deleted_at,
+            n.updated_at,
+            n.id
+          )
+        }
+      }
+    }
+
+    // --- Note Folders ---
+    let noteFoldersQuery = sb.from('note_folders').select('*').eq('user_id', userId)
+    if (lastPullAt) noteFoldersQuery = noteFoldersQuery.gt('updated_at', lastPullAt)
+    const { data: noteFolders, error: nfErr } = await noteFoldersQuery
+    if (nfErr) throw nfErr
+
+    for (const f of noteFolders ?? []) {
+      const local = db.prepare('SELECT * FROM note_folders WHERE id = ?').get(f.id) as any
+      if (!local) {
+        db.prepare(
+          `INSERT OR IGNORE INTO note_folders
+            (id, name, display_order, created_at, updated_at, deleted_at, last_synced_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)`
+        ).run(f.id, f.name, f.display_order, f.created_at, f.updated_at, f.deleted_at, f.updated_at)
+      } else {
+        const remoteTs = new Date(f.updated_at).getTime()
+        const localTs = new Date(local.updated_at).getTime()
+        if (f.deleted_at && !local.deleted_at) {
+          db.prepare(
+            'UPDATE note_folders SET deleted_at = ?, updated_at = ?, last_synced_at = ? WHERE id = ?'
+          ).run(f.deleted_at, f.updated_at, f.updated_at, f.id)
+        } else if (remoteTs >= localTs) {
+          db.prepare(
+            `UPDATE note_folders SET name = ?, display_order = ?, updated_at = ?, deleted_at = ?, last_synced_at = ? WHERE id = ?`
+          ).run(f.name, f.display_order, f.updated_at, f.deleted_at, f.updated_at, f.id)
         }
       }
     }
@@ -182,20 +277,44 @@ export class SyncEngine {
           `INSERT OR IGNORE INTO todos
             (id, title, description, due_date, list_id, sort_order, completed, completed_at, created_at, updated_at, deleted_at, last_synced_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-        ).run(t.id, t.title, t.description, t.due_date, t.list_id, t.sort_order, t.completed, t.completed_at,
-              t.created_at, t.updated_at, t.deleted_at, t.updated_at)
+        ).run(
+          t.id,
+          t.title,
+          t.description,
+          t.due_date,
+          t.list_id,
+          t.sort_order,
+          t.completed,
+          t.completed_at,
+          t.created_at,
+          t.updated_at,
+          t.deleted_at,
+          t.updated_at
+        )
       } else {
         const remoteTs = new Date(t.updated_at).getTime()
         const localTs = new Date(local.updated_at).getTime()
         if (t.deleted_at && !local.deleted_at) {
-          db.prepare('UPDATE todos SET deleted_at = ?, updated_at = ?, last_synced_at = ? WHERE id = ?')
-            .run(t.deleted_at, t.updated_at, t.updated_at, t.id)
+          db.prepare(
+            'UPDATE todos SET deleted_at = ?, updated_at = ?, last_synced_at = ? WHERE id = ?'
+          ).run(t.deleted_at, t.updated_at, t.updated_at, t.id)
         } else if (remoteTs >= localTs) {
           db.prepare(
             `UPDATE todos SET title = ?, description = ?, due_date = ?, list_id = ?, sort_order = ?, completed = ?,
               completed_at = ?, updated_at = ?, deleted_at = ?, last_synced_at = ? WHERE id = ?`
-          ).run(t.title, t.description, t.due_date, t.list_id, t.sort_order, t.completed, t.completed_at,
-                t.updated_at, t.deleted_at, t.updated_at, t.id)
+          ).run(
+            t.title,
+            t.description,
+            t.due_date,
+            t.list_id,
+            t.sort_order,
+            t.completed,
+            t.completed_at,
+            t.updated_at,
+            t.deleted_at,
+            t.updated_at,
+            t.id
+          )
         }
       }
     }
@@ -217,8 +336,9 @@ export class SyncEngine {
         const remoteTs = new Date(f.updated_at).getTime()
         const localTs = new Date(local.updated_at).getTime()
         if (f.deleted_at && !local.deleted_at) {
-          db.prepare('UPDATE todo_folders SET deleted_at = ?, updated_at = ?, last_synced_at = ? WHERE id = ?')
-            .run(f.deleted_at, f.updated_at, f.updated_at, f.id)
+          db.prepare(
+            'UPDATE todo_folders SET deleted_at = ?, updated_at = ?, last_synced_at = ? WHERE id = ?'
+          ).run(f.deleted_at, f.updated_at, f.updated_at, f.id)
         } else if (remoteTs >= localTs) {
           db.prepare(
             `UPDATE todo_folders SET name = ?, sort_order = ?, updated_at = ?, deleted_at = ?, last_synced_at = ? WHERE id = ?`
@@ -239,13 +359,23 @@ export class SyncEngine {
         db.prepare(
           `INSERT OR IGNORE INTO todo_lists (id, name, folder_id, sort_order, created_at, updated_at, deleted_at, last_synced_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-        ).run(l.id, l.name, l.folder_id, l.sort_order, l.created_at, l.updated_at, l.deleted_at, l.updated_at)
+        ).run(
+          l.id,
+          l.name,
+          l.folder_id,
+          l.sort_order,
+          l.created_at,
+          l.updated_at,
+          l.deleted_at,
+          l.updated_at
+        )
       } else {
         const remoteTs = new Date(l.updated_at).getTime()
         const localTs = new Date(local.updated_at).getTime()
         if (l.deleted_at && !local.deleted_at) {
-          db.prepare('UPDATE todo_lists SET deleted_at = ?, updated_at = ?, last_synced_at = ? WHERE id = ?')
-            .run(l.deleted_at, l.updated_at, l.updated_at, l.id)
+          db.prepare(
+            'UPDATE todo_lists SET deleted_at = ?, updated_at = ?, last_synced_at = ? WHERE id = ?'
+          ).run(l.deleted_at, l.updated_at, l.updated_at, l.id)
         } else if (remoteTs >= localTs) {
           db.prepare(
             `UPDATE todo_lists SET name = ?, folder_id = ?, sort_order = ?, updated_at = ?, deleted_at = ?, last_synced_at = ? WHERE id = ?`
@@ -259,19 +389,30 @@ export class SyncEngine {
     const db = getDb()
 
     const reminders = db
-      .prepare('SELECT * FROM reminders WHERE last_synced_at IS NULL OR updated_at > last_synced_at')
+      .prepare(
+        'SELECT * FROM reminders WHERE last_synced_at IS NULL OR updated_at > last_synced_at'
+      )
       .all() as any[]
 
     for (const r of reminders) {
       const { error } = await sb.from('reminders').upsert({
-        id: r.id, user_id: userId, title: r.title, description: r.description,
-        date: r.date, time: r.time, recurrence: r.recurrence,
-        completed_dates: r.completed_dates, created_at: r.created_at,
-        updated_at: r.updated_at, deleted_at: r.deleted_at
+        id: r.id,
+        user_id: userId,
+        title: r.title,
+        description: r.description,
+        date: r.date,
+        time: r.time,
+        recurrence: r.recurrence,
+        completed_dates: r.completed_dates,
+        created_at: r.created_at,
+        updated_at: r.updated_at,
+        deleted_at: r.deleted_at
       })
       if (!error) {
-        db.prepare('UPDATE reminders SET last_synced_at = ? WHERE id = ?')
-          .run(new Date().toISOString(), r.id)
+        db.prepare('UPDATE reminders SET last_synced_at = ? WHERE id = ?').run(
+          new Date().toISOString(),
+          r.id
+        )
       }
     }
 
@@ -281,12 +422,46 @@ export class SyncEngine {
 
     for (const n of notes) {
       const { error } = await sb.from('notes').upsert({
-        date: n.date, user_id: userId, content: n.content,
-        updated_at: n.updated_at, deleted_at: n.deleted_at
+        id: n.id,
+        user_id: userId,
+        title: n.title,
+        content: n.content,
+        folder_id: n.folder_id,
+        due_date: n.due_date,
+        display_order: n.display_order,
+        created_at: n.created_at,
+        updated_at: n.updated_at,
+        deleted_at: n.deleted_at
       })
       if (!error) {
-        db.prepare('UPDATE notes SET last_synced_at = ? WHERE date = ?')
-          .run(new Date().toISOString(), n.date)
+        db.prepare('UPDATE notes SET last_synced_at = ? WHERE id = ?').run(
+          new Date().toISOString(),
+          n.id
+        )
+      }
+    }
+
+    const noteFolders = db
+      .prepare(
+        'SELECT * FROM note_folders WHERE last_synced_at IS NULL OR updated_at > last_synced_at'
+      )
+      .all() as any[]
+
+    for (const f of noteFolders) {
+      const { error } = await sb.from('note_folders').upsert({
+        id: f.id,
+        user_id: userId,
+        name: f.name,
+        display_order: f.display_order,
+        created_at: f.created_at,
+        updated_at: f.updated_at,
+        deleted_at: f.deleted_at
+      })
+      if (!error) {
+        db.prepare('UPDATE note_folders SET last_synced_at = ? WHERE id = ?').run(
+          new Date().toISOString(),
+          f.id
+        )
       }
     }
 
@@ -296,46 +471,73 @@ export class SyncEngine {
 
     for (const t of todos) {
       const { error } = await sb.from('todos').upsert({
-        id: t.id, user_id: userId, title: t.title, description: t.description,
-        due_date: t.due_date ?? null, list_id: t.list_id ?? null,
-        sort_order: t.sort_order, completed: t.completed,
-        completed_at: t.completed_at, created_at: t.created_at, updated_at: t.updated_at,
+        id: t.id,
+        user_id: userId,
+        title: t.title,
+        description: t.description,
+        due_date: t.due_date ?? null,
+        list_id: t.list_id ?? null,
+        sort_order: t.sort_order,
+        completed: t.completed,
+        completed_at: t.completed_at,
+        created_at: t.created_at,
+        updated_at: t.updated_at,
         deleted_at: t.deleted_at
       })
       if (!error) {
-        db.prepare('UPDATE todos SET last_synced_at = ? WHERE id = ?')
-          .run(new Date().toISOString(), t.id)
+        db.prepare('UPDATE todos SET last_synced_at = ? WHERE id = ?').run(
+          new Date().toISOString(),
+          t.id
+        )
       }
     }
 
     const todoFolders = db
-      .prepare('SELECT * FROM todo_folders WHERE last_synced_at IS NULL OR updated_at > last_synced_at')
+      .prepare(
+        'SELECT * FROM todo_folders WHERE last_synced_at IS NULL OR updated_at > last_synced_at'
+      )
       .all() as any[]
 
     for (const f of todoFolders) {
       const { error } = await sb.from('todo_folders').upsert({
-        id: f.id, user_id: userId, name: f.name, sort_order: f.sort_order,
-        created_at: f.created_at, updated_at: f.updated_at, deleted_at: f.deleted_at
+        id: f.id,
+        user_id: userId,
+        name: f.name,
+        sort_order: f.sort_order,
+        created_at: f.created_at,
+        updated_at: f.updated_at,
+        deleted_at: f.deleted_at
       })
       if (!error) {
-        db.prepare('UPDATE todo_folders SET last_synced_at = ? WHERE id = ?')
-          .run(new Date().toISOString(), f.id)
+        db.prepare('UPDATE todo_folders SET last_synced_at = ? WHERE id = ?').run(
+          new Date().toISOString(),
+          f.id
+        )
       }
     }
 
     const todoLists = db
-      .prepare('SELECT * FROM todo_lists WHERE last_synced_at IS NULL OR updated_at > last_synced_at')
+      .prepare(
+        'SELECT * FROM todo_lists WHERE last_synced_at IS NULL OR updated_at > last_synced_at'
+      )
       .all() as any[]
 
     for (const l of todoLists) {
       const { error } = await sb.from('todo_lists').upsert({
-        id: l.id, user_id: userId, name: l.name, folder_id: l.folder_id ?? null,
-        sort_order: l.sort_order, created_at: l.created_at, updated_at: l.updated_at,
+        id: l.id,
+        user_id: userId,
+        name: l.name,
+        folder_id: l.folder_id ?? null,
+        sort_order: l.sort_order,
+        created_at: l.created_at,
+        updated_at: l.updated_at,
         deleted_at: l.deleted_at
       })
       if (!error) {
-        db.prepare('UPDATE todo_lists SET last_synced_at = ? WHERE id = ?')
-          .run(new Date().toISOString(), l.id)
+        db.prepare('UPDATE todo_lists SET last_synced_at = ? WHERE id = ?').run(
+          new Date().toISOString(),
+          l.id
+        )
       }
     }
   }

@@ -1,32 +1,40 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
-import { ArrowLeft, List, ArrowRight } from 'lucide-react'
+import { ArrowLeft, List, ArrowRight, Trash2 } from 'lucide-react'
 import { Temporal } from '@js-temporal/polyfill'
+import { MilkdownProvider } from '@milkdown/react'
 import { parseDateStr, today } from '../utils/dates'
 import { getOccurrencesInRange } from '../utils/recurrence'
 import { useRemindersStore } from '../store/reminders.store'
 import { useTodoListsStore } from '../store/todo_lists.store'
 import { useUIStore } from '../store/ui.store'
-import type { Reminder, TodoList } from '../types/models'
-import NoteEditor from './notes/NoteEditor'
+import type { Reminder, TodoList, Note } from '../types/models'
 import ReminderList from './reminders/ReminderList'
 import ReminderForm from './reminders/ReminderForm'
 import ListForm from './lists/ListForm'
 import { useTodoFoldersStore } from '../store/todo_folders.store'
+import { useNotesStore } from '../store/notes.store'
+import { EditorWithToolbar } from './notes/NoteEditor'
 
 function formatDayHeading(date: Temporal.PlainDate) {
   return {
     weekday: date.toLocaleString('en-US', { weekday: 'long' }),
-    rest: date.toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+    rest: date.toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
   }
 }
 
 function getDayStatus(date: Temporal.PlainDate) {
   const cmp = Temporal.PlainDate.compare(date, Temporal.Now.plainDateISO())
   if (cmp === 0)
-    return { label: 'Today', cls: 'bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400 border border-blue-100 dark:border-blue-500/20' }
+    return {
+      label: 'Today',
+      cls: 'bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400 border border-blue-100 dark:border-blue-500/20'
+    }
   if (cmp < 0)
-    return { label: 'Past', cls: 'bg-slate-100 text-slate-400 dark:bg-white/[0.06] dark:text-white/30 border border-slate-200 dark:border-white/10' }
+    return {
+      label: 'Past',
+      cls: 'bg-slate-100 text-slate-400 dark:bg-white/[0.06] dark:text-white/30 border border-slate-200 dark:border-white/10'
+    }
   return null
 }
 
@@ -48,7 +56,13 @@ export default function DayView() {
   const saveList = useTodoListsStore((s) => s.save)
   const folders = useTodoFoldersStore((s) => s.folders)
 
-  useEffect(() => { loadLists() }, [loadLists])
+  const notes = useNotesStore((s) => s.notes)
+  const saveNote = useNotesStore((s) => s.saveNote)
+  const deleteNote = useNotesStore((s) => s.deleteNote)
+
+  useEffect(() => {
+    loadLists()
+  }, [loadLists])
 
   const triggerNewReminder = useUIStore((s) => s.triggerNewReminder)
   const setTriggerNewReminder = useUIStore((s) => s.setTriggerNewReminder)
@@ -79,7 +93,7 @@ export default function DayView() {
 
   const dayReminders = useMemo(
     () => reminders.filter((r) => getOccurrencesInRange(r, plainDate, plainDate).length > 0),
-    [reminders, plainDate],
+    [reminders, plainDate]
   )
 
   const { overdueReminders, upcomingReminders } = useMemo(() => {
@@ -87,14 +101,18 @@ export default function DayView() {
     if (cmp < 0) return { overdueReminders: dayReminders, upcomingReminders: [] }
     if (cmp > 0) return { overdueReminders: [], upcomingReminders: dayReminders }
     const now = Temporal.Now.plainTimeISO()
-    const overdue = dayReminders.filter((r) => r.time && Temporal.PlainTime.compare(Temporal.PlainTime.from(r.time), now) < 0)
-    const upcoming = dayReminders.filter((r) => !r.time || Temporal.PlainTime.compare(Temporal.PlainTime.from(r.time), now) >= 0)
+    const overdue = dayReminders.filter(
+      (r) => r.time && Temporal.PlainTime.compare(Temporal.PlainTime.from(r.time), now) < 0
+    )
+    const upcoming = dayReminders.filter(
+      (r) => !r.time || Temporal.PlainTime.compare(Temporal.PlainTime.from(r.time), now) >= 0
+    )
     return { overdueReminders: overdue, upcomingReminders: upcoming }
   }, [dayReminders, plainDate])
 
   const dayLists = useMemo(
     () => lists.filter((l) => l.dueDate === dateStr).sort((a, b) => a.order - b.order),
-    [lists, dateStr],
+    [lists, dateStr]
   )
 
   const { weekday, rest } = formatDayHeading(plainDate)
@@ -114,7 +132,10 @@ export default function DayView() {
       {/* Heading */}
       <div className="mb-8">
         <div className="flex items-baseline gap-3 mb-1">
-          <h1 className="text-3xl text-slate-900 dark:text-white/80 tracking-tight leading-none" style={{ fontFamily: "'Bree Serif', serif" }}>
+          <h1
+            className="text-3xl text-slate-900 dark:text-white/80 tracking-tight leading-none"
+            style={{ fontFamily: "'Bree Serif', serif" }}
+          >
             {weekday}
           </h1>
           {status && (
@@ -123,16 +144,29 @@ export default function DayView() {
             </span>
           )}
         </div>
-        <p className="text-sm text-slate-400 dark:text-white/35 font-medium" style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 400 }}>{rest}</p>
+        <p
+          className="text-sm text-slate-400 dark:text-white/35 font-medium"
+          style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 400 }}
+        >
+          {rest}
+        </p>
       </div>
 
       {/* Tabs */}
       <div className="flex items-center gap-1 border-b border-slate-200/60 dark:border-white/[0.07] mb-6">
-        {([
-          { id: 'notes',     label: 'Notes',     count: null },
-          { id: 'reminders', label: 'Reminders', count: dayReminders.length, overdue: overdueReminders.length, upcoming: upcomingReminders.length },
-          { id: 'todos',     label: 'Todos',     count: dayLists.length },
-        ] as const).map(({ id, label, count, ...rest }) => (
+        {(
+          [
+            { id: 'notes', label: 'Notes', count: null },
+            {
+              id: 'reminders',
+              label: 'Reminders',
+              count: dayReminders.length,
+              overdue: overdueReminders.length,
+              upcoming: upcomingReminders.length
+            },
+            { id: 'todos', label: 'Todos', count: dayLists.length }
+          ] as const
+        ).map(({ id, label, count, ...rest }) => (
           <button
             key={id}
             onClick={() => setTab(id)}
@@ -157,7 +191,8 @@ export default function DayView() {
                 )}
               </>
             ) : (
-              count !== null && count > 0 && (
+              count !== null &&
+              count > 0 && (
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#6498c8]/[0.15] text-[#6498c8]">
                   {count}
                 </span>
@@ -171,14 +206,130 @@ export default function DayView() {
       </div>
 
       {/* Tab content */}
-      {tab === 'notes' && <NoteEditor date={dateStr} />}
+      {tab === 'notes' && (
+        <div>
+          {(() => {
+            const existingNotes = Array.from(notes.values()).filter((n) => n.date === dateStr)
+            const [currentNoteId, setCurrentNoteId] = useState<string | null>(null)
+
+            useEffect(() => {
+              if (currentNoteId === null && existingNotes.length > 0) {
+                setCurrentNoteId(existingNotes[0].id)
+              }
+            }, [existingNotes, currentNoteId])
+
+            const currentNote = currentNoteId ? notes.get(currentNoteId) : undefined
+
+            const handleNew = () => {
+              const now = new Date()
+              const newNote: Note = {
+                id: crypto.randomUUID(),
+                content: '',
+                title: '',
+                date: dateStr,
+                displayOrder: 0,
+                createdAt: now.toISOString(),
+                updatedAt: now.toISOString()
+              }
+              saveNote(newNote)
+              setCurrentNoteId(newNote.id)
+            }
+
+            const handleNoteChange = (updatedNote: Note) => {
+              saveNote(updatedNote)
+            }
+
+            const handleDelete = () => {
+              if (!currentNote) return
+              if (window.confirm('Delete this note?')) {
+                deleteNote(currentNote.id)
+                setCurrentNoteId(null)
+              }
+            }
+
+            if (existingNotes.length === 0) {
+              return (
+                <div className="mb-8 min-h-[400px] bg-white/[0.03] dark:bg-white/[0.03] rounded-xl border border-slate-200 dark:border-white/[0.08]">
+                  <div className="flex items-center justify-center h-64">
+                    <div className="text-center">
+                      <p className="text-[13px] text-slate-400 dark:text-white/25 mb-4">
+                        No notes for this day yet.
+                      </p>
+                      <button
+                        onClick={handleNew}
+                        className="text-[12px] font-medium text-[#6498c8] hover:opacity-80 transition-opacity"
+                      >
+                        + Create your first note
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )
+            }
+
+            return (
+              <div className="mb-8 min-h-[400px] bg-white/[0.03] dark:bg-white/[0.03]">
+                {currentNote && (
+                  <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100 dark:border-white/[0.05]">
+                    <select
+                      value={currentNoteId || ''}
+                      onChange={(e) => setCurrentNoteId(e.target.value)}
+                      className="flex-1 text-lg font-semibold text-gray-900 dark:text-gray-100 bg-transparent border-none focus:outline-none focus:ring-0 px-0"
+                    >
+                      {existingNotes.map((note) => (
+                        <option key={note.id} value={note.id}>
+                          {note.title || 'Untitled'}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={handleDelete}
+                      className="w-8 h-8 flex items-center justify-center rounded text-gray-600 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                      title="Delete note"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                    <button
+                      onClick={handleNew}
+                      className="w-8 h-8 flex items-center justify-center rounded text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[var(--bg-elevated)] transition-colors"
+                      title="New note"
+                    >
+                      <span className="text-xl leading-none">+</span>
+                    </button>
+                  </div>
+                )}
+                <MilkdownProvider key={currentNote?.id || 'new'}>
+                  <EditorWithToolbar
+                    initialContent={currentNote?.content || ''}
+                    onChange={(md) => {
+                      if (currentNoteId) {
+                        handleNoteChange({
+                          ...currentNote!,
+                          content: md,
+                          updatedAt: new Date().toISOString()
+                        })
+                      }
+                    }}
+                  />
+                </MilkdownProvider>
+              </div>
+            )
+          })()}
+        </div>
+      )}
 
       {tab === 'reminders' && (
         <ReminderList
           date={dateStr}
           reminders={dayReminders}
-          onAdd={() => { setEditing(null); setFormOpen(true) }}
-          onEdit={(r) => { setEditing(r); setFormOpen(true) }}
+          onAdd={() => {
+            setEditing(null)
+            setFormOpen(true)
+          }}
+          onEdit={(r) => {
+            setEditing(r)
+            setFormOpen(true)
+          }}
           onDelete={remove}
           onToggle={toggleComplete}
         />
@@ -188,7 +339,10 @@ export default function DayView() {
         <div>
           <div className="flex justify-end mb-3">
             <button
-              onClick={() => { setEditingList(null); setListFormOpen(true) }}
+              onClick={() => {
+                setEditingList(null)
+                setListFormOpen(true)
+              }}
               className="text-[12px] font-medium text-[#6498c8] hover:opacity-80 transition-opacity"
             >
               + New list
@@ -203,13 +357,17 @@ export default function DayView() {
                   className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-left bg-white dark:bg-white/[0.06] border border-slate-200/60 dark:border-white/[0.08] hover:bg-slate-50 dark:hover:bg-white/[0.09] transition-colors shadow-sm"
                 >
                   <List size={15} className="shrink-0 text-[#6498c8]" />
-                  <span className="text-[14px] font-medium text-slate-800 dark:text-white/80 flex-1 truncate">{l.name}</span>
+                  <span className="text-[14px] font-medium text-slate-800 dark:text-white/80 flex-1 truncate">
+                    {l.name}
+                  </span>
                   <ArrowRight size={13} className="shrink-0 text-slate-300 dark:text-white/20" />
                 </button>
               ))}
             </div>
           ) : (
-            <p className="text-[13px] text-slate-400 dark:text-white/25">No lists for this day yet.</p>
+            <p className="text-[13px] text-slate-400 dark:text-white/25">
+              No lists for this day yet.
+            </p>
           )}
         </div>
       )}
@@ -218,7 +376,10 @@ export default function DayView() {
         <ReminderForm
           date={dateStr}
           reminder={editing}
-          onSave={async (r) => { await save(r); setFormOpen(false) }}
+          onSave={async (r) => {
+            await save(r)
+            setFormOpen(false)
+          }}
           onClose={() => setFormOpen(false)}
         />
       )}

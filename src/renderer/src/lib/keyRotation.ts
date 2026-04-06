@@ -8,39 +8,65 @@ import type { Reminder, Note, TodoFolder, TodoList, TodoListItem } from '../type
 
 function reminderRow(r: Reminder, userId: string) {
   return {
-    id: r.id, user_id: userId, title: r.title,
-    description: r.description ?? null, date: r.date, time: r.time ?? null,
+    id: r.id,
+    user_id: userId,
+    title: r.title,
+    description: r.description ?? null,
+    date: r.date,
+    time: r.time ?? null,
     recurrence: r.recurrence ? JSON.stringify(r.recurrence) : null,
     completed_dates: JSON.stringify(r.completedDates),
-    created_at: r.createdAt, updated_at: r.updatedAt,
+    created_at: r.createdAt,
+    updated_at: r.updatedAt
   }
 }
 
 function noteRow(n: Note, userId: string) {
-  return { date: n.date, user_id: userId, content: n.content, updated_at: n.updatedAt }
+  return {
+    date: n.date,
+    user_id: userId,
+    content: n.content,
+    updated_at: n.updatedAt,
+    display_order: n.displayOrder
+  }
 }
 
 function folderRow(f: TodoFolder, userId: string) {
   return {
-    id: f.id, user_id: userId, name: f.name,
-    sort_order: f.order, created_at: f.createdAt, updated_at: f.updatedAt,
+    id: f.id,
+    user_id: userId,
+    name: f.name,
+    sort_order: f.order,
+    created_at: f.createdAt,
+    updated_at: f.updatedAt
   }
 }
 
 function listRow(l: TodoList, userId: string) {
   return {
-    id: l.id, user_id: userId, name: l.name,
-    folder_id: l.folderId ?? null, due_date: l.dueDate ?? null, sort_order: l.order,
-    created_at: l.createdAt, updated_at: l.updatedAt,
+    id: l.id,
+    user_id: userId,
+    name: l.name,
+    folder_id: l.folderId ?? null,
+    due_date: l.dueDate ?? null,
+    sort_order: l.order,
+    created_at: l.createdAt,
+    updated_at: l.updatedAt
   }
 }
 
 function listItemRow(i: TodoListItem, userId: string) {
   return {
-    id: i.id, user_id: userId, list_id: i.listId, title: i.title,
-    description: i.description ?? null, sort_order: i.order,
-    completed: i.completed ? 1 : 0, completed_at: i.completedAt ?? null,
-    created_at: i.createdAt, updated_at: i.updatedAt,
+    id: i.id,
+    user_id: userId,
+    list_id: i.listId,
+    title: i.title,
+    description: i.description ?? null,
+    sort_order: i.order,
+    completed: i.completed ? 1 : 0,
+    completed_at: i.completedAt ?? null,
+    created_at: i.createdAt,
+    updated_at: i.updatedAt
   }
 }
 
@@ -55,7 +81,7 @@ export async function rotateEncryptionKey(userId: string): Promise<void> {
   const [reminders, notes, folders] = await Promise.all([
     enc.getReminders(),
     enc.getAllNotes(),
-    enc.getTodoFolders(),
+    enc.getTodoFolders()
   ])
   const allItems: TodoListItem[] = (
     await Promise.all(lists.map((l) => enc.getTodoListItems(l.id)))
@@ -71,19 +97,23 @@ export async function rotateEncryptionKey(userId: string): Promise<void> {
 
   // 3. Re-encrypt all records in memory
   const encReminders = await Promise.all(
-    reminders.map(async (r) => ({ ...r, title: await ef(r.title), description: await efOpt(r.description) }))
+    reminders.map(async (r) => ({
+      ...r,
+      title: await ef(r.title),
+      description: await efOpt(r.description)
+    }))
   )
   const encNotes = await Promise.all(
     notes.map(async (n) => ({ ...n, content: await ef(n.content) }))
   )
-  const encFolders = await Promise.all(
-    folders.map(async (f) => ({ ...f, name: await ef(f.name) }))
-  )
-  const encLists = await Promise.all(
-    lists.map(async (l) => ({ ...l, name: await ef(l.name) }))
-  )
+  const encFolders = await Promise.all(folders.map(async (f) => ({ ...f, name: await ef(f.name) })))
+  const encLists = await Promise.all(lists.map(async (l) => ({ ...l, name: await ef(l.name) })))
   const encItems = await Promise.all(
-    allItems.map(async (i) => ({ ...i, title: await ef(i.title), description: await efOpt(i.description) }))
+    allItems.map(async (i) => ({
+      ...i,
+      title: await ef(i.title),
+      description: await efOpt(i.description)
+    }))
   )
 
   // 4. Push re-encrypted data to Supabase BEFORE updating the key.
@@ -97,7 +127,9 @@ export async function rotateEncryptionKey(userId: string): Promise<void> {
   if (encLists.length)
     pushes.push(supabase.from('todo_lists').upsert(encLists.map((l) => listRow(l, userId))))
   if (encItems.length)
-    pushes.push(supabase.from('todo_list_items').upsert(encItems.map((i) => listItemRow(i, userId))))
+    pushes.push(
+      supabase.from('todo_list_items').upsert(encItems.map((i) => listItemRow(i, userId)))
+    )
   await Promise.all(pushes)
 
   // 5. Now update the key in Supabase — data is already in new-key format
@@ -113,7 +145,7 @@ export async function rotateEncryptionKey(userId: string): Promise<void> {
     ...encNotes.map((n) => raw.saveNote(n)),
     ...encFolders.map((f) => raw.saveTodoFolder(f)),
     ...encLists.map((l) => raw.saveTodoList(l)),
-    ...encItems.map((i) => raw.saveTodoListItem(i)),
+    ...encItems.map((i) => raw.saveTodoListItem(i))
   ])
 
   // 7. Swap in-memory key and update local cache

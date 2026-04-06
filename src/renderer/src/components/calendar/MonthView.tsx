@@ -19,7 +19,7 @@ interface Props {
 export default function MonthView({ displayDate }: Props) {
   const navigate = useNavigate()
   const reminders = useRemindersStore((s) => s.reminders)
-  const noteDates = useNotesStore((s) => s.noteDates)
+  const notes = useNotesStore((s) => s.notes)
   const lists = useTodoListsStore((s) => s.lists)
   const selectedDate = useUIStore((s) => s.selectedDate)
   const setSelectedDate = useUIStore((s) => s.setSelectedDate)
@@ -38,6 +38,14 @@ export default function MonthView({ displayDate }: Props) {
     }
     return map
   }, [reminders, days])
+
+  const noteDates = useMemo(() => {
+    const set = new Set<string>()
+    for (const n of notes.values()) {
+      if (n.date) set.add(n.date)
+    }
+    return Array.from(set)
+  }, [notes])
 
   const listCountByDate = useMemo(() => {
     const map: Record<string, number> = {}
@@ -91,7 +99,10 @@ export default function MonthView({ displayDate }: Props) {
     <div className="flex flex-col flex-1 overflow-auto">
       <div className="grid grid-cols-7 border-b border-slate-200/60 dark:border-white/[0.06] bg-[var(--bg-app)]">
         {DAY_NAMES.map((name) => (
-          <div key={name} className="py-2.5 text-center text-[12px] font-semibold text-slate-400 dark:text-white/35">
+          <div
+            key={name}
+            className="py-2.5 text-center text-[12px] font-semibold text-slate-400 dark:text-white/35"
+          >
             {name}
           </div>
         ))}

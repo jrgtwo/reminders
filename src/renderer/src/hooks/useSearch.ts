@@ -23,15 +23,19 @@ export function useSearch(query: string): SearchResults {
 
     return {
       reminders: reminders
-        .filter((r) => r.title.toLowerCase().includes(q) || r.description?.toLowerCase().includes(q))
+        .filter(
+          (r) => r.title.toLowerCase().includes(q) || r.description?.toLowerCase().includes(q)
+        )
         .slice(0, 5),
       items: allItems
-        .filter((i) => i.title.toLowerCase().includes(q) || i.description?.toLowerCase().includes(q))
+        .filter(
+          (i) => i.title.toLowerCase().includes(q) || i.description?.toLowerCase().includes(q)
+        )
         .slice(0, 5),
-      notes: Object.values(notes)
-        .filter((n) => n.content.toLowerCase().includes(q))
-        .sort((a, b) => b.date.localeCompare(a.date))
-        .slice(0, 5),
+      notes: Array.from(notes.values())
+        .filter((n) => (n.title?.toLowerCase() || n.content).toLowerCase().includes(q))
+        .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+        .slice(0, 5)
     }
   }, [query, reminders, storeItems, notes])
 }

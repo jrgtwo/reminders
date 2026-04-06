@@ -1,5 +1,12 @@
 import type { IStorageAdapter } from './types'
-import type { Reminder, Note, TodoFolder, TodoList, TodoListItem } from '../types/models'
+import type {
+  Reminder,
+  Note,
+  NoteFolder,
+  TodoFolder,
+  TodoList,
+  TodoListItem
+} from '../types/models'
 
 // Calls window.electronAPI exposed by the preload contextBridge
 export class ElectronAdapter implements IStorageAdapter {
@@ -21,11 +28,30 @@ export class ElectronAdapter implements IStorageAdapter {
   getAllNotes(): Promise<Note[]> {
     return this.api.notes.getAll()
   }
-  getNoteByDate(date: string): Promise<Note | null> {
-    return this.api.notes.getByDate(date)
+  getNoteById(id: string): Promise<Note | null> {
+    return this.api.notes.getById(id)
   }
   saveNote(n: Note): Promise<Note> {
     return this.api.notes.save(n)
+  }
+  deleteNote(id: string): Promise<void> {
+    return this.api.notes.delete(id)
+  }
+  getNotesByFolder(folderId: string): Promise<Note[]> {
+    return this.api.notes.getByFolder(folderId)
+  }
+  getNotesByDate(date: string): Promise<Note[]> {
+    return this.api.notes.getByDate(date)
+  }
+
+  getAllNoteFolders(): Promise<NoteFolder[]> {
+    return this.api.noteFolders.getAll()
+  }
+  saveNoteFolder(f: NoteFolder): Promise<NoteFolder> {
+    return this.api.noteFolders.save(f)
+  }
+  deleteNoteFolder(id: string): Promise<void> {
+    return this.api.noteFolders.delete(id)
   }
 
   getTodoFolders(): Promise<TodoFolder[]> {
