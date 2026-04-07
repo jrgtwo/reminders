@@ -5,13 +5,9 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
-  ChevronUp,
   Plus,
   List,
-  FolderOpen,
-  FolderPlus,
-  Pencil,
-  Trash2
+  FolderOpen
 } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useTodoFoldersStore } from '../../store/todo_folders.store'
@@ -23,21 +19,13 @@ import type { TodoFolder, TodoList } from '../../types/models'
 import FolderForm from '../lists/FolderForm'
 import ListForm from '../lists/ListForm'
 import NotesNav from '../notes/NotesNav'
+import { CollapsibleSection } from '../ui/CollapsibleSection'
+import { SidebarNavItem, FolderTree } from '../ui/FolderNav'
 
 // --- Date hierarchy helpers ---
 const MONTH_NAMES = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December'
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
 ]
 
 type DayMap = Record<string, TodoList[]>
@@ -55,68 +43,6 @@ function buildDateTree(lists: TodoList[]): YearMap {
     tree[year][month][day].push(l)
   }
   return tree
-}
-
-function CollapsibleSection({
-  label,
-  count,
-  accent = 'blue',
-  defaultOpen = false,
-  children,
-  headerExtra
-}: {
-  label: string
-  count: number
-  accent?: 'blue' | 'red' | 'slate'
-  defaultOpen?: boolean
-  children: ReactNode
-  headerExtra?: ReactNode
-}) {
-  const [open, setOpen] = useState(defaultOpen)
-  const labelCls =
-    accent === 'red'
-      ? 'text-red-500 dark:text-[#e8a045]'
-      : accent === 'slate'
-        ? 'text-slate-400 dark:text-white/30'
-        : 'text-blue-500 dark:text-[#6498c8]'
-  const countCls =
-    accent === 'red'
-      ? 'text-red-500 dark:text-[#e8a045] bg-red-50 dark:bg-[#e8a045]/[0.08]'
-      : accent === 'slate'
-        ? 'text-slate-400 dark:text-white/30 bg-slate-100 dark:bg-white/[0.05]'
-        : 'text-blue-500 dark:text-[#6498c8] bg-blue-50 dark:bg-[#6498c8]/[0.08]'
-  const chevronCls =
-    accent === 'red'
-      ? 'text-[#e8a045]/60'
-      : accent === 'slate'
-        ? 'text-slate-300 dark:text-white/20'
-        : 'text-[#6498c8]/60'
-  return (
-    <div>
-      <div className="flex items-center gap-1 px-4 py-1.5">
-        <button
-          onClick={() => setOpen((o) => !o)}
-          className="flex items-center gap-2 flex-1 text-left hover:opacity-80 transition-opacity"
-        >
-          <span className={`text-[10px] font-bold uppercase tracking-wide flex-1 ${labelCls}`}>
-            {label}
-          </span>
-          {count > 0 && (
-            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${countCls}`}>
-              {count}
-            </span>
-          )}
-          {open ? (
-            <ChevronUp size={11} className={chevronCls} />
-          ) : (
-            <ChevronDown size={11} className={chevronCls} />
-          )}
-        </button>
-        {headerExtra}
-      </div>
-      {open && <div className="animate-in fade-in duration-200">{children}</div>}
-    </div>
-  )
 }
 
 function DateSection({
@@ -225,7 +151,17 @@ function DateSection({
                               </button>
                             </div>
                             {dayLists.map((l) => (
-                              <ListNavItem key={l.id} l={l} active={activeListId === l.id} indent onDelete={onDeleteList} />
+                              <SidebarNavItem
+                                key={l.id}
+                                id={l.id}
+                                label={l.name}
+                                active={activeListId === l.id}
+                                route={`/lists/${l.id}`}
+                                icon={List}
+                                indent
+                                onDelete={onDeleteList}
+                                deleteTitle="Delete list"
+                              />
                             ))}
                           </div>
                         )
@@ -237,60 +173,6 @@ function DateSection({
         )
       })}
     </>
-  )
-}
-
-function ListNavItem({
-  l,
-  active,
-  indent = false,
-  onDelete,
-  onDragStart,
-  onDragEnd,
-}: {
-  l: TodoList
-  active: boolean
-  indent?: boolean
-  onDelete: (id: string) => void
-  onDragStart?: (id: string) => void
-  onDragEnd?: () => void
-}) {
-  const navigate = useNavigate()
-  return (
-    <div
-      draggable={!!onDragStart}
-      onDragStart={(e) => { e.dataTransfer.setData('listId', l.id); onDragStart?.(l.id) }}
-      onDragEnd={() => onDragEnd?.()}
-      className={`group flex items-center gap-2 w-full py-1.5 transition-colors ${onDragStart ? 'cursor-grab active:cursor-grabbing' : ''} ${indent ? 'pl-8 pr-2' : 'pl-4 pr-2'} ${
-        active
-          ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.12]'
-          : 'hover:bg-slate-50 dark:hover:bg-white/[0.03]'
-      }`}
-    >
-      <button
-        onClick={() => navigate(`/lists/${l.id}`)}
-        className="flex items-center gap-2 flex-1 min-w-0 text-left"
-      >
-        <List
-          size={11}
-          className={
-            active ? 'shrink-0 text-[#6498c8]' : 'shrink-0 text-slate-400 dark:text-white/25'
-          }
-        />
-        <span
-          className={`text-[13px] truncate flex-1 ${active ? 'font-medium text-[#6498c8]' : 'text-slate-600 dark:text-white/60'}`}
-        >
-          {l.name}
-        </span>
-      </button>
-      <button
-        onClick={() => onDelete(l.id)}
-        className="shrink-0 p-1 rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-        title="Delete list"
-      >
-        <Trash2 size={9} />
-      </button>
-    </div>
   )
 }
 
@@ -415,55 +297,21 @@ export default function RightSidebar() {
     removeList(id)
   }
 
-  function renderTodoFolder(folder: TodoFolder, depth: number): ReactNode {
-    const folderLists = adHocLists.filter((l) => l.folderId === folder.id)
-    const collapsed = collapsedFolders.has(folder.id)
-    const isDropTarget = listDropTarget === folder.id
-    const children = (folderChildrenMap.get(folder.id) ?? []).sort((a, b) => a.order - b.order)
-    const pl = 16 + depth * 12
+  function renderList(l: TodoList, indent: boolean): ReactNode {
     return (
-      <div
-        key={folder.id}
-        onDragOver={(e) => { if (draggingListId) { e.preventDefault(); setListDropTarget(folder.id) } }}
-        onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setListDropTarget(null) }}
-        onDrop={(e) => { e.preventDefault(); handleListDrop(folder.id) }}
-        className={`rounded mx-1 transition-colors ${isDropTarget ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.08] ring-1 ring-[#6498c8]/30' : ''}`}
-      >
-        <div
-          onClick={() => toggleFolder(folder.id)}
-          className="flex items-center gap-1.5 w-full py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors cursor-pointer rounded"
-          style={{ paddingLeft: `${pl}px`, paddingRight: '8px' }}
-        >
-          {collapsed
-            ? <ChevronRight size={10} className="text-slate-300 dark:text-white/20 shrink-0" />
-            : <ChevronDown size={10} className="text-slate-300 dark:text-white/20 shrink-0" />
-          }
-          <FolderOpen size={11} className={`shrink-0 transition-colors ${isDropTarget ? 'text-[#6498c8]' : 'text-blue-400 dark:text-blue-500/70'}`} />
-          <span className="text-[11px] font-semibold text-slate-400 dark:text-white/30 uppercase tracking-wide truncate flex-1 text-left">
-            {folder.name}
-          </span>
-          <button onClick={(e) => { e.stopPropagation(); setEditingFolder(folder); setPendingParentFolderId(undefined); setFolderFormOpen(true) }} className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors" title="Rename folder">
-            <Pencil size={9} />
-          </button>
-          <button onClick={(e) => { e.stopPropagation(); handleDeleteFolder(folder.id) }} className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors" title="Delete folder">
-            <Trash2 size={9} />
-          </button>
-          <button onClick={(e) => { e.stopPropagation(); setEditingFolder(null); setPendingParentFolderId(folder.id); setFolderFormOpen(true) }} className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors" title="New subfolder">
-            <FolderPlus size={9} />
-          </button>
-          <button onClick={(e) => { e.stopPropagation(); openNewList({ folderId: folder.id }) }} className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors" title="New list in folder">
-            <Plus size={10} />
-          </button>
-        </div>
-        {!collapsed && (
-          <>
-            {folderLists.map((l) => (
-              <ListNavItem key={l.id} l={l} active={activeListId === l.id} indent onDelete={handleDeleteList} onDragStart={setDraggingListId} onDragEnd={() => { setDraggingListId(null); setListDropTarget(null) }} />
-            ))}
-            {children.map((child) => renderTodoFolder(child, depth + 1))}
-          </>
-        )}
-      </div>
+      <SidebarNavItem
+        key={l.id}
+        id={l.id}
+        label={l.name}
+        active={activeListId === l.id}
+        route={`/lists/${l.id}`}
+        icon={List}
+        indent={indent}
+        onDelete={handleDeleteList}
+        deleteTitle="Delete list"
+        onDragStart={setDraggingListId}
+        onDragEnd={() => { setDraggingListId(null); setListDropTarget(null) }}
+      />
     )
   }
 
@@ -540,14 +388,36 @@ export default function RightSidebar() {
                     onDrop={(e) => { e.preventDefault(); handleListDrop(undefined) }}
                     className={`transition-colors rounded mx-1 ${listDropTarget === 'standalone' ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.08] ring-1 ring-[#6498c8]/30' : ''}`}
                   >
-                    {standaloneLists.map((l) => (
-                      <ListNavItem key={l.id} l={l} active={activeListId === l.id} onDelete={handleDeleteList} onDragStart={setDraggingListId} onDragEnd={() => { setDraggingListId(null); setListDropTarget(null) }} />
-                    ))}
+                    {standaloneLists.map((l) => renderList(l, false))}
                     {listDropTarget === 'standalone' && standaloneLists.length === 0 && (
                       <p className="text-[11px] text-[#6498c8]/60 px-4 py-2">Drop here to remove from folder</p>
                     )}
                   </div>
-                  {rootFolders.map((folder) => renderTodoFolder(folder, 0))}
+                  <FolderTree
+                    rootFolders={rootFolders}
+                    folderChildrenMap={folderChildrenMap}
+                    getOrder={(f) => f.order}
+                    getItemsInFolder={(folderId) => adHocLists.filter((l) => l.folderId === folderId)}
+                    renderItem={renderList}
+                    draggingItemId={draggingListId}
+                    dropTarget={listDropTarget}
+                    setDropTarget={setListDropTarget}
+                    onDrop={handleListDrop}
+                    collapsedFolders={collapsedFolders}
+                    onToggleFolder={toggleFolder}
+                    onEditFolder={(folder) => {
+                      setEditingFolder(folder)
+                      setPendingParentFolderId(undefined)
+                      setFolderFormOpen(true)
+                    }}
+                    onDeleteFolder={handleDeleteFolder}
+                    onNewSubfolder={(parentId) => {
+                      setEditingFolder(null)
+                      setPendingParentFolderId(parentId)
+                      setFolderFormOpen(true)
+                    }}
+                    onNewItemInFolder={(folderId) => openNewList({ folderId })}
+                  />
                 </CollapsibleSection>
               </div>
 
@@ -662,7 +532,6 @@ export default function RightSidebar() {
           }}
         />
       )}
-
     </>
   )
 }

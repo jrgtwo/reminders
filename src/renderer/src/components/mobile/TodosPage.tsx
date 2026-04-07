@@ -1,55 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { ReactNode } from 'react'
 import { ChevronDown, ChevronRight, Plus, ArrowRight, List, FolderOpen } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useTodoFoldersStore } from '../../store/todo_folders.store'
 import { useTodoListsStore } from '../../store/todo_lists.store'
+import { buildFolderTree } from '../../lib/folderTree'
 import type { TodoFolder, TodoList } from '../../types/models'
 import ListForm from '../lists/ListForm'
 import FolderForm from '../lists/FolderForm'
+import { CollapsibleSection } from '../ui/CollapsibleSection'
+import { FolderTree } from '../ui/FolderNav'
 
-// --- Collapsible section helper ---
-
-function CollapsibleSection({ label, count, accent = 'blue', defaultOpen = true, children, headerExtra }: {
-  label: string
-  count?: number
-  accent?: 'blue' | 'slate'
-  defaultOpen?: boolean
-  children: ReactNode
-  headerExtra?: ReactNode
-}) {
-  const [open, setOpen] = useState(defaultOpen)
-  const labelCls = accent === 'slate'
-    ? 'text-slate-400 dark:text-white/30'
-    : 'text-blue-500 dark:text-[#6498c8]'
-  const countCls = accent === 'slate'
-    ? 'text-slate-400 dark:text-white/30 bg-slate-100 dark:bg-white/[0.05]'
-    : 'text-blue-500 dark:text-[#6498c8] bg-blue-50 dark:bg-[#6498c8]/[0.08]'
-  const chevronCls = accent === 'slate' ? 'text-slate-300 dark:text-white/20' : 'text-[#6498c8]/60'
-
-  return (
-    <div>
-      <div className="flex items-center gap-1 px-4 py-1.5">
-        <button
-          onClick={() => setOpen((o) => !o)}
-          className="flex items-center gap-2 flex-1 text-left hover:opacity-80 transition-opacity"
-        >
-          <span className={`text-[10px] font-bold uppercase tracking-wide flex-1 ${labelCls}`}>{label}</span>
-          {count !== undefined && count > 0 && (
-            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${countCls}`}>{count}</span>
-          )}
-          {open
-            ? <ChevronDown size={11} className={chevronCls} />
-            : <ChevronRight size={11} className={chevronCls} />}
-        </button>
-        {headerExtra}
-      </div>
-      {open && <div>{children}</div>}
-    </div>
-  )
-}
-
-// --- List nav item ---
+// --- List nav item (mobile: navigate only, no delete) ---
 
 function ListNavItem({ l, active, indent = false }: { l: TodoList; active: boolean; indent?: boolean }) {
   const navigate = useNavigate()
@@ -74,9 +35,9 @@ function ListNavItem({ l, active, indent = false }: { l: TodoList; active: boole
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December']
 
-type DayMap = Record<string, TodoList[]>          // day string → lists
-type MonthMap = Record<string, DayMap>             // month string → days
-type YearMap = Record<string, MonthMap>            // year string → months
+type DayMap = Record<string, TodoList[]>
+type MonthMap = Record<string, DayMap>
+type YearMap = Record<string, MonthMap>
 
 function buildDateTree(lists: TodoList[]): YearMap {
   const tree: YearMap = {}
@@ -91,8 +52,6 @@ function buildDateTree(lists: TodoList[]): YearMap {
   return tree
 }
 
-// --- Date section component ---
-
 function DateSection({ lists, activeListId, onNewListForDate }: {
   lists: TodoList[]
   activeListId?: string
@@ -100,7 +59,6 @@ function DateSection({ lists, activeListId, onNewListForDate }: {
 }) {
   const tree = useMemo(() => buildDateTree(lists), [lists])
   const years = Object.keys(tree).sort((a, b) => b.localeCompare(a))
-
   const [collapsedYears, setCollapsedYears] = useState<Set<string>>(new Set())
   const [collapsedMonths, setCollapsedMonths] = useState<Set<string>>(new Set())
 
@@ -227,9 +185,10 @@ export default function TodosPage() {
     () => adHocLists.filter((l) => !l.folderId),
     [adHocLists]
   )
-  const sortedFolders = useMemo(
-    () => [...folders].sort((a, b) => a.order - b.order),
-    [folders]
+  const folderChildrenMap = useMemo(() => buildFolderTree(folders), [folders])
+  const rootFolders = useMemo(
+    () => (folderChildrenMap.get(undefined) ?? []).sort((a, b) => a.order - b.order),
+    [folderChildrenMap]
   )
 
   function toggleFolder(id: string) {
@@ -256,7 +215,6 @@ export default function TodosPage() {
         </div>
 
         <div className="flex-1 overflow-y-auto">
-
           {/* Ad-hoc section */}
           <div className="py-1">
             <CollapsibleSection
@@ -282,40 +240,22 @@ export default function TodosPage() {
                 <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2">No lists yet</p>
               )}
 
-              {/* Standalone lists */}
               {standaloneLists.map((l) => (
                 <ListNavItem key={l.id} l={l} active={activeListId === l.id} />
               ))}
 
-              {/* Folder groups */}
-              {sortedFolders.map((folder) => {
-                const folderLists = adHocLists.filter((l) => l.folderId === folder.id)
-                const collapsed = collapsedFolders.has(folder.id)
-                return (
-                  <div key={folder.id}>
-                    <button
-                      onClick={() => toggleFolder(folder.id)}
-                      className="flex items-center gap-1.5 w-full px-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
-                    >
-                      {collapsed
-                        ? <ChevronRight size={10} className="text-slate-300 dark:text-white/20 shrink-0" />
-                        : <ChevronDown size={10} className="text-slate-300 dark:text-white/20 shrink-0" />}
-                      <FolderOpen size={11} className="text-slate-400 dark:text-white/25 shrink-0" />
-                      <span className="text-[11px] font-semibold text-slate-400 dark:text-white/30 uppercase tracking-wide truncate flex-1">
-                        {folder.name}
-                      </span>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); openNewList({ folderId: folder.id }) }}
-                        className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-                        title="New list in folder"
-                      ><Plus size={10} /></button>
-                    </button>
-                    {!collapsed && folderLists.map((l) => (
-                      <ListNavItem key={l.id} l={l} active={activeListId === l.id} indent />
-                    ))}
-                  </div>
-                )
-              })}
+              <FolderTree
+                rootFolders={rootFolders}
+                folderChildrenMap={folderChildrenMap}
+                getOrder={(f) => f.order}
+                getItemsInFolder={(folderId) => adHocLists.filter((l) => l.folderId === folderId)}
+                renderItem={(l, indent) => (
+                  <ListNavItem key={l.id} l={l} active={activeListId === l.id} indent={indent} />
+                )}
+                collapsedFolders={collapsedFolders}
+                onToggleFolder={toggleFolder}
+                onNewItemInFolder={(folderId) => openNewList({ folderId })}
+              />
             </CollapsibleSection>
           </div>
 

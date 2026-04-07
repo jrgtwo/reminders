@@ -3,13 +3,9 @@ import type { ReactNode } from 'react'
 import {
   ChevronRight,
   ChevronDown,
-  ChevronUp,
   Plus,
   FolderOpen,
-  FolderPlus,
-  FileText,
-  Pencil,
-  Trash2
+  FileText
 } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useNotesStore } from '../../store/notes.store'
@@ -17,6 +13,8 @@ import { useNoteFoldersStore } from '../../store/note_folders.store'
 import { buildFolderTree, getDescendantIds } from '../../lib/folderTree'
 import type { Note, NoteFolder } from '../../types/models'
 import NoteFolderForm from './NoteFolderForm'
+import { CollapsibleSection } from '../ui/CollapsibleSection'
+import { SidebarNavItem, FolderTree } from '../ui/FolderNav'
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -38,117 +36,6 @@ function buildNoteDateTree(notes: Note[]): NoteYearMap {
     tree[year][month][day].push(n)
   }
   return tree
-}
-
-function CollapsibleSection({
-  label,
-  count,
-  accent = 'blue',
-  defaultOpen = true,
-  children,
-  headerExtra
-}: {
-  label: string
-  count: number
-  accent?: 'blue' | 'slate'
-  defaultOpen?: boolean
-  children: ReactNode
-  headerExtra?: ReactNode
-}) {
-  const [open, setOpen] = useState(defaultOpen)
-  const labelCls =
-    accent === 'slate'
-      ? 'text-slate-400 dark:text-white/30'
-      : 'text-blue-500 dark:text-[#6498c8]'
-  const countCls =
-    accent === 'slate'
-      ? 'text-slate-400 dark:text-white/30 bg-slate-100 dark:bg-white/[0.05]'
-      : 'text-blue-500 dark:text-[#6498c8] bg-blue-50 dark:bg-[#6498c8]/[0.08]'
-  const chevronCls = accent === 'slate' ? 'text-slate-300 dark:text-white/20' : 'text-[#6498c8]/60'
-  return (
-    <div>
-      <div className="flex items-center gap-1 px-4 py-1.5">
-        <button
-          onClick={() => setOpen((o) => !o)}
-          className="flex items-center gap-2 flex-1 text-left hover:opacity-80 transition-opacity"
-        >
-          <span className={`text-[10px] font-bold uppercase tracking-wide flex-1 ${labelCls}`}>
-            {label}
-          </span>
-          {count > 0 && (
-            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${countCls}`}>
-              {count}
-            </span>
-          )}
-          {open ? (
-            <ChevronUp size={11} className={chevronCls} />
-          ) : (
-            <ChevronDown size={11} className={chevronCls} />
-          )}
-        </button>
-        {headerExtra}
-      </div>
-      {open && <div className="animate-in fade-in duration-200">{children}</div>}
-    </div>
-  )
-}
-
-function NoteNavItem({
-  n,
-  active,
-  indent = false,
-  onDelete,
-  onDragStart,
-  onDragEnd
-}: {
-  n: Note
-  active: boolean
-  indent?: boolean
-  onDelete: (id: string) => void
-  onDragStart?: (id: string) => void
-  onDragEnd?: () => void
-}) {
-  const navigate = useNavigate()
-  const title = n.title || 'Untitled'
-  return (
-    <div
-      draggable={!!onDragStart}
-      onDragStart={(e) => {
-        e.dataTransfer.setData('noteId', n.id)
-        onDragStart?.(n.id)
-      }}
-      onDragEnd={() => onDragEnd?.()}
-      className={`group flex items-center gap-2 w-full py-1.5 transition-colors ${onDragStart ? 'cursor-grab active:cursor-grabbing' : ''} ${indent ? 'pl-8 pr-2' : 'pl-4 pr-2'} ${
-        active
-          ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.12]'
-          : 'hover:bg-slate-50 dark:hover:bg-white/[0.03]'
-      }`}
-    >
-      <button
-        onClick={() => navigate(`/notes/${n.id}`)}
-        className="flex items-center gap-2 flex-1 min-w-0 text-left"
-      >
-        <FileText
-          size={11}
-          className={
-            active ? 'shrink-0 text-[#6498c8]' : 'shrink-0 text-slate-400 dark:text-white/25'
-          }
-        />
-        <span
-          className={`text-[13px] truncate flex-1 ${active ? 'font-medium text-[#6498c8]' : 'text-slate-600 dark:text-white/60'}`}
-        >
-          {title}
-        </span>
-      </button>
-      <button
-        onClick={() => onDelete(n.id)}
-        className="shrink-0 p-1 rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-        title="Delete note"
-      >
-        <Trash2 size={9} />
-      </button>
-    </div>
-  )
 }
 
 function DateNoteSection({
@@ -275,12 +162,16 @@ function DateNoteSection({
                               </button>
                             </div>
                             {!dayCollapsed && dayNotes.map((n) => (
-                              <NoteNavItem
+                              <SidebarNavItem
                                 key={n.id}
-                                n={n}
+                                id={n.id}
+                                label={n.title || 'Untitled'}
                                 active={activeNoteId === n.id}
+                                route={`/notes/${n.id}`}
+                                icon={FileText}
                                 indent
                                 onDelete={onDeleteNote}
+                                deleteTitle="Delete note"
                               />
                             ))}
                           </div>
@@ -406,113 +297,21 @@ export default function NotesNav() {
     setNoteDropTarget(null)
   }
 
-  function renderNoteFolder(folder: NoteFolder, depth: number): ReactNode {
-    const folderNotes = Array.from(allNotes.values()).filter((n) => n.folderId === folder.id)
-    const collapsed = collapsedNoteFolders.has(folder.id)
-    const isDropTarget = noteDropTarget === folder.id
-    const children = (noteFolderChildrenMap.get(folder.id) ?? []).sort(
-      (a, b) => a.displayOrder - b.displayOrder
-    )
-    const pl = 16 + depth * 12
+  function renderNote(n: Note, indent: boolean): ReactNode {
     return (
-      <div
-        key={folder.id}
-        onDragOver={(e) => {
-          if (draggingNoteId) {
-            e.preventDefault()
-            setNoteDropTarget(folder.id)
-          }
-        }}
-        onDragLeave={(e) => {
-          if (!e.currentTarget.contains(e.relatedTarget as Node)) setNoteDropTarget(null)
-        }}
-        onDrop={(e) => {
-          e.preventDefault()
-          handleNoteDrop(folder.id)
-        }}
-        className={`rounded mx-1 transition-colors ${isDropTarget ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.08] ring-1 ring-[#6498c8]/30' : ''}`}
-      >
-        <div
-          onClick={() => toggleNoteFolder(folder.id)}
-          className="flex items-center gap-1.5 w-full py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors cursor-pointer rounded"
-          style={{ paddingLeft: `${pl}px`, paddingRight: '8px' }}
-        >
-          {collapsed ? (
-            <ChevronRight size={10} className="text-slate-300 dark:text-white/20 shrink-0" />
-          ) : (
-            <ChevronDown size={10} className="text-slate-300 dark:text-white/20 shrink-0" />
-          )}
-          <FolderOpen
-            size={11}
-            className={`shrink-0 transition-colors ${isDropTarget ? 'text-[#6498c8]' : 'text-blue-400 dark:text-blue-500/70'}`}
-          />
-          <span className="text-[11px] font-semibold text-slate-400 dark:text-white/30 uppercase tracking-wide truncate flex-1 text-left">
-            {folder.name}
-          </span>
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              setEditingNoteFolder(folder)
-              setNoteFolderFormOpen(true)
-            }}
-            className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-            title="Rename folder"
-          >
-            <Pencil size={9} />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              handleDeleteNoteFolder(folder.id)
-            }}
-            className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors"
-            title="Delete folder"
-          >
-            <Trash2 size={9} />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              setEditingNoteFolder(null)
-              setPendingParentNoteFolderId(folder.id)
-              setNoteFolderFormOpen(true)
-            }}
-            className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-            title="New subfolder"
-          >
-            <FolderPlus size={9} />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              handleNewNote(folder.id)
-            }}
-            className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-            title="New note in folder"
-          >
-            <Plus size={10} />
-          </button>
-        </div>
-        {!collapsed && (
-          <>
-            {folderNotes.map((n) => (
-              <NoteNavItem
-                key={n.id}
-                n={n}
-                active={activeNoteId === n.id}
-                indent
-                onDelete={handleDeleteNote}
-                onDragStart={setDraggingNoteId}
-                onDragEnd={() => {
-                  setDraggingNoteId(null)
-                  setNoteDropTarget(null)
-                }}
-              />
-            ))}
-            {children.map((child) => renderNoteFolder(child, depth + 1))}
-          </>
-        )}
-      </div>
+      <SidebarNavItem
+        key={n.id}
+        id={n.id}
+        label={n.title || 'Untitled'}
+        active={activeNoteId === n.id}
+        route={`/notes/${n.id}`}
+        icon={FileText}
+        indent={indent}
+        onDelete={handleDeleteNote}
+        deleteTitle="Delete note"
+        onDragStart={setDraggingNoteId}
+        onDragEnd={() => { setDraggingNoteId(null); setNoteDropTarget(null) }}
+      />
     )
   }
 
@@ -565,19 +364,7 @@ export default function NotesNav() {
           }}
           className={`transition-colors rounded mx-1 ${noteDropTarget === 'standalone' ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.08] ring-1 ring-[#6498c8]/30' : ''}`}
         >
-          {standaloneNotes.map((n) => (
-            <NoteNavItem
-              key={n.id}
-              n={n}
-              active={activeNoteId === n.id}
-              onDelete={handleDeleteNote}
-              onDragStart={setDraggingNoteId}
-              onDragEnd={() => {
-                setDraggingNoteId(null)
-                setNoteDropTarget(null)
-              }}
-            />
-          ))}
+          {standaloneNotes.map((n) => renderNote(n, false))}
           {noteDropTarget === 'standalone' && standaloneNotes.length === 0 && (
             <p className="text-[11px] text-[#6498c8]/60 px-4 py-2">
               Drop here to remove from folder
@@ -586,7 +373,32 @@ export default function NotesNav() {
         </div>
 
         {/* Folder groups */}
-        {rootNoteFolders.map((folder) => renderNoteFolder(folder, 0))}
+        <FolderTree
+          rootFolders={rootNoteFolders}
+          folderChildrenMap={noteFolderChildrenMap}
+          getOrder={(f) => f.displayOrder}
+          getItemsInFolder={(folderId) =>
+            Array.from(allNotes.values()).filter((n) => n.folderId === folderId)
+          }
+          renderItem={renderNote}
+          draggingItemId={draggingNoteId}
+          dropTarget={noteDropTarget}
+          setDropTarget={setNoteDropTarget}
+          onDrop={handleNoteDrop}
+          collapsedFolders={collapsedNoteFolders}
+          onToggleFolder={toggleNoteFolder}
+          onEditFolder={(folder) => {
+            setEditingNoteFolder(folder)
+            setNoteFolderFormOpen(true)
+          }}
+          onDeleteFolder={handleDeleteNoteFolder}
+          onNewSubfolder={(parentId) => {
+            setEditingNoteFolder(null)
+            setPendingParentNoteFolderId(parentId)
+            setNoteFolderFormOpen(true)
+          }}
+          onNewItemInFolder={handleNewNote}
+        />
 
         {/* By Date section */}
         {dateNotes.length > 0 && (
