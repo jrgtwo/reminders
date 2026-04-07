@@ -1,7 +1,6 @@
 import { useRef, useCallback, useState, useEffect, useMemo } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { Settings, Cloud, CloudOff, Loader2, X } from 'lucide-react'
-import LeftSidebar from './LeftSidebar'
 import RightSidebar from './RightSidebar'
 import BottomNav from './BottomNav'
 import SearchBar from './SearchBar'
@@ -30,9 +29,7 @@ export default function AppShell() {
   const focusSearch = useCallback(() => searchRef.current?.focus(), [])
   const [errorDismissed, setErrorDismissed] = useState(false)
 
-  const setLeftOpen = useUIStore((s) => s.setLeftOpen)
   const setRightOpen = useUIStore((s) => s.setRightOpen)
-  const setReminderSection = useUIStore((s) => s.setReminderSection)
 
   const newReminderDate = useUIStore((s) => s.newReminderDate)
   const setNewReminderDate = useUIStore((s) => s.setNewReminderDate)
@@ -106,15 +103,7 @@ export default function AppShell() {
             </button>
             <div className="flex items-center gap-3">
               <button
-                onClick={() => {
-                  if (window.innerWidth >= 1024) {
-                    setLeftOpen(true)
-                    setReminderSection('overdue', true)
-                    setReminderSection('upcoming', false)
-                  } else {
-                    navigate('/reminders')
-                  }
-                }}
+                onClick={() => navigate('/reminders')}
                 className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
               >
                 <span
@@ -129,15 +118,7 @@ export default function AppShell() {
                 </span>
               </button>
               <button
-                onClick={() => {
-                  if (window.innerWidth >= 1024) {
-                    setLeftOpen(true)
-                    setReminderSection('upcoming', true)
-                    setReminderSection('overdue', false)
-                  } else {
-                    navigate('/reminders')
-                  }
-                }}
+                onClick={() => navigate('/reminders')}
                 className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
               >
                 <span
@@ -279,9 +260,6 @@ export default function AppShell() {
       )}
 
       <div className="flex flex-1 overflow-hidden">
-        <div className="hidden lg:flex shrink-0">
-          <LeftSidebar />
-        </div>
         <main className="flex-1 h-full overflow-auto bg-[var(--bg-app)]">
           <Outlet />
         </main>

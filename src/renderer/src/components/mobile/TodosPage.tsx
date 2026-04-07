@@ -59,8 +59,8 @@ function DateSection({ lists, activeListId, onNewListForDate }: {
 }) {
   const tree = useMemo(() => buildDateTree(lists), [lists])
   const years = Object.keys(tree).sort((a, b) => b.localeCompare(a))
-  const [collapsedYears, setCollapsedYears] = useState<Set<string>>(new Set())
-  const [collapsedMonths, setCollapsedMonths] = useState<Set<string>>(new Set())
+  const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set())
+  const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set())
 
   if (years.length === 0) {
     return <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2">No date-based lists yet</p>
@@ -69,12 +69,12 @@ function DateSection({ lists, activeListId, onNewListForDate }: {
   return (
     <>
       {years.map((year) => {
-        const yearCollapsed = collapsedYears.has(year)
+        const yearCollapsed = !expandedYears.has(year)
         const months = Object.keys(tree[year]).sort((a, b) => b.localeCompare(a))
         return (
           <div key={year}>
             <button
-              onClick={() => setCollapsedYears((prev) => {
+              onClick={() => setExpandedYears((prev) => {
                 const next = new Set(prev)
                 next.has(year) ? next.delete(year) : next.add(year)
                 return next
@@ -89,14 +89,14 @@ function DateSection({ lists, activeListId, onNewListForDate }: {
 
             {!yearCollapsed && months.map((month) => {
               const monthKey = `${year}-${month}`
-              const monthCollapsed = collapsedMonths.has(monthKey)
+              const monthCollapsed = !expandedMonths.has(monthKey)
               const days = Object.keys(tree[year][month]).sort((a, b) => b.localeCompare(a))
               const monthName = MONTH_NAMES[parseInt(month, 10) - 1]
 
               return (
                 <div key={month}>
                   <button
-                    onClick={() => setCollapsedMonths((prev) => {
+                    onClick={() => setExpandedMonths((prev) => {
                       const next = new Set(prev)
                       next.has(monthKey) ? next.delete(monthKey) : next.add(monthKey)
                       return next
@@ -162,7 +162,7 @@ export default function TodosPage() {
   const [newListFolderId, setNewListFolderId] = useState<string | undefined>()
   const [folderFormOpen, setFolderFormOpen] = useState(false)
   const [editingFolder, setEditingFolder] = useState<TodoFolder | null>(null)
-  const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set())
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     loadLists()
@@ -192,7 +192,7 @@ export default function TodosPage() {
   )
 
   function toggleFolder(id: string) {
-    setCollapsedFolders((prev) => {
+    setExpandedFolders((prev) => {
       const next = new Set(prev)
       next.has(id) ? next.delete(id) : next.add(id)
       return next
@@ -252,7 +252,7 @@ export default function TodosPage() {
                 renderItem={(l, indent) => (
                   <ListNavItem key={l.id} l={l} active={activeListId === l.id} indent={indent} />
                 )}
-                collapsedFolders={collapsedFolders}
+                expandedFolders={expandedFolders}
                 onToggleFolder={toggleFolder}
                 onNewItemInFolder={(folderId) => openNewList({ folderId })}
               />

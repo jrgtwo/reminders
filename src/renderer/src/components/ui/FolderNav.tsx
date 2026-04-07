@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode } from 'react'
-import { ChevronRight, ChevronDown, FolderOpen, FolderPlus, Pencil, Trash2, Plus } from 'lucide-react'
+import { ChevronRight, ChevronDown, FolderPlus, Pencil, Trash2, Plus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 export function SidebarNavItem({
@@ -34,7 +34,7 @@ export function SidebarNavItem({
         onDragStart?.(id)
       }}
       onDragEnd={() => onDragEnd?.()}
-      className={`group flex items-center gap-2 w-full py-1.5 transition-colors ${onDragStart ? 'cursor-grab active:cursor-grabbing' : ''} ${indent ? 'pl-8 pr-2' : 'pl-4 pr-2'} ${
+      className={`group flex items-center gap-2 mx-1.5 mb-0.5 py-2 rounded-lg transition-all ${onDragStart ? 'cursor-grab active:cursor-grabbing' : ''} ${indent ? 'pl-7 pr-2' : 'pl-3 pr-2'} ${
         active
           ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.12]'
           : 'hover:bg-slate-50 dark:hover:bg-white/[0.03]'
@@ -73,7 +73,7 @@ interface FolderTreeProps<F extends { id: string; name: string }, I> {
   getOrder: (f: F) => number
   getItemsInFolder: (folderId: string) => I[]
   renderItem: (item: I, indent: boolean) => ReactNode
-  collapsedFolders: Set<string>
+  expandedFolders: Set<string>
   onToggleFolder: (id: string) => void
   onNewItemInFolder: (folderId: string) => void
   // Optional drag-drop
@@ -93,7 +93,7 @@ export function FolderTree<F extends { id: string; name: string }, I>({
   getOrder,
   getItemsInFolder,
   renderItem,
-  collapsedFolders,
+  expandedFolders,
   onToggleFolder,
   onNewItemInFolder,
   draggingItemId,
@@ -106,7 +106,7 @@ export function FolderTree<F extends { id: string; name: string }, I>({
 }: FolderTreeProps<F, I>) {
   function renderFolder(folder: F, depth: number): ReactNode {
     const items = getItemsInFolder(folder.id)
-    const collapsed = collapsedFolders.has(folder.id)
+    const collapsed = !expandedFolders.has(folder.id)
     const isDropTarget = dropTarget === folder.id
     const children = (folderChildrenMap.get(folder.id) ?? []).sort(
       (a, b) => getOrder(a) - getOrder(b)
@@ -127,7 +127,7 @@ export function FolderTree<F extends { id: string; name: string }, I>({
       >
         <div
           onClick={() => onToggleFolder(folder.id)}
-          className="flex items-center gap-1.5 w-full py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors cursor-pointer rounded"
+          className="group flex items-center gap-1.5 w-full py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors cursor-pointer rounded"
           style={{ paddingLeft: `${pl}px`, paddingRight: '8px' }}
         >
           {collapsed ? (
@@ -135,17 +135,13 @@ export function FolderTree<F extends { id: string; name: string }, I>({
           ) : (
             <ChevronDown size={10} className="text-slate-300 dark:text-white/20 shrink-0" />
           )}
-          <FolderOpen
-            size={11}
-            className={`shrink-0 transition-colors ${isDropTarget ? 'text-[#6498c8]' : 'text-blue-400 dark:text-blue-500/70'}`}
-          />
           <span className="text-[11px] font-semibold text-slate-400 dark:text-white/30 uppercase tracking-wide truncate flex-1 text-left">
             {folder.name}
           </span>
           {onEditFolder && (
             <button
               onClick={(e) => { e.stopPropagation(); onEditFolder(folder) }}
-              className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+              className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors opacity-0 group-hover:opacity-100"
               title="Rename folder"
             >
               <Pencil size={9} />
@@ -154,7 +150,7 @@ export function FolderTree<F extends { id: string; name: string }, I>({
           {onDeleteFolder && (
             <button
               onClick={(e) => { e.stopPropagation(); onDeleteFolder(folder.id) }}
-              className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors"
+              className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
               title="Delete folder"
             >
               <Trash2 size={9} />
@@ -163,7 +159,7 @@ export function FolderTree<F extends { id: string; name: string }, I>({
           {onNewSubfolder && (
             <button
               onClick={(e) => { e.stopPropagation(); onNewSubfolder(folder.id) }}
-              className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+              className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors opacity-0 group-hover:opacity-100"
               title="New subfolder"
             >
               <FolderPlus size={9} />
@@ -171,7 +167,7 @@ export function FolderTree<F extends { id: string; name: string }, I>({
           )}
           <button
             onClick={(e) => { e.stopPropagation(); onNewItemInFolder(folder.id) }}
-            className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+            className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors opacity-0 group-hover:opacity-100"
             title="New item in folder"
           >
             <Plus size={10} />
@@ -179,8 +175,8 @@ export function FolderTree<F extends { id: string; name: string }, I>({
         </div>
         {!collapsed && (
           <>
-            {items.map((item) => renderItem(item, true))}
             {children.map((child) => renderFolder(child, depth + 1))}
+            {items.map((item) => renderItem(item, true))}
           </>
         )}
       </div>

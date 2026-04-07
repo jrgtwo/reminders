@@ -33,7 +33,7 @@ export default function ReminderDetail({ reminder, dateStr, onClose }: Props) {
 
   function goToDay() {
     onClose()
-    navigate(`/day/${dateStr}`)
+    navigate(`/day/${dateStr}`, { state: { tab: 'reminders' } })
   }
 
   return (

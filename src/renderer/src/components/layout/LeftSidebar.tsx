@@ -106,19 +106,26 @@ export default function LeftSidebar() {
   const setLeftOpen = useUIStore((s) => s.setLeftOpen)
   const [width, setWidth] = useState(240)
   const dragging = useRef(false)
+  const asideRef = useRef<HTMLElement>(null)
 
   function onResizeStart(e: React.MouseEvent) {
     e.preventDefault()
     dragging.current = true
     const startX = e.clientX
     const startWidth = width
+    const el = asideRef.current!
+    el.style.transition = 'none'
+    let lastWidth = startWidth
 
     function onMouseMove(e: MouseEvent) {
       if (!dragging.current) return
-      setWidth(Math.max(180, Math.min(520, startWidth + e.clientX - startX)))
+      lastWidth = Math.max(180, Math.min(520, startWidth + e.clientX - startX))
+      el.style.width = lastWidth + 'px'
     }
     function onMouseUp() {
       dragging.current = false
+      el.style.transition = ''
+      setWidth(lastWidth)
       window.removeEventListener('mousemove', onMouseMove)
       window.removeEventListener('mouseup', onMouseUp)
       document.body.style.cursor = ''
@@ -241,6 +248,7 @@ export default function LeftSidebar() {
 
   return (
     <aside
+      ref={asideRef}
       className="relative h-full flex flex-col border-r border-slate-300/60 dark:border-white/[0.07] overflow-hidden bg-[var(--bg-app)] transition-[width] duration-200"
       style={{ width: leftOpen ? width : 44 }}
     >

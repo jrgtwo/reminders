@@ -113,7 +113,7 @@ export default function CalendarDay({
       <span
         className={[
           'flex items-center justify-center rounded-full shrink-0 leading-none',
-          tall ? 'w-8 h-8 text-[15px]' : 'w-7 h-7 text-[14px]',
+          tall ? 'text-[15px]' : 'text-[14px]',
           todayDate
             ? 'text-blue-500 dark:text-[#6498c8]'
             : inMonth

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { ChevronRight, ChevronDown, Plus, FolderOpen, FileText } from 'lucide-react'
+import { ChevronRight, ChevronDown, Plus, FolderOpen, FileText, ArrowUpRight } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useNotesStore } from '../../store/notes.store'
 import { useNoteFoldersStore } from '../../store/note_folders.store'
@@ -55,9 +55,9 @@ function DateNoteSection({
 }) {
   const tree = useMemo(() => buildNoteDateTree(notes), [notes])
   const years = Object.keys(tree).sort((a, b) => b.localeCompare(a))
-  const [collapsedYears, setCollapsedYears] = useState<Set<string>>(new Set())
-  const [collapsedMonths, setCollapsedMonths] = useState<Set<string>>(new Set())
-  const [collapsedDays, setCollapsedDays] = useState<Set<string>>(new Set())
+  const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set())
+  const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set())
+  const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set())
 
   if (years.length === 0) {
     return (
@@ -70,13 +70,13 @@ function DateNoteSection({
   return (
     <>
       {years.map((year) => {
-        const yearCollapsed = collapsedYears.has(year)
+        const yearCollapsed = !expandedYears.has(year)
         const months = Object.keys(tree[year]).sort((a, b) => b.localeCompare(a))
         return (
           <div key={year}>
             <button
               onClick={() =>
-                setCollapsedYears((prev) => {
+                setExpandedYears((prev) => {
                   const next = new Set(prev)
                   next.has(year) ? next.delete(year) : next.add(year)
                   return next
@@ -97,7 +97,7 @@ function DateNoteSection({
             {!yearCollapsed &&
               months.map((month) => {
                 const monthKey = `${year}-${month}`
-                const monthCollapsed = collapsedMonths.has(monthKey)
+                const monthCollapsed = !expandedMonths.has(monthKey)
                 const days = Object.keys(tree[year][month]).sort((a, b) => b.localeCompare(a))
                 const monthName = MONTH_NAMES[parseInt(month, 10) - 1]
 
@@ -105,7 +105,7 @@ function DateNoteSection({
                   <div key={month}>
                     <button
                       onClick={() =>
-                        setCollapsedMonths((prev) => {
+                        setExpandedMonths((prev) => {
                           const next = new Set(prev)
                           next.has(monthKey) ? next.delete(monthKey) : next.add(monthKey)
                           return next
@@ -134,13 +134,13 @@ function DateNoteSection({
                         const dayNotes = tree[year][month][day]
                         const dateStr = `${year}-${month}-${day}`
                         const dayKey = `${year}-${month}-${day}`
-                        const dayCollapsed = collapsedDays.has(dayKey)
+                        const dayCollapsed = !expandedDays.has(dayKey)
                         return (
                           <div key={day}>
                             <div className="flex items-center pl-8 pr-4 py-0.5">
                               <button
                                 onClick={() =>
-                                  setCollapsedDays((prev) => {
+                                  setExpandedDays((prev) => {
                                     const next = new Set(prev)
                                     next.has(dayKey) ? next.delete(dayKey) : next.add(dayKey)
                                     return next
@@ -217,7 +217,7 @@ export default function NotesNav() {
   const [noteFolderFormOpen, setNoteFolderFormOpen] = useState(false)
   const [editingNoteFolder, setEditingNoteFolder] = useState<NoteFolder | null>(null)
   const [pendingParentNoteFolderId, setPendingParentNoteFolderId] = useState<string | undefined>()
-  const [collapsedNoteFolders, setCollapsedNoteFolders] = useState<Set<string>>(new Set())
+  const [expandedNoteFolders, setExpandedNoteFolders] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     loadNoteFolders()
@@ -248,7 +248,7 @@ export default function NotesNav() {
   const dateNotes = useMemo(() => Array.from(allNotes.values()).filter((n) => !!n.date), [allNotes])
 
   function toggleNoteFolder(id: string) {
-    setCollapsedNoteFolders((prev) => {
+    setExpandedNoteFolders((prev) => {
       const next = new Set(prev)
       next.has(id) ? next.delete(id) : next.add(id)
       return next
@@ -332,7 +332,27 @@ export default function NotesNav() {
         accent="blue"
         defaultOpen={true}
         headerExtra={
-          <div className="flex items-center gap-0.5 shrink-0">
+          <button
+            onClick={() => navigate('/notes')}
+            className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+            title="Go to Notes"
+          >
+            <ArrowUpRight size={11} />
+          </button>
+        }
+      >
+        {noteCount === 0 && noteFolders.length === 0 && (
+          <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2">No notes yet</p>
+        )}
+
+        {/* My Notes Collapsible Section */}
+        <CollapsibleSection
+          label="My Notes"
+          count={standaloneNotes.length + rootNoteFolders.length}
+          accent="slate"
+          defaultOpen={false}
+        >
+          <div className="flex items-center justify-end gap-0.5 px-3 py-1 border-b border-slate-100 dark:border-white/[0.04]">
             <button
               onClick={() => handleNewNote(undefined)}
               className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
@@ -352,19 +372,33 @@ export default function NotesNav() {
               <FolderOpen size={11} />
             </button>
           </div>
-        }
-      >
-        {noteCount === 0 && noteFolders.length === 0 && (
-          <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2">No notes yet</p>
-        )}
+          <FolderTree
+            rootFolders={rootNoteFolders}
+            folderChildrenMap={noteFolderChildrenMap}
+            getOrder={(f) => f.displayOrder}
+            getItemsInFolder={(folderId) =>
+              Array.from(allNotes.values()).filter((n) => n.folderId === folderId)
+            }
+            renderItem={renderNote}
+            draggingItemId={draggingNoteId}
+            dropTarget={noteDropTarget}
+            setDropTarget={setNoteDropTarget}
+            onDrop={handleNoteDrop}
+            expandedFolders={expandedNoteFolders}
+            onToggleFolder={toggleNoteFolder}
+            onEditFolder={(folder) => {
+              setEditingNoteFolder(folder)
+              setNoteFolderFormOpen(true)
+            }}
+            onDeleteFolder={handleDeleteNoteFolder}
+            onNewSubfolder={(parentId) => {
+              setEditingNoteFolder(null)
+              setPendingParentNoteFolderId(parentId)
+              setNoteFolderFormOpen(true)
+            }}
+            onNewItemInFolder={handleNewNote}
+          />
 
-        {/* My Notes Collapsible Section */}
-        <CollapsibleSection
-          label="My Notes"
-          count={standaloneNotes.length + rootNoteFolders.length}
-          accent="slate"
-          defaultOpen={true}
-        >
           <div
             onDragOver={(e) => {
               if (draggingNoteId) {
@@ -386,33 +420,6 @@ export default function NotesNav() {
               </p>
             )}
           </div>
-
-          <FolderTree
-            rootFolders={rootNoteFolders}
-            folderChildrenMap={noteFolderChildrenMap}
-            getOrder={(f) => f.displayOrder}
-            getItemsInFolder={(folderId) =>
-              Array.from(allNotes.values()).filter((n) => n.folderId === folderId)
-            }
-            renderItem={renderNote}
-            draggingItemId={draggingNoteId}
-            dropTarget={noteDropTarget}
-            setDropTarget={setNoteDropTarget}
-            onDrop={handleNoteDrop}
-            collapsedFolders={collapsedNoteFolders}
-            onToggleFolder={toggleNoteFolder}
-            onEditFolder={(folder) => {
-              setEditingNoteFolder(folder)
-              setNoteFolderFormOpen(true)
-            }}
-            onDeleteFolder={handleDeleteNoteFolder}
-            onNewSubfolder={(parentId) => {
-              setEditingNoteFolder(null)
-              setPendingParentNoteFolderId(parentId)
-              setNoteFolderFormOpen(true)
-            }}
-            onNewItemInFolder={handleNewNote}
-          />
         </CollapsibleSection>
 
         {/* By Date section */}

@@ -303,7 +303,7 @@ export default function WeekView({ displayDate }: Props) {
                       className="absolute left-1 right-1 px-1.5 py-[3px] rounded-md text-[11px] font-semibold bg-[#6498c8]/[0.15] text-[#6498c8] transition-all duration-150 hover:bg-[#6498c8]/[0.28] hover:brightness-125 hover:shadow-md pointer-events-auto overflow-hidden"
                       style={{ top, height }}
                     >
-                      <span className="block truncate">{r.startTime}{r.endTime ? `–${r.endTime}` : ''} {r.title}</span>
+                      <span className="block truncate">{r.title}</span>
                     </button>
                   )
                 })}

@@ -2,6 +2,7 @@
 
 html, body, #root {
   font-family: 'Inter', system-ui, sans-serif;
+  font-size: 18px;
   background-color: var(--bg-app);
 }
 

@@ -59,7 +59,7 @@ export function CollapsibleSection({
         </button>
         {headerExtra}
       </div>
-      {open && <div className="animate-in fade-in duration-200">{children}</div>}
+      {open && <div className="animate-in fade-in duration-200 bg-slate-50/70 dark:bg-white/[0.018] rounded-sm">{children}</div>}
     </div>
   )
 }
