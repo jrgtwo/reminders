@@ -46,12 +46,12 @@ export default function ReminderItem({ reminder, date, onToggle, onEdit, onDelet
             {reminder.description}
           </p>
         )}
-        {(reminder.time || reminder.recurrence) && (
+        {(reminder.startTime || reminder.recurrence) && (
           <div className="flex items-center gap-1.5 mt-1.5">
-            {reminder.time && (
+            {reminder.startTime && (
               <span className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-1.5 py-0.5 rounded">
                 <Clock size={9} />
-                {reminder.time}
+                {reminder.startTime}{reminder.endTime ? ` – ${reminder.endTime}` : ''}
               </span>
             )}
             {reminder.recurrence && (

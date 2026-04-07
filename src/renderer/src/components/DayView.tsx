@@ -101,10 +101,10 @@ export default function DayView() {
     if (cmp > 0) return { overdueReminders: [], upcomingReminders: dayReminders }
     const now = Temporal.Now.plainTimeISO()
     const overdue = dayReminders.filter(
-      (r) => r.time && Temporal.PlainTime.compare(Temporal.PlainTime.from(r.time), now) < 0
+      (r) => r.startTime && Temporal.PlainTime.compare(Temporal.PlainTime.from(r.startTime), now) < 0
     )
     const upcoming = dayReminders.filter(
-      (r) => !r.time || Temporal.PlainTime.compare(Temporal.PlainTime.from(r.time), now) >= 0
+      (r) => !r.startTime || Temporal.PlainTime.compare(Temporal.PlainTime.from(r.startTime), now) >= 0
     )
     return { overdueReminders: overdue, upcomingReminders: upcoming }
   }, [dayReminders, plainDate])

@@ -48,7 +48,7 @@ export function useNotifications(): void {
         const time = currentTimeStr()
 
         for (const r of reminders) {
-          if (!r.time || r.time !== time) continue
+          if (!r.startTime || r.startTime !== time) continue
           if (getOccurrencesInRange(r, t, t).length === 0) continue
           if (r.completedDates.includes(todayStr)) continue
 

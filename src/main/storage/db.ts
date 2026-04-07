@@ -119,7 +119,10 @@ const MIGRATIONS = [
   // MIGRATIONS[6] - Add parent_id to folder tables for nested folder support
   `ALTER TABLE note_folders ADD COLUMN parent_id TEXT;
     ALTER TABLE todo_folders ADD COLUMN parent_id TEXT;
-    UPDATE schema_version SET version = 7;`
+    UPDATE schema_version SET version = 7;`,
+  // MIGRATIONS[7] - Rename time to start_time and add end_time for time ranges
+  `ALTER TABLE reminders RENAME COLUMN time TO start_time;
+    ALTER TABLE reminders ADD COLUMN end_time TEXT;`
 ]
 
 export function getDb(): Database.Database {

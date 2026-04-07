@@ -46,10 +46,10 @@ export default function ReminderDetail({ reminder, dateStr, onClose }: Props) {
             <CalendarDays size={14} className="shrink-0 text-[#6498c8]" />
             <span>{formatDate(dateStr)}</span>
           </div>
-          {reminder.time && (
+          {reminder.startTime && (
             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
               <Clock size={14} className="shrink-0 text-[#6498c8]" />
-              <span>{reminder.time}</span>
+              <span>{reminder.startTime}{reminder.endTime ? ` – ${reminder.endTime}` : ''}</span>
             </div>
           )}
           {reminder.recurrence && (

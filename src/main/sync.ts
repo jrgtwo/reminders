@@ -127,14 +127,15 @@ export class SyncEngine {
       if (!local) {
         db.prepare(
           `INSERT OR IGNORE INTO reminders
-            (id, title, description, date, time, recurrence, completed_dates, created_at, updated_at, deleted_at, last_synced_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            (id, title, description, date, start_time, end_time, recurrence, completed_dates, created_at, updated_at, deleted_at, last_synced_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         ).run(
           r.id,
           r.title,
           r.description,
           r.date,
-          r.time,
+          r.start_time,
+          r.end_time,
           r.recurrence,
           r.completed_dates,
           r.created_at,
@@ -155,13 +156,14 @@ export class SyncEngine {
           const remoteDates: string[] = JSON.parse(r.completed_dates ?? '[]')
           const merged = JSON.stringify([...new Set([...localDates, ...remoteDates])])
           db.prepare(
-            `UPDATE reminders SET title = ?, description = ?, date = ?, time = ?, recurrence = ?,
-              completed_dates = ?, updated_at = ?, deleted_at = ?, last_synced_at = ? WHERE id = ?`
+            `UPDATE reminders SET title = ?, description = ?, date = ?, start_time = ?, end_time = ?,
+              recurrence = ?, completed_dates = ?, updated_at = ?, deleted_at = ?, last_synced_at = ? WHERE id = ?`
           ).run(
             r.title,
             r.description,
             r.date,
-            r.time,
+            r.start_time,
+            r.end_time,
             r.recurrence,
             merged,
             r.updated_at,
@@ -401,7 +403,8 @@ export class SyncEngine {
         title: r.title,
         description: r.description,
         date: r.date,
-        time: r.time,
+        start_time: r.start_time,
+        end_time: r.end_time,
         recurrence: r.recurrence,
         completed_dates: r.completed_dates,
         created_at: r.created_at,

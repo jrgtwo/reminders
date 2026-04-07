@@ -24,7 +24,8 @@ export default function ReminderForm({ date, reminder, defaultTime, onSave, onCl
   const [title, setTitle] = useState(reminder?.title ?? '')
   const [description, setDescription] = useState(reminder?.description ?? '')
   const [reminderDate, setReminderDate] = useState(reminder?.date ?? date)
-  const [time, setTime] = useState(reminder?.time ?? defaultTime ?? '')
+  const [startTime, setStartTime] = useState(reminder?.startTime ?? defaultTime ?? '')
+  const [endTime, setEndTime] = useState(reminder?.endTime ?? '')
   const [recurring, setRecurring] = useState(!!reminder?.recurrence)
   const [recurrence, setRecurrence] = useState<RecurrenceRule>(
     reminder?.recurrence ?? DEFAULT_RECURRENCE,
@@ -46,7 +47,8 @@ export default function ReminderForm({ date, reminder, defaultTime, onSave, onCl
       title: title.trim(),
       description: description.trim() || undefined,
       date: reminderDate,
-      time: time || undefined,
+      startTime: startTime || undefined,
+      endTime: endTime || undefined,
       recurrence: recurring ? recurrence : undefined,
       completedDates: reminder?.completedDates ?? [],
       createdAt: reminder?.createdAt ?? now,
@@ -91,12 +93,21 @@ export default function ReminderForm({ date, reminder, defaultTime, onSave, onCl
             onChange={(e) => setReminderDate(e.target.value)}
           />
           <Input
-            label="Time (optional)"
+            label="Start Time (optional)"
             type="time"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
+            value={startTime}
+            onChange={(e) => setStartTime(e.target.value)}
           />
         </div>
+
+        {startTime && (
+          <Input
+            label="End Time (optional)"
+            type="time"
+            value={endTime}
+            onChange={(e) => setEndTime(e.target.value)}
+          />
+        )}
 
         {/* Recurrence toggle */}
         <label className="flex items-center gap-2 cursor-pointer select-none">
