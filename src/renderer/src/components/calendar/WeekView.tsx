@@ -56,7 +56,7 @@ export default function WeekView({ displayDate }: Props) {
     const allDay: Record<string, Reminder[]> = {}
     for (const reminder of reminders) {
       for (const dateStr of getOccurrencesInRange(reminder, days[0], days[6])) {
-        if (reminder.time) {
+        if (reminder.startTime) {
           if (!timed[dateStr]) timed[dateStr] = []
           timed[dateStr].push(reminder)
         } else {
@@ -206,7 +206,7 @@ export default function WeekView({ displayDate }: Props) {
                 const dateStr = day.toString()
                 const isToday = dateStr === todayStr
                 const cellReminders = (timedByDate[dateStr] ?? []).filter(
-                  (r) => r.time && parseHour(r.time) === hour
+                  (r) => r.startTime && parseHour(r.startTime) === hour
                 )
                 return (
                   <div
@@ -226,7 +226,7 @@ export default function WeekView({ displayDate }: Props) {
                           onClick={(e) => { e.stopPropagation(); setDetail({ reminder: r, dateStr }) }}
                           className="w-full text-left px-1.5 py-[3px] rounded-md text-[11px] font-semibold truncate bg-[#6498c8]/[0.15] text-[#6498c8] transition-all duration-150 hover:bg-[#6498c8]/[0.28] hover:brightness-125 hover:shadow-md hover:scale-[1.03]"
                         >
-                          {r.time} {r.title}
+                          {r.startTime}{r.endTime ? `–${r.endTime}` : ''} {r.title}
                         </button>
                       ))}
                     </div>

@@ -59,7 +59,7 @@ function checkAndFire(): void {
   }
 
   for (const r of reminders) {
-    if (!r.time || r.time !== time) continue
+    if (!r.startTime || r.startTime !== time) continue
     if (!hasOccurrenceToday(r, today)) continue
     if (r.completedDates.includes(today)) continue
 

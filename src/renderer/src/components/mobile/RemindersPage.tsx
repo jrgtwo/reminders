@@ -87,10 +87,10 @@ export default function RemindersPage() {
   const upcoming = useMemo(() => {
     const start = today()
     const end = start.add({ days: 30 })
-    const items: { id: string; title: string; time?: string; dateStr: string }[] = []
+    const items: { id: string; title: string; startTime?: string; dateStr: string }[] = []
     for (const r of reminders) {
       for (const dateStr of getOccurrencesInRange(r, start, end)) {
-        items.push({ id: r.id, title: r.title, time: r.time, dateStr })
+        items.push({ id: r.id, title: r.title, startTime: r.startTime, dateStr })
       }
     }
     items.sort((a, b) => a.dateStr.localeCompare(b.dateStr))

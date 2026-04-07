@@ -13,7 +13,8 @@ export interface Reminder {
   title: string
   description?: string
   date: string
-  time?: string
+  startTime?: string
+  endTime?: string
   recurrence?: RecurrenceRule
   completedDates: string[]
   createdAt: string

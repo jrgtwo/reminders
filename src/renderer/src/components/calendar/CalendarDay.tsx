@@ -132,7 +132,7 @@ export default function CalendarDay({
         <div className={`flex flex-col w-full ${tall ? 'gap-1' : 'gap-[3px]'}`}>
           <div className="flex flex-row flex-wrap lg:flex-col w-full gap-1 lg:gap-[3px]">
             {reminders.slice(0, 4).map((r) => {
-              const icon = r.time ? (
+              const icon = r.startTime ? (
                 <Clock size={13} />
               ) : r.recurrence ? (
                 <Repeat size={13} />
