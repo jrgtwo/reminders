@@ -122,7 +122,9 @@ const MIGRATIONS = [
     UPDATE schema_version SET version = 7;`,
   // MIGRATIONS[7] - Rename time to start_time and add end_time for time ranges
   `ALTER TABLE reminders RENAME COLUMN time TO start_time;
-    ALTER TABLE reminders ADD COLUMN end_time TEXT;`
+    ALTER TABLE reminders ADD COLUMN end_time TEXT;`,
+  // MIGRATIONS[8] - Add end_date for multi-day reminders
+  `ALTER TABLE reminders ADD COLUMN end_date TEXT;`
 ]
 
 export function getDb(): Database.Database {

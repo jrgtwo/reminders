@@ -51,10 +51,20 @@ export default function WeekView({ displayDate }: Props) {
     return map
   }, [lists])
 
-  const { timedByDate, allDayByDate } = useMemo(() => {
+  const { timedByDate, allDayByDate, multiDayReminders } = useMemo(() => {
     const timed: Record<string, Reminder[]> = {}
     const allDay: Record<string, Reminder[]> = {}
+    const multiDay: Reminder[] = []
+    const weekStart = days[0].toString()
+    const weekEnd = days[6].toString()
+
     for (const reminder of reminders) {
+      if (reminder.endDate && reminder.endDate > reminder.date) {
+        if (reminder.date <= weekEnd && reminder.endDate >= weekStart) {
+          multiDay.push(reminder)
+        }
+        continue
+      }
       for (const dateStr of getOccurrencesInRange(reminder, days[0], days[6])) {
         if (reminder.startTime) {
           if (!timed[dateStr]) timed[dateStr] = []
@@ -65,7 +75,7 @@ export default function WeekView({ displayDate }: Props) {
         }
       }
     }
-    return { timedByDate: timed, allDayByDate: allDay }
+    return { timedByDate: timed, allDayByDate: allDay, multiDayReminders: multiDay }
   }, [reminders, days])
 
   const selectedPlainDate = useMemo(() => parseDateStr(selectedDate), [selectedDate])
@@ -75,9 +85,20 @@ export default function WeekView({ displayDate }: Props) {
   const nowMinutes = now.hour * 60 + now.minute
   const nowTop = (nowMinutes / 60) * SLOT_H
 
-  const hasAllDay = days.some(
+  const hasSingleDayAllDay = days.some(
     (d) => (allDayByDate[d.toString()] ?? []).length > 0 || (listCountByDate[d.toString()] ?? 0) > 0
   )
+  const hasAllDay = multiDayReminders.length > 0 || hasSingleDayAllDay
+
+  function getColSpan(r: Reminder) {
+    const weekStart = days[0].toString()
+    const weekEnd = days[6].toString()
+    const clampedStart = r.date < weekStart ? weekStart : r.date
+    const clampedEnd = r.endDate! > weekEnd ? weekEnd : r.endDate!
+    const startCol = days.findIndex((d) => d.toString() === clampedStart)
+    const endCol = days.findIndex((d) => d.toString() === clampedEnd)
+    return { startCol: startCol === -1 ? 0 : startCol, endCol: endCol === -1 ? 6 : endCol }
+  }
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -135,43 +156,72 @@ export default function WeekView({ displayDate }: Props) {
 
         {/* All-day strip */}
         {hasAllDay && (
-          <div
-            className="sticky top-[65px] z-10 grid border-b border-slate-200/60 dark:border-white/[0.06] bg-[var(--bg-app)]"
-            style={{ gridTemplateColumns: '3.5rem repeat(7, 1fr)' }}
-          >
-            <div className="flex items-center justify-end pr-2 py-1">
-              <span className="text-[9px] font-medium uppercase tracking-wide text-slate-300 dark:text-white/20">all‑day</span>
-            </div>
-            {days.map((day) => {
-              const dateStr = day.toString()
-              const dayReminders = allDayByDate[dateStr] ?? []
-              const dayListCount = listCountByDate[dateStr] ?? 0
-              const isOverdue = dateStr < todayStr
-              const listBadge = isOverdue
-                ? 'bg-[#e8a045]/[0.12] text-[#e8a045] hover:bg-[#e8a045]/[0.28]'
-                : 'bg-emerald-500/[0.12] text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/[0.28]'
-              return (
-                <div key={dateStr} className={['flex flex-col gap-[2px] px-1 py-1 min-h-[28px] overflow-hidden min-w-0', dateStr === todayStr ? 'bg-blue-50/60 dark:bg-[#6498c8]/[0.07]' : ''].join(' ')}>
-                  {dayReminders.slice(0, 3).map((r) => (
-                    <button
-                      key={r.id}
-                      onClick={(e) => { e.stopPropagation(); setDetail({ reminder: r, dateStr }) }}
-                      className="w-full text-left px-1.5 py-[2px] rounded text-[10px] font-semibold truncate bg-[#6498c8]/[0.12] text-[#6498c8] transition-all duration-150 hover:bg-[#6498c8]/[0.28] hover:brightness-125 hover:shadow-md hover:scale-[1.03]"
-                    >
-                      {r.title}
-                    </button>
-                  ))}
-                  {dayListCount > 0 && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); navigate(`/day/${dateStr}`, { state: { tab: 'todos' } }) }}
-                      className={`w-full text-left px-1.5 py-[2px] rounded text-[10px] font-semibold truncate transition-all duration-150 hover:brightness-125 hover:shadow-md hover:scale-[1.03] ${listBadge}`}
-                    >
-                      ☐ {dayListCount} {dayListCount === 1 ? 'list' : 'lists'}
-                    </button>
-                  )}
+          <div className="sticky top-[65px] z-10 border-b border-slate-200/60 dark:border-white/[0.06] bg-[var(--bg-app)]">
+            {/* Multi-day spanning reminders */}
+            {multiDayReminders.length > 0 && (
+              <div className="flex py-[3px]">
+                <div style={{ width: '3.5rem', flexShrink: 0 }} />
+                <div className="flex-1 relative" style={{ height: '22px' }}>
+                  {multiDayReminders.map((r) => {
+                    const { startCol, endCol } = getColSpan(r)
+                    return (
+                      <button
+                        key={r.id}
+                        onClick={(e) => { e.stopPropagation(); setDetail({ reminder: r, dateStr: r.date }) }}
+                        className="absolute top-0 h-full px-1.5 rounded text-[10px] font-semibold truncate bg-[#6498c8]/[0.18] text-[#6498c8] transition-all duration-150 hover:bg-[#6498c8]/[0.32] hover:brightness-125 hover:shadow-md"
+                        style={{
+                          left: `calc(${startCol} * 100% / 7)`,
+                          width: `calc(${endCol - startCol + 1} * 100% / 7 - 4px)`,
+                        }}
+                      >
+                        {r.title}
+                      </button>
+                    )
+                  })}
                 </div>
-              )
-            })}
+              </div>
+            )}
+            {/* Single-day all-day reminders */}
+            {hasSingleDayAllDay && (
+              <div
+                className="grid"
+                style={{ gridTemplateColumns: '3.5rem repeat(7, 1fr)' }}
+              >
+                <div className="flex items-center justify-end pr-2 py-1">
+                  <span className="text-[9px] font-medium uppercase tracking-wide text-slate-300 dark:text-white/20">all‑day</span>
+                </div>
+                {days.map((day) => {
+                  const dateStr = day.toString()
+                  const dayReminders = allDayByDate[dateStr] ?? []
+                  const dayListCount = listCountByDate[dateStr] ?? 0
+                  const isOverdue = dateStr < todayStr
+                  const listBadge = isOverdue
+                    ? 'bg-[#e8a045]/[0.12] text-[#e8a045] hover:bg-[#e8a045]/[0.28]'
+                    : 'bg-emerald-500/[0.12] text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/[0.28]'
+                  return (
+                    <div key={dateStr} className={['flex flex-col gap-[2px] px-1 py-1 min-h-[28px] overflow-hidden min-w-0', dateStr === todayStr ? 'bg-blue-50/60 dark:bg-[#6498c8]/[0.07]' : ''].join(' ')}>
+                      {dayReminders.slice(0, 3).map((r) => (
+                        <button
+                          key={r.id}
+                          onClick={(e) => { e.stopPropagation(); setDetail({ reminder: r, dateStr }) }}
+                          className="w-full text-left px-1.5 py-[2px] rounded text-[10px] font-semibold truncate bg-[#6498c8]/[0.12] text-[#6498c8] transition-all duration-150 hover:bg-[#6498c8]/[0.28] hover:brightness-125 hover:shadow-md hover:scale-[1.03]"
+                        >
+                          {r.title}
+                        </button>
+                      ))}
+                      {dayListCount > 0 && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); navigate(`/day/${dateStr}`, { state: { tab: 'todos' } }) }}
+                          className={`w-full text-left px-1.5 py-[2px] rounded text-[10px] font-semibold truncate transition-all duration-150 hover:brightness-125 hover:shadow-md hover:scale-[1.03] ${listBadge}`}
+                        >
+                          ☐ {dayListCount} {dayListCount === 1 ? 'list' : 'lists'}
+                        </button>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
         )}
 
@@ -205,36 +255,61 @@ export default function WeekView({ displayDate }: Props) {
               {days.map((day) => {
                 const dateStr = day.toString()
                 const isToday = dateStr === todayStr
-                const cellReminders = (timedByDate[dateStr] ?? []).filter(
-                  (r) => r.startTime && parseHour(r.startTime) === hour
-                )
                 return (
                   <div
                     key={`${dateStr}-${hour}`}
                     className={[
-                      'relative border-t border-l border-slate-200/50 dark:border-white/[0.04] overflow-hidden min-w-0 cursor-pointer',
+                      'border-t border-l border-slate-200/50 dark:border-white/[0.04] min-w-0 cursor-pointer',
                       'opacity-80 hover:opacity-100 hover:brightness-105 transition-all duration-150',
                       isToday ? 'bg-blue-50/60 dark:bg-[#6498c8]/[0.07]' : 'hover:bg-slate-50/80 dark:hover:bg-white/[0.02]',
                     ].filter(Boolean).join(' ')}
                     style={{ height: `${SLOT_H}px` }}
                     onClick={() => setNewForm({ date: dateStr, time: `${String(hour).padStart(2, '0')}:00` })}
-                  >
-                    <div className="flex flex-col gap-[2px] p-1 overflow-hidden h-full">
-                      {cellReminders.map((r) => (
-                        <button
-                          key={r.id}
-                          onClick={(e) => { e.stopPropagation(); setDetail({ reminder: r, dateStr }) }}
-                          className="w-full text-left px-1.5 py-[3px] rounded-md text-[11px] font-semibold truncate bg-[#6498c8]/[0.15] text-[#6498c8] transition-all duration-150 hover:bg-[#6498c8]/[0.28] hover:brightness-125 hover:shadow-md hover:scale-[1.03]"
-                        >
-                          {r.startTime}{r.endTime ? `–${r.endTime}` : ''} {r.title}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  />
                 )
               })}
             </>
           ))}
+
+          {/* Timed reminder overlays — one absolute column per day */}
+          {days.map((day, dayIndex) => {
+            const dateStr = day.toString()
+            const dayReminders = timedByDate[dateStr] ?? []
+            if (dayReminders.length === 0) return null
+            return (
+              <div
+                key={`overlay-${dateStr}`}
+                className="absolute top-0 pointer-events-none"
+                style={{
+                  left: `calc(3.5rem + ${dayIndex} * (100% - 3.5rem) / 7)`,
+                  width: `calc((100% - 3.5rem) / 7)`,
+                  height: `${SLOT_H * 24}px`,
+                }}
+              >
+                {dayReminders.map((r) => {
+                  const [sh, sm] = r.startTime!.split(':').map(Number)
+                  const top = (sh + sm / 60) * SLOT_H
+                  let height: number
+                  if (r.endTime) {
+                    const [eh, em] = r.endTime.split(':').map(Number)
+                    height = Math.max(20, ((eh + em / 60) - (sh + sm / 60)) * SLOT_H)
+                  } else {
+                    height = SLOT_H - 8
+                  }
+                  return (
+                    <button
+                      key={r.id}
+                      onClick={(e) => { e.stopPropagation(); setDetail({ reminder: r, dateStr }) }}
+                      className="absolute left-1 right-1 px-1.5 py-[3px] rounded-md text-[11px] font-semibold bg-[#6498c8]/[0.15] text-[#6498c8] transition-all duration-150 hover:bg-[#6498c8]/[0.28] hover:brightness-125 hover:shadow-md pointer-events-auto overflow-hidden"
+                      style={{ top, height }}
+                    >
+                      <span className="block truncate">{r.startTime}{r.endTime ? `–${r.endTime}` : ''} {r.title}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            )
+          })}
         </div>
       </div>
 

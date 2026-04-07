@@ -16,14 +16,14 @@ export function getRemindersByDate(date: string): Reminder[] {
 export function saveReminder(r: Reminder): Reminder {
   getDb()
     .prepare(
-      `INSERT INTO reminders (id, title, description, date, start_time, end_time, recurrence,
+      `INSERT INTO reminders (id, title, description, date, end_date, start_time, end_time, recurrence,
  completed_dates, created_at, updated_at)
-        VALUES (@id, @title, @description, @date, @start_time, @end_time, @recurrence,
+        VALUES (@id, @title, @description, @date, @end_date, @start_time, @end_time, @recurrence,
  @completed_dates, @created_at, @updated_at)
         ON CONFLICT(id) DO UPDATE SET
-          title = @title, description = @description, date = @date, start_time = @start_time,
-          end_time = @end_time, recurrence = @recurrence, completed_dates = @completed_dates,
-          updated_at = @updated_at`
+          title = @title, description = @description, date = @date, end_date = @end_date,
+          start_time = @start_time, end_time = @end_time, recurrence = @recurrence,
+          completed_dates = @completed_dates, updated_at = @updated_at`
     )
     .run(serialize(r))
   return r
@@ -42,6 +42,7 @@ function serialize(r: Reminder) {
     title: r.title,
     description: r.description ?? null,
     date: r.date,
+    end_date: r.endDate ?? null,
     start_time: r.startTime ?? null,
     end_time: r.endTime ?? null,
     recurrence: r.recurrence ? JSON.stringify(r.recurrence) : null,
@@ -57,6 +58,7 @@ function deserialize(row: any): Reminder {
     title: row.title,
     description: row.description ?? undefined,
     date: row.date,
+    endDate: row.end_date ?? undefined,
     startTime: row.start_time ?? undefined,
     endTime: row.end_time ?? undefined,
     recurrence: row.recurrence ? JSON.parse(row.recurrence) : undefined,
