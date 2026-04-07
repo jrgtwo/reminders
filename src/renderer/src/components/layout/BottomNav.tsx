@@ -1,10 +1,11 @@
-import { Calendar, Bell, CheckSquare } from 'lucide-react'
+import { Calendar, Bell, CheckSquare, FileText } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 
 const tabs = [
   { label: 'Calendar', icon: Calendar, path: '/' },
   { label: 'Reminders', icon: Bell, path: '/reminders' },
   { label: 'Todos', icon: CheckSquare, path: '/todos' },
+  { label: 'Notes', icon: FileText, path: '/notes' },
 ]
 
 export default function BottomNav() {
