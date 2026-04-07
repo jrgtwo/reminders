@@ -82,6 +82,7 @@ export default function DayView() {
   const [editing, setEditing] = useState<Reminder | null>(null)
   const [listFormOpen, setListFormOpen] = useState(false)
   const [editingList, setEditingList] = useState<TodoList | null>(null)
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!triggerNewReminder) return
@@ -209,7 +210,6 @@ export default function DayView() {
         <div>
           {(() => {
             const existingNotes = Array.from(notes.values()).filter((n) => n.date === dateStr)
-            const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
 
             const handleNew = () => {
               const now = new Date()

@@ -1,12 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import {
-  ChevronRight,
-  ChevronDown,
-  Plus,
-  FolderOpen,
-  FileText
-} from 'lucide-react'
+import { ChevronRight, ChevronDown, Plus, FolderOpen, FileText } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useNotesStore } from '../../store/notes.store'
 import { useNoteFoldersStore } from '../../store/note_folders.store'
@@ -17,8 +11,18 @@ import { CollapsibleSection } from '../ui/CollapsibleSection'
 import { SidebarNavItem, FolderTree } from '../ui/FolderNav'
 
 const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December'
 ]
 
 type NoteDayMap = Record<string, Note[]>
@@ -145,9 +149,15 @@ function DateNoteSection({
                                 className="flex items-center gap-1.5 flex-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
                               >
                                 {dayCollapsed ? (
-                                  <ChevronRight size={9} className="text-slate-300 dark:text-white/20 shrink-0" />
+                                  <ChevronRight
+                                    size={9}
+                                    className="text-slate-300 dark:text-white/20 shrink-0"
+                                  />
                                 ) : (
-                                  <ChevronDown size={9} className="text-slate-300 dark:text-white/20 shrink-0" />
+                                  <ChevronDown
+                                    size={9}
+                                    className="text-slate-300 dark:text-white/20 shrink-0"
+                                  />
                                 )}
                                 <span className="text-[11px] font-semibold text-slate-400 dark:text-white/25">
                                   {parseInt(day, 10)}
@@ -161,19 +171,20 @@ function DateNoteSection({
                                 <Plus size={10} />
                               </button>
                             </div>
-                            {!dayCollapsed && dayNotes.map((n) => (
-                              <SidebarNavItem
-                                key={n.id}
-                                id={n.id}
-                                label={n.title || 'Untitled'}
-                                active={activeNoteId === n.id}
-                                route={`/notes/${n.id}`}
-                                icon={FileText}
-                                indent
-                                onDelete={onDeleteNote}
-                                deleteTitle="Delete note"
-                              />
-                            ))}
+                            {!dayCollapsed &&
+                              dayNotes.map((n) => (
+                                <SidebarNavItem
+                                  key={n.id}
+                                  id={n.id}
+                                  label={n.title || 'Untitled'}
+                                  active={activeNoteId === n.id}
+                                  route={`/notes/${n.id}`}
+                                  icon={FileText}
+                                  indent
+                                  onDelete={onDeleteNote}
+                                  deleteTitle="Delete note"
+                                />
+                              ))}
                           </div>
                         )
                       })}
@@ -220,9 +231,7 @@ export default function NotesNav() {
   const noteFolderChildrenMap = useMemo(() => buildFolderTree(noteFolders), [noteFolders])
   const rootNoteFolders = useMemo(
     () =>
-      (noteFolderChildrenMap.get(undefined) ?? []).sort(
-        (a, b) => a.displayOrder - b.displayOrder
-      ),
+      (noteFolderChildrenMap.get(undefined) ?? []).sort((a, b) => a.displayOrder - b.displayOrder),
     [noteFolderChildrenMap]
   )
 
@@ -236,10 +245,7 @@ export default function NotesNav() {
     [allNotes]
   )
 
-  const dateNotes = useMemo(
-    () => Array.from(allNotes.values()).filter((n) => !!n.date),
-    [allNotes]
-  )
+  const dateNotes = useMemo(() => Array.from(allNotes.values()).filter((n) => !!n.date), [allNotes])
 
   function toggleNoteFolder(id: string) {
     setCollapsedNoteFolders((prev) => {
@@ -310,7 +316,10 @@ export default function NotesNav() {
         onDelete={handleDeleteNote}
         deleteTitle="Delete note"
         onDragStart={setDraggingNoteId}
-        onDragEnd={() => { setDraggingNoteId(null); setNoteDropTarget(null) }}
+        onDragEnd={() => {
+          setDraggingNoteId(null)
+          setNoteDropTarget(null)
+        }}
       />
     )
   }
@@ -349,56 +358,62 @@ export default function NotesNav() {
           <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2">No notes yet</p>
         )}
 
-        {/* Standalone notes (no folder, no date) */}
-        <div
-          onDragOver={(e) => {
-            if (draggingNoteId) {
-              e.preventDefault()
-              setNoteDropTarget('standalone')
-            }
-          }}
-          onDragLeave={() => setNoteDropTarget(null)}
-          onDrop={(e) => {
-            e.preventDefault()
-            handleNoteDrop(undefined)
-          }}
-          className={`transition-colors rounded mx-1 ${noteDropTarget === 'standalone' ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.08] ring-1 ring-[#6498c8]/30' : ''}`}
+        {/* My Notes Collapsible Section */}
+        <CollapsibleSection
+          label="My Notes"
+          count={standaloneNotes.length + rootNoteFolders.length}
+          accent="slate"
+          defaultOpen={true}
         >
-          {standaloneNotes.map((n) => renderNote(n, false))}
-          {noteDropTarget === 'standalone' && standaloneNotes.length === 0 && (
-            <p className="text-[11px] text-[#6498c8]/60 px-4 py-2">
-              Drop here to remove from folder
-            </p>
-          )}
-        </div>
+          <div
+            onDragOver={(e) => {
+              if (draggingNoteId) {
+                e.preventDefault()
+                setNoteDropTarget('standalone')
+              }
+            }}
+            onDragLeave={() => setNoteDropTarget(null)}
+            onDrop={(e) => {
+              e.preventDefault()
+              handleNoteDrop(undefined)
+            }}
+            className={`transition-colors rounded mx-1 ${noteDropTarget === 'standalone' ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.08] ring-1 ring-[#6498c8]/30' : ''}`}
+          >
+            {standaloneNotes.map((n) => renderNote(n, false))}
+            {noteDropTarget === 'standalone' && standaloneNotes.length === 0 && (
+              <p className="text-[11px] text-[#6498c8]/60 px-4 py-2">
+                Drop here to remove from folder
+              </p>
+            )}
+          </div>
 
-        {/* Folder groups */}
-        <FolderTree
-          rootFolders={rootNoteFolders}
-          folderChildrenMap={noteFolderChildrenMap}
-          getOrder={(f) => f.displayOrder}
-          getItemsInFolder={(folderId) =>
-            Array.from(allNotes.values()).filter((n) => n.folderId === folderId)
-          }
-          renderItem={renderNote}
-          draggingItemId={draggingNoteId}
-          dropTarget={noteDropTarget}
-          setDropTarget={setNoteDropTarget}
-          onDrop={handleNoteDrop}
-          collapsedFolders={collapsedNoteFolders}
-          onToggleFolder={toggleNoteFolder}
-          onEditFolder={(folder) => {
-            setEditingNoteFolder(folder)
-            setNoteFolderFormOpen(true)
-          }}
-          onDeleteFolder={handleDeleteNoteFolder}
-          onNewSubfolder={(parentId) => {
-            setEditingNoteFolder(null)
-            setPendingParentNoteFolderId(parentId)
-            setNoteFolderFormOpen(true)
-          }}
-          onNewItemInFolder={handleNewNote}
-        />
+          <FolderTree
+            rootFolders={rootNoteFolders}
+            folderChildrenMap={noteFolderChildrenMap}
+            getOrder={(f) => f.displayOrder}
+            getItemsInFolder={(folderId) =>
+              Array.from(allNotes.values()).filter((n) => n.folderId === folderId)
+            }
+            renderItem={renderNote}
+            draggingItemId={draggingNoteId}
+            dropTarget={noteDropTarget}
+            setDropTarget={setNoteDropTarget}
+            onDrop={handleNoteDrop}
+            collapsedFolders={collapsedNoteFolders}
+            onToggleFolder={toggleNoteFolder}
+            onEditFolder={(folder) => {
+              setEditingNoteFolder(folder)
+              setNoteFolderFormOpen(true)
+            }}
+            onDeleteFolder={handleDeleteNoteFolder}
+            onNewSubfolder={(parentId) => {
+              setEditingNoteFolder(null)
+              setPendingParentNoteFolderId(parentId)
+              setNoteFolderFormOpen(true)
+            }}
+            onNewItemInFolder={handleNewNote}
+          />
+        </CollapsibleSection>
 
         {/* By Date section */}
         {dateNotes.length > 0 && (
