@@ -115,7 +115,11 @@ const MIGRATIONS = [
     CREATE INDEX IF NOT EXISTS idx_notes_folder ON notes(folder_id, display_order);
     CREATE INDEX IF NOT EXISTS idx_notes_date ON notes(due_date, display_order);
     CREATE INDEX IF NOT EXISTS idx_notes_deleted ON notes(deleted_at);
-    UPDATE schema_version SET version = 6;`
+    UPDATE schema_version SET version = 6;`,
+  // MIGRATIONS[6] - Add parent_id to folder tables for nested folder support
+  `ALTER TABLE note_folders ADD COLUMN parent_id TEXT;
+    ALTER TABLE todo_folders ADD COLUMN parent_id TEXT;
+    UPDATE schema_version SET version = 7;`
 ]
 
 export function getDb(): Database.Database {

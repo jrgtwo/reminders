@@ -11,10 +11,10 @@ export function getAllFolders(): TodoFolder[] {
 export function saveFolder(f: TodoFolder): TodoFolder {
   getDb()
     .prepare(
-      `INSERT INTO todo_folders (id, name, sort_order, created_at, updated_at)
-        VALUES (@id, @name, @sort_order, @created_at, @updated_at)
+      `INSERT INTO todo_folders (id, name, sort_order, parent_id, created_at, updated_at)
+        VALUES (@id, @name, @sort_order, @parent_id, @created_at, @updated_at)
         ON CONFLICT(id) DO UPDATE SET
-          name = @name, sort_order = @sort_order, updated_at = @updated_at`
+          name = @name, sort_order = @sort_order, parent_id = @parent_id, updated_at = @updated_at`
     )
     .run(serialize(f))
   return f
@@ -30,6 +30,7 @@ function serialize(f: TodoFolder) {
     id: f.id,
     name: f.name,
     sort_order: f.order,
+    parent_id: f.parentId ?? null,
     created_at: f.createdAt,
     updated_at: f.updatedAt,
   }
@@ -40,6 +41,7 @@ function deserialize(row: any): TodoFolder {
     id: row.id,
     name: row.name,
     order: row.sort_order,
+    parentId: row.parent_id ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }

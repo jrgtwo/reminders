@@ -6,11 +6,12 @@ import Input from '../ui/Input'
 
 interface Props {
   folder: TodoFolder | null
+  parentId?: string
   onSave: (f: TodoFolder) => Promise<void>
   onClose: () => void
 }
 
-export default function FolderForm({ folder, onSave, onClose }: Props) {
+export default function FolderForm({ folder, parentId, onSave, onClose }: Props) {
   const isNew = !folder
   const [name, setName] = useState(folder?.name ?? '')
   const [saving, setSaving] = useState(false)
@@ -25,6 +26,7 @@ export default function FolderForm({ folder, onSave, onClose }: Props) {
       id: folder?.id ?? crypto.randomUUID(),
       name: name.trim(),
       order: folder?.order ?? Date.now(),
+      parentId: isNew ? parentId : folder?.parentId,
       createdAt: folder?.createdAt ?? now,
       updatedAt: now,
     }

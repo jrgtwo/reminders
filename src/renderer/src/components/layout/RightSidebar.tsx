@@ -10,6 +10,7 @@ import {
   ArrowRight,
   List,
   FolderOpen,
+  FolderPlus,
   FileText,
   Pencil,
   Trash2
@@ -20,8 +21,9 @@ import { useTodoListsStore } from '../../store/todo_lists.store'
 import { useNotesStore } from '../../store/notes.store'
 import { useNoteFoldersStore } from '../../store/note_folders.store'
 import { useUIStore } from '../../store/ui.store'
+import { buildFolderTree, getDescendantIds } from '../../lib/folderTree'
 
-import type { TodoFolder, TodoList, Note } from '../../types/models'
+import type { TodoFolder, NoteFolder, TodoList, Note } from '../../types/models'
 import FolderForm from '../lists/FolderForm'
 import ListForm from '../lists/ListForm'
 import NoteFolderForm from '../notes/NoteFolderForm'
@@ -389,17 +391,24 @@ function ListNavItem({
   l,
   active,
   indent = false,
-  onDelete
+  onDelete,
+  onDragStart,
+  onDragEnd,
 }: {
   l: TodoList
   active: boolean
   indent?: boolean
   onDelete: (id: string) => void
+  onDragStart?: (id: string) => void
+  onDragEnd?: () => void
 }) {
   const navigate = useNavigate()
   return (
     <div
-      className={`group flex items-center gap-2 w-full py-1.5 transition-colors ${indent ? 'pl-8 pr-2' : 'pl-4 pr-2'} ${
+      draggable={!!onDragStart}
+      onDragStart={(e) => { e.dataTransfer.setData('listId', l.id); onDragStart?.(l.id) }}
+      onDragEnd={() => onDragEnd?.()}
+      className={`group flex items-center gap-2 w-full py-1.5 transition-colors ${onDragStart ? 'cursor-grab active:cursor-grabbing' : ''} ${indent ? 'pl-8 pr-2' : 'pl-4 pr-2'} ${
         active
           ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.12]'
           : 'hover:bg-slate-50 dark:hover:bg-white/[0.03]'
@@ -541,6 +550,7 @@ export default function RightSidebar() {
 
   const [folderFormOpen, setFolderFormOpen] = useState(false)
   const [editingFolder, setEditingFolder] = useState<TodoFolder | null>(null)
+  const [pendingParentFolderId, setPendingParentFolderId] = useState<string | undefined>()
   const [listFormOpen, setListFormOpen] = useState(false)
   const [editingList, setEditingList] = useState<TodoList | null>(null)
   const [newListFolderId, setNewListFolderId] = useState<string | undefined>()
@@ -549,10 +559,11 @@ export default function RightSidebar() {
   const [collapsedNoteFolders, setCollapsedNoteFolders] = useState<Set<string>>(new Set())
   const [draggingNoteId, setDraggingNoteId] = useState<string | null>(null)
   const [noteDropTarget, setNoteDropTarget] = useState<string | 'standalone' | null>(null)
+  const [draggingListId, setDraggingListId] = useState<string | null>(null)
+  const [listDropTarget, setListDropTarget] = useState<string | 'standalone' | null>(null)
   const [noteFolderFormOpen, setNoteFolderFormOpen] = useState(false)
-  const [editingNoteFolder, setEditingNoteFolder] = useState<
-    import('../../types/models').NoteFolder | null
-  >(null)
+  const [editingNoteFolder, setEditingNoteFolder] = useState<NoteFolder | null>(null)
+  const [pendingParentNoteFolderId, setPendingParentNoteFolderId] = useState<string | undefined>()
 
   useEffect(() => {
     loadFolders()
@@ -575,9 +586,15 @@ export default function RightSidebar() {
   const dateLists = useMemo(() => lists.filter((l) => !!l.dueDate), [lists])
 
   const standaloneLists = useMemo(() => adHocLists.filter((l) => !l.folderId), [adHocLists])
-  const sortedFolders = useMemo(
-    () => [...folders].sort((a, b) => a.displayOrder - b.displayOrder),
-    [folders]
+  const folderChildrenMap = useMemo(() => buildFolderTree(folders), [folders])
+  const rootFolders = useMemo(
+    () => (folderChildrenMap.get(undefined) ?? []).sort((a, b) => a.order - b.order),
+    [folderChildrenMap]
+  )
+  const noteFolderChildrenMap = useMemo(() => buildFolderTree(noteFolders), [noteFolders])
+  const rootNoteFolders = useMemo(
+    () => (noteFolderChildrenMap.get(undefined) ?? []).sort((a, b) => a.displayOrder - b.displayOrder),
+    [noteFolderChildrenMap]
   )
 
   function toggleFolder(id: string) {
@@ -622,21 +639,22 @@ export default function RightSidebar() {
   function handleDeleteFolder(id: string) {
     const folder = folders.find((f) => f.id === id)
     if (!folder) return
-    const folderLists = adHocLists.filter((l) => l.folderId === id)
-    if (folderLists.length > 0) {
-      if (
-        !window.confirm(
-          `This folder has ${folderLists.length} list(s). Delete the folder? Lists will become standalone.`
-        )
-      ) {
-        return
-      }
+    const descendantIds = getDescendantIds(id, folderChildrenMap)
+    const allFolderIds = new Set([id, ...descendantIds])
+    const affectedLists = adHocLists.filter((l) => l.folderId && allFolderIds.has(l.folderId))
+    if (affectedLists.length > 0 || descendantIds.size > 0) {
+      const msg = [
+        descendantIds.size > 0 ? `${descendantIds.size} subfolder(s)` : '',
+        affectedLists.length > 0 ? `${affectedLists.length} list(s)` : '',
+      ].filter(Boolean).join(' and ')
+      if (!window.confirm(`This folder contains ${msg}. Delete everything?`)) return
     }
-    removeFolder(id)
+    allFolderIds.forEach((fid) => removeFolder(fid))
   }
 
   function openNewNoteFolder() {
     setEditingNoteFolder(null)
+    setPendingParentNoteFolderId(undefined)
     setNoteFolderFormOpen(true)
   }
 
@@ -648,18 +666,27 @@ export default function RightSidebar() {
   function handleDeleteNoteFolder(id: string) {
     const folder = noteFolders.find((f) => f.id === id)
     if (!folder) return
-    const folderNotes = Array.from(allNotes.values()).filter((n) => n.folderId === id)
-    if (folderNotes.length > 0) {
-      if (
-        !window.confirm(
-          `This folder has ${folderNotes.length} note(s). Delete the folder and all its notes?`
-        )
-      ) {
-        return
-      }
-      folderNotes.forEach((n) => deleteNote(n.id))
+    const descendantIds = getDescendantIds(id, noteFolderChildrenMap)
+    const allFolderIds = new Set([id, ...descendantIds])
+    const affectedNotes = Array.from(allNotes.values()).filter((n) => n.folderId && allFolderIds.has(n.folderId))
+    if (affectedNotes.length > 0 || descendantIds.size > 0) {
+      const msg = [
+        descendantIds.size > 0 ? `${descendantIds.size} subfolder(s)` : '',
+        affectedNotes.length > 0 ? `${affectedNotes.length} note(s)` : '',
+      ].filter(Boolean).join(' and ')
+      if (!window.confirm(`This folder contains ${msg}. Delete everything?`)) return
+      affectedNotes.forEach((n) => deleteNote(n.id))
     }
-    removeNoteFolder(id)
+    allFolderIds.forEach((fid) => removeNoteFolder(fid))
+  }
+
+  function handleListDrop(targetFolderId: string | undefined) {
+    if (!draggingListId) return
+    const list = lists.find((l) => l.id === draggingListId)
+    if (!list || list.folderId === targetFolderId) return
+    saveList({ ...list, folderId: targetFolderId, updatedAt: new Date().toISOString() })
+    setDraggingListId(null)
+    setListDropTarget(null)
   }
 
   function handleNoteDrop(targetFolderId: string | undefined) {
@@ -691,6 +718,110 @@ export default function RightSidebar() {
     }
     saveNote(note)
     navigate(`/notes/${note.id}`)
+  }
+
+  function renderTodoFolder(folder: TodoFolder, depth: number): ReactNode {
+    const folderLists = adHocLists.filter((l) => l.folderId === folder.id)
+    const collapsed = collapsedFolders.has(folder.id)
+    const isDropTarget = listDropTarget === folder.id
+    const children = (folderChildrenMap.get(folder.id) ?? []).sort((a, b) => a.order - b.order)
+    const pl = 16 + depth * 12
+    return (
+      <div
+        key={folder.id}
+        onDragOver={(e) => { if (draggingListId) { e.preventDefault(); setListDropTarget(folder.id) } }}
+        onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setListDropTarget(null) }}
+        onDrop={(e) => { e.preventDefault(); handleListDrop(folder.id) }}
+        className={`rounded mx-1 transition-colors ${isDropTarget ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.08] ring-1 ring-[#6498c8]/30' : ''}`}
+      >
+        <div
+          onClick={() => toggleFolder(folder.id)}
+          className="flex items-center gap-1.5 w-full py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors cursor-pointer rounded"
+          style={{ paddingLeft: `${pl}px`, paddingRight: '8px' }}
+        >
+          {collapsed
+            ? <ChevronRight size={10} className="text-slate-300 dark:text-white/20 shrink-0" />
+            : <ChevronDown size={10} className="text-slate-300 dark:text-white/20 shrink-0" />
+          }
+          <FolderOpen size={11} className={`shrink-0 transition-colors ${isDropTarget ? 'text-[#6498c8]' : 'text-blue-400 dark:text-blue-500/70'}`} />
+          <span className="text-[11px] font-semibold text-slate-400 dark:text-white/30 uppercase tracking-wide truncate flex-1 text-left">
+            {folder.name}
+          </span>
+          <button onClick={(e) => { e.stopPropagation(); setEditingFolder(folder); setPendingParentFolderId(undefined); setFolderFormOpen(true) }} className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors" title="Rename folder">
+            <Pencil size={9} />
+          </button>
+          <button onClick={(e) => { e.stopPropagation(); handleDeleteFolder(folder.id) }} className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors" title="Delete folder">
+            <Trash2 size={9} />
+          </button>
+          <button onClick={(e) => { e.stopPropagation(); setEditingFolder(null); setPendingParentFolderId(folder.id); setFolderFormOpen(true) }} className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors" title="New subfolder">
+            <FolderPlus size={9} />
+          </button>
+          <button onClick={(e) => { e.stopPropagation(); openNewList({ folderId: folder.id }) }} className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors" title="New list in folder">
+            <Plus size={10} />
+          </button>
+        </div>
+        {!collapsed && (
+          <>
+            {folderLists.map((l) => (
+              <ListNavItem key={l.id} l={l} active={activeListId === l.id} indent onDelete={handleDeleteList} onDragStart={setDraggingListId} onDragEnd={() => { setDraggingListId(null); setListDropTarget(null) }} />
+            ))}
+            {children.map((child) => renderTodoFolder(child, depth + 1))}
+          </>
+        )}
+      </div>
+    )
+  }
+
+  function renderNoteFolder(folder: NoteFolder, depth: number): ReactNode {
+    const folderNotes = Array.from(allNotes.values()).filter((n) => n.folderId === folder.id)
+    const collapsed = collapsedNoteFolders.has(folder.id)
+    const isDropTarget = noteDropTarget === folder.id
+    const children = (noteFolderChildrenMap.get(folder.id) ?? []).sort((a, b) => a.displayOrder - b.displayOrder)
+    const pl = 16 + depth * 12
+    return (
+      <div
+        key={folder.id}
+        onDragOver={(e) => { if (draggingNoteId) { e.preventDefault(); setNoteDropTarget(folder.id) } }}
+        onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setNoteDropTarget(null) }}
+        onDrop={(e) => { e.preventDefault(); handleNoteDrop(folder.id) }}
+        className={`rounded mx-1 transition-colors ${isDropTarget ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.08] ring-1 ring-[#6498c8]/30' : ''}`}
+      >
+        <div
+          onClick={() => toggleNoteFolder(folder.id)}
+          className="flex items-center gap-1.5 w-full py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors cursor-pointer rounded"
+          style={{ paddingLeft: `${pl}px`, paddingRight: '8px' }}
+        >
+          {collapsed
+            ? <ChevronRight size={10} className="text-slate-300 dark:text-white/20 shrink-0" />
+            : <ChevronDown size={10} className="text-slate-300 dark:text-white/20 shrink-0" />
+          }
+          <FolderOpen size={11} className={`shrink-0 transition-colors ${isDropTarget ? 'text-[#6498c8]' : 'text-blue-400 dark:text-blue-500/70'}`} />
+          <span className="text-[11px] font-semibold text-slate-400 dark:text-white/30 uppercase tracking-wide truncate flex-1 text-left">
+            {folder.name}
+          </span>
+          <button onClick={(e) => { e.stopPropagation(); openEditNoteFolder(folder) }} className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors" title="Rename folder">
+            <Pencil size={9} />
+          </button>
+          <button onClick={(e) => { e.stopPropagation(); handleDeleteNoteFolder(folder.id) }} className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors" title="Delete folder">
+            <Trash2 size={9} />
+          </button>
+          <button onClick={(e) => { e.stopPropagation(); setEditingNoteFolder(null); setPendingParentNoteFolderId(folder.id); setNoteFolderFormOpen(true) }} className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors" title="New subfolder">
+            <FolderPlus size={9} />
+          </button>
+          <button onClick={(e) => { e.stopPropagation(); handleNewNote(folder.id) }} className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors" title="New note in folder">
+            <Plus size={10} />
+          </button>
+        </div>
+        {!collapsed && (
+          <>
+            {folderNotes.map((n) => (
+              <NoteNavItem key={n.id} n={n} active={activeNoteId === n.id} indent onDelete={handleDeleteNote} onDragStart={setDraggingNoteId} onDragEnd={() => { setDraggingNoteId(null); setNoteDropTarget(null) }} />
+            ))}
+            {children.map((child) => renderNoteFolder(child, depth + 1))}
+          </>
+        )}
+      </div>
+    )
   }
 
   return (
@@ -744,6 +875,7 @@ export default function RightSidebar() {
                       <button
                         onClick={() => {
                           setEditingFolder(null)
+                          setPendingParentFolderId(undefined)
                           setFolderFormOpen(true)
                         }}
                         className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
@@ -759,75 +891,20 @@ export default function RightSidebar() {
                       No lists yet
                     </p>
                   )}
-                  {standaloneLists.map((l) => (
-                    <ListNavItem key={l.id} l={l} active={activeListId === l.id} onDelete={handleDeleteList} />
-                  ))}
-                  {sortedFolders.map((folder) => {
-                    const folderLists = adHocLists.filter((l) => l.folderId === folder.id)
-                    const collapsed = collapsedFolders.has(folder.id)
-                    return (
-                      <div key={folder.id}>
-                        <button
-                          onClick={() => toggleFolder(folder.id)}
-                          className="flex items-center gap-1.5 w-full px-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
-                        >
-                          {collapsed ? (
-                            <ChevronRight
-                              size={10}
-                              className="text-slate-300 dark:text-white/20 shrink-0"
-                            />
-                          ) : (
-                            <ChevronDown
-                              size={10}
-                              className="text-slate-300 dark:text-white/20 shrink-0"
-                            />
-                          )}
-                          <FolderOpen
-                            size={11}
-                            className="text-blue-400 dark:text-blue-500/70 shrink-0"
-                          />
-                          <span className="text-[11px] font-semibold text-slate-400 dark:text-white/30 uppercase tracking-wide truncate flex-1 text-left">
-                            {folder.name}
-                          </span>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setEditingFolder(folder)
-                              setFolderFormOpen(true)
-                            }}
-                            className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-                            title="Rename folder"
-                          >
-                            <Pencil size={9} />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleDeleteFolder(folder.id)
-                            }}
-                            className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors"
-                            title="Delete folder"
-                          >
-                            <Trash2 size={9} />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              openNewList({ folderId: folder.id })
-                            }}
-                            className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-                            title="New list in folder"
-                          >
-                            <Plus size={10} />
-                          </button>
-                        </button>
-                        {!collapsed &&
-                          folderLists.map((l) => (
-                            <ListNavItem key={l.id} l={l} active={activeListId === l.id} indent onDelete={handleDeleteList} />
-                          ))}
-                      </div>
-                    )
-                  })}
+                  <div
+                    onDragOver={(e) => { if (draggingListId) { e.preventDefault(); setListDropTarget('standalone') } }}
+                    onDragLeave={() => setListDropTarget(null)}
+                    onDrop={(e) => { e.preventDefault(); handleListDrop(undefined) }}
+                    className={`transition-colors rounded mx-1 ${listDropTarget === 'standalone' ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.08] ring-1 ring-[#6498c8]/30' : ''}`}
+                  >
+                    {standaloneLists.map((l) => (
+                      <ListNavItem key={l.id} l={l} active={activeListId === l.id} onDelete={handleDeleteList} onDragStart={setDraggingListId} onDragEnd={() => { setDraggingListId(null); setListDropTarget(null) }} />
+                    ))}
+                    {listDropTarget === 'standalone' && standaloneLists.length === 0 && (
+                      <p className="text-[11px] text-[#6498c8]/60 px-4 py-2">Drop here to remove from folder</p>
+                    )}
+                  </div>
+                  {rootFolders.map((folder) => renderTodoFolder(folder, 0))}
                 </CollapsibleSection>
               </div>
 
@@ -913,80 +990,7 @@ export default function RightSidebar() {
                   </div>
 
                   {/* Folder groups */}
-                  {noteFolders.map((folder) => {
-                    const folderNotes = Array.from(allNotes.values()).filter(
-                      (n) => n.folderId === folder.id
-                    )
-                    const collapsed = collapsedNoteFolders.has(folder.id)
-                    const isDropTarget = noteDropTarget === folder.id
-                    return (
-                      <div
-                        key={folder.id}
-                        onDragOver={(e) => { if (draggingNoteId) { e.preventDefault(); setNoteDropTarget(folder.id) } }}
-                        onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setNoteDropTarget(null) }}
-                        onDrop={(e) => { e.preventDefault(); handleNoteDrop(folder.id) }}
-                        className={`rounded mx-1 transition-colors ${isDropTarget ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.08] ring-1 ring-[#6498c8]/30' : ''}`}
-                      >
-                        <div
-                          onClick={() => toggleNoteFolder(folder.id)}
-                          className="flex items-center gap-1.5 w-full px-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors cursor-pointer rounded"
-                        >
-                          {collapsed ? (
-                            <ChevronRight
-                              size={10}
-                              className="text-slate-300 dark:text-white/20 shrink-0"
-                            />
-                          ) : (
-                            <ChevronDown
-                              size={10}
-                              className="text-slate-300 dark:text-white/20 shrink-0"
-                            />
-                          )}
-                          <FolderOpen
-                            size={11}
-                            className={`shrink-0 transition-colors ${isDropTarget ? 'text-[#6498c8]' : 'text-blue-400 dark:text-blue-500/70'}`}
-                          />
-                          <span className="text-[11px] font-semibold text-slate-400 dark:text-white/30 uppercase tracking-wide truncate flex-1 text-left">
-                            {folder.name}
-                          </span>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              openEditNoteFolder(folder)
-                            }}
-                            className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-                            title="Rename folder"
-                          >
-                            <Pencil size={9} />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleDeleteNoteFolder(folder.id)
-                            }}
-                            className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors"
-                            title="Delete folder"
-                          >
-                            <Trash2 size={9} />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleNewNote(folder.id)
-                            }}
-                            className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-                            title="New note in folder"
-                          >
-                            <Plus size={10} />
-                          </button>
-                        </div>
-                        {!collapsed &&
-                          folderNotes.map((n) => (
-                            <NoteNavItem key={n.id} n={n} active={activeNoteId === n.id} indent onDelete={handleDeleteNote} onDragStart={setDraggingNoteId} onDragEnd={() => { setDraggingNoteId(null); setNoteDropTarget(null) }} />
-                          ))}
-                      </div>
-                    )
-                  })}
+                  {rootNoteFolders.map((folder) => renderNoteFolder(folder, 0))}
 
                   {/* By Date section */}
                   {dateNotes.length > 0 && (
@@ -1069,14 +1073,17 @@ export default function RightSidebar() {
       {folderFormOpen && (
         <FolderForm
           folder={editingFolder}
+          parentId={pendingParentFolderId}
           onSave={async (f) => {
             await saveFolder(f)
             setFolderFormOpen(false)
             setEditingFolder(null)
+            setPendingParentFolderId(undefined)
           }}
           onClose={() => {
             setFolderFormOpen(false)
             setEditingFolder(null)
+            setPendingParentFolderId(undefined)
           }}
         />
       )}
@@ -1103,14 +1110,17 @@ export default function RightSidebar() {
       {noteFolderFormOpen && (
         <NoteFolderForm
           folder={editingNoteFolder}
+          parentId={pendingParentNoteFolderId}
           onSave={async (f) => {
             await saveNoteFolder(f)
             setNoteFolderFormOpen(false)
             setEditingNoteFolder(null)
+            setPendingParentNoteFolderId(undefined)
           }}
           onClose={() => {
             setNoteFolderFormOpen(false)
             setEditingNoteFolder(null)
+            setPendingParentNoteFolderId(undefined)
           }}
         />
       )}

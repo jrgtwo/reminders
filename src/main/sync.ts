@@ -246,9 +246,9 @@ export class SyncEngine {
       if (!local) {
         db.prepare(
           `INSERT OR IGNORE INTO note_folders
-            (id, name, display_order, created_at, updated_at, deleted_at, last_synced_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)`
-        ).run(f.id, f.name, f.display_order, f.created_at, f.updated_at, f.deleted_at, f.updated_at)
+            (id, name, display_order, parent_id, created_at, updated_at, deleted_at, last_synced_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+        ).run(f.id, f.name, f.display_order, f.parent_id ?? null, f.created_at, f.updated_at, f.deleted_at, f.updated_at)
       } else {
         const remoteTs = new Date(f.updated_at).getTime()
         const localTs = new Date(local.updated_at).getTime()
@@ -258,8 +258,8 @@ export class SyncEngine {
           ).run(f.deleted_at, f.updated_at, f.updated_at, f.id)
         } else if (remoteTs >= localTs) {
           db.prepare(
-            `UPDATE note_folders SET name = ?, display_order = ?, updated_at = ?, deleted_at = ?, last_synced_at = ? WHERE id = ?`
-          ).run(f.name, f.display_order, f.updated_at, f.deleted_at, f.updated_at, f.id)
+            `UPDATE note_folders SET name = ?, display_order = ?, parent_id = ?, updated_at = ?, deleted_at = ?, last_synced_at = ? WHERE id = ?`
+          ).run(f.name, f.display_order, f.parent_id ?? null, f.updated_at, f.deleted_at, f.updated_at, f.id)
         }
       }
     }
@@ -329,9 +329,9 @@ export class SyncEngine {
       const local = db.prepare('SELECT * FROM todo_folders WHERE id = ?').get(f.id) as any
       if (!local) {
         db.prepare(
-          `INSERT OR IGNORE INTO todo_folders (id, name, sort_order, created_at, updated_at, deleted_at, last_synced_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)`
-        ).run(f.id, f.name, f.sort_order, f.created_at, f.updated_at, f.deleted_at, f.updated_at)
+          `INSERT OR IGNORE INTO todo_folders (id, name, sort_order, parent_id, created_at, updated_at, deleted_at, last_synced_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+        ).run(f.id, f.name, f.sort_order, f.parent_id ?? null, f.created_at, f.updated_at, f.deleted_at, f.updated_at)
       } else {
         const remoteTs = new Date(f.updated_at).getTime()
         const localTs = new Date(local.updated_at).getTime()
@@ -341,8 +341,8 @@ export class SyncEngine {
           ).run(f.deleted_at, f.updated_at, f.updated_at, f.id)
         } else if (remoteTs >= localTs) {
           db.prepare(
-            `UPDATE todo_folders SET name = ?, sort_order = ?, updated_at = ?, deleted_at = ?, last_synced_at = ? WHERE id = ?`
-          ).run(f.name, f.sort_order, f.updated_at, f.deleted_at, f.updated_at, f.id)
+            `UPDATE todo_folders SET name = ?, sort_order = ?, parent_id = ?, updated_at = ?, deleted_at = ?, last_synced_at = ? WHERE id = ?`
+          ).run(f.name, f.sort_order, f.parent_id ?? null, f.updated_at, f.deleted_at, f.updated_at, f.id)
         }
       }
     }
@@ -453,6 +453,7 @@ export class SyncEngine {
         user_id: userId,
         name: f.name,
         display_order: f.display_order,
+        parent_id: f.parent_id ?? null,
         created_at: f.created_at,
         updated_at: f.updated_at,
         deleted_at: f.deleted_at
@@ -504,6 +505,7 @@ export class SyncEngine {
         user_id: userId,
         name: f.name,
         sort_order: f.sort_order,
+        parent_id: f.parent_id ?? null,
         created_at: f.created_at,
         updated_at: f.updated_at,
         deleted_at: f.deleted_at

@@ -6,11 +6,12 @@ import Input from '../ui/Input'
 
 interface Props {
   folder: NoteFolder | null
+  parentId?: string
   onSave: (f: NoteFolder) => Promise<void>
   onClose: () => void
 }
 
-export default function NoteFolderForm({ folder, onSave, onClose }: Props) {
+export default function NoteFolderForm({ folder, parentId, onSave, onClose }: Props) {
   const isNew = !folder
   const [name, setName] = useState(folder?.name ?? '')
   const [saving, setSaving] = useState(false)
@@ -28,6 +29,7 @@ export default function NoteFolderForm({ folder, onSave, onClose }: Props) {
       id: folder?.id ?? crypto.randomUUID(),
       name: name.trim(),
       displayOrder: folder?.displayOrder ?? Date.now(),
+      parentId: isNew ? parentId : folder?.parentId,
       createdAt: folder?.createdAt ?? now,
       updatedAt: now
     }

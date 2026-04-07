@@ -106,6 +106,7 @@ export function getAllNoteFolders(): NoteFolder[] {
     id: row.id,
     name: row.name,
     displayOrder: row.display_order,
+    parentId: row.parent_id ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at
   }))
@@ -114,17 +115,19 @@ export function getAllNoteFolders(): NoteFolder[] {
 export function saveNoteFolder(f: NoteFolder): NoteFolder {
   getDb()
     .prepare(
-      `INSERT INTO note_folders (id, name, display_order, created_at, updated_at)
-       VALUES (@id, @name, @display_order, @created_at, @updated_at)
+      `INSERT INTO note_folders (id, name, display_order, parent_id, created_at, updated_at)
+       VALUES (@id, @name, @display_order, @parent_id, @created_at, @updated_at)
        ON CONFLICT(id) DO UPDATE SET
          name = @name,
          display_order = @display_order,
+         parent_id = @parent_id,
          updated_at = @updated_at`
     )
     .run({
       id: f.id,
       name: f.name,
       display_order: f.displayOrder,
+      parent_id: f.parentId ?? null,
       created_at: f.createdAt,
       updated_at: f.updatedAt
     })

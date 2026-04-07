@@ -35,6 +35,7 @@ export interface NoteFolder {
   id: string
   name: string
   displayOrder: number
+  parentId?: string
   createdAt: string
   updatedAt: string
 }
@@ -43,6 +44,7 @@ export interface TodoFolder {
   id: string
   name: string
   order: number
+  parentId?: string
   createdAt: string
   updatedAt: string
 }

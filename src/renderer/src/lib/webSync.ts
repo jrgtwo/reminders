@@ -79,6 +79,7 @@ function noteFolderToRow(f: NoteFolder, userId: string) {
     user_id: userId,
     name: f.name,
     display_order: f.displayOrder,
+    parent_id: f.parentId ?? null,
     created_at: f.createdAt,
     updated_at: f.updatedAt
   }
@@ -89,6 +90,7 @@ function rowToNoteFolder(row: any): NoteFolder {
     id: row.id,
     name: row.name,
     displayOrder: row.display_order,
+    parentId: row.parent_id ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at
   }
@@ -100,6 +102,7 @@ function folderToRow(f: TodoFolder, userId: string) {
     user_id: userId,
     name: f.name,
     sort_order: f.order,
+    parent_id: f.parentId ?? null,
     created_at: f.createdAt,
     updated_at: f.updatedAt
   }
@@ -110,6 +113,7 @@ function rowToFolder(row: any): TodoFolder {
     id: row.id,
     name: row.name,
     order: row.sort_order,
+    parentId: row.parent_id ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at
   }
