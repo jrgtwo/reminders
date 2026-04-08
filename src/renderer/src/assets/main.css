@@ -145,3 +145,17 @@ button, a { cursor: pointer; }
   --bg-elevated:         #2c1e3e;
   --border:              rgba(255, 255, 255, 0.10);
 }
+
+/* Native date/time picker indicator — make visible in dark themes */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.45;
+}
+
+.dark input[type="date"]::-webkit-calendar-picker-indicator,
+.dark input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.4;
+  cursor: pointer;
+}
