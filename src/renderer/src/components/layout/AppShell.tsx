@@ -1,8 +1,7 @@
 import { useRef, useCallback, useState, useEffect, useMemo } from 'react'
-import { Outlet, useNavigate, useLocation } from 'react-router-dom'
+import { Outlet, useNavigate } from 'react-router-dom'
 import { Settings, Cloud, CloudOff, Loader2, X } from 'lucide-react'
-import RightSidebar from './RightSidebar'
-import BottomNav from './BottomNav'
+import BottomNav, { SideNav } from './BottomNav'
 import SearchBar from './SearchBar'
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts'
 import { usePageTracking } from '../../hooks/usePageTracking'
@@ -26,13 +25,8 @@ function formatLastSynced(isoStr: string): string {
 export default function AppShell() {
   const searchRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
-  const location = useLocation()
-  const isNotesPage = location.pathname.startsWith('/notes')
-  const isListsPage = location.pathname.startsWith('/lists')
   const focusSearch = useCallback(() => searchRef.current?.focus(), [])
   const [errorDismissed, setErrorDismissed] = useState(false)
-
-  const setRightOpen = useUIStore((s) => s.setRightOpen)
 
   const newReminderDate = useUIStore((s) => s.newReminderDate)
   const setNewReminderDate = useUIStore((s) => s.setNewReminderDate)
@@ -136,10 +130,7 @@ export default function AppShell() {
                 </span>
               </button>
               <button
-                onClick={() => {
-                  if (window.innerWidth >= 1024) setRightOpen(true)
-                  else navigate('/todos')
-                }}
+                onClick={() => navigate('/todos')}
                 className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
               >
                 <span
@@ -263,14 +254,10 @@ export default function AppShell() {
       )}
 
       <div className="flex flex-1 overflow-hidden">
+        <SideNav />
         <main className="flex-1 h-full overflow-auto bg-[var(--bg-app)]">
           <Outlet />
         </main>
-        {!isNotesPage && !isListsPage && (
-          <div className="hidden lg:flex shrink-0">
-            <RightSidebar />
-          </div>
-        )}
       </div>
 
       <BottomNav />
