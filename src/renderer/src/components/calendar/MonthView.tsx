@@ -39,12 +39,12 @@ export default function MonthView({ displayDate }: Props) {
     return map
   }, [reminders, days])
 
-  const noteDates = useMemo(() => {
-    const set = new Set<string>()
+  const noteCountByDate = useMemo(() => {
+    const map: Record<string, number> = {}
     for (const n of notes.values()) {
-      if (n.date) set.add(n.date)
+      if (n.date) map[n.date] = (map[n.date] ?? 0) + 1
     }
-    return Array.from(set)
+    return map
   }, [notes])
 
   const listCountByDate = useMemo(() => {
@@ -125,7 +125,7 @@ export default function MonthView({ displayDate }: Props) {
             displayMonth={displayDate}
             reminders={remindersByDate[day.toString()] ?? []}
             listCount={listCountByDate[day.toString()] ?? 0}
-            hasNote={noteDates.includes(day.toString())}
+            noteCount={noteCountByDate[day.toString()] ?? 0}
             isSelected={isSameDay(day, selectedPlainDate)}
             onClick={() => handleDayClick(day)}
             onReminderClick={() => handleReminderClick(day)}

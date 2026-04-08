@@ -30,7 +30,7 @@ interface Props {
   displayMonth: Temporal.PlainDate
   reminders: Reminder[]
   listCount?: number
-  hasNote?: boolean
+  noteCount?: number
   isSelected: boolean
   onClick: () => void
   onReminderClick?: () => void
@@ -44,7 +44,7 @@ export default function CalendarDay({
   displayMonth,
   reminders,
   listCount = 0,
-  hasNote,
+  noteCount = 0,
   isSelected,
   onClick,
   onReminderClick,
@@ -128,17 +128,29 @@ export default function CalendarDay({
       </span>
 
       {/* Events + Note */}
-      {(reminders.length > 0 || listCount > 0 || hasNote) && (
+      {(reminders.length > 0 || listCount > 0 || noteCount > 0) && (
         <div className={`flex flex-col w-full ${tall ? 'gap-1' : 'gap-[3px]'}`}>
           <div className="flex flex-row flex-wrap lg:flex-col w-full gap-1 lg:gap-[3px]">
-            {reminders.slice(0, 4).map((r) => {
-              const icon = r.startTime ? (
-                <Clock size={13} />
-              ) : r.recurrence ? (
-                <Repeat size={13} />
-              ) : (
-                <Bell size={13} />
-              )
+            {/* Reminders: single badge with count if >1, full badge if exactly 1 */}
+            {reminders.length > 1 ? (
+              <span
+                className="min-w-0 lg:w-full"
+                onClick={(e) => { e.stopPropagation(); onReminderClick?.() }}
+              >
+                <span className={`hidden lg:flex items-center gap-1 w-full px-1.5 py-[3px] rounded-md text-[10px] font-medium overflow-hidden transition-all duration-150 hover:brightness-125 hover:shadow-md hover:scale-[1.03] cursor-pointer ${colors.chip}`}>
+                  <Bell size={11} className="shrink-0" />
+                  <span>{reminders.length} reminders</span>
+                </span>
+                <span className={`hidden md:flex lg:hidden items-center justify-center gap-[3px] px-1 h-[22px] rounded cursor-pointer text-[10px] font-medium ${colors.chip}`}>
+                  <Bell size={11} /><span>{reminders.length}</span>
+                </span>
+                <span className={`flex md:hidden items-center gap-[2px] text-[10px] font-medium cursor-pointer ${colors.text}`}>
+                  <Bell size={12} /><span>{reminders.length}</span>
+                </span>
+              </span>
+            ) : reminders.length === 1 ? (() => {
+              const r = reminders[0]
+              const icon = r.startTime ? <Clock size={13} /> : r.recurrence ? <Repeat size={13} /> : <Bell size={13} />
               return (
                 <span
                   key={r.id}
@@ -155,7 +167,7 @@ export default function CalendarDay({
                   <span className={`flex md:hidden ${colors.text}`}>{icon}</span>
                 </span>
               )
-            })}
+            })() : null}
 
             {/* List count badge */}
             {listCount > 0 && (
@@ -167,35 +179,31 @@ export default function CalendarDay({
                   <CheckSquare size={11} className="shrink-0" />
                   <span>{listCount} {listCount === 1 ? 'list' : 'lists'}</span>
                 </span>
-                <span className={`hidden md:flex lg:hidden items-center justify-center w-[22px] h-[22px] rounded cursor-pointer ${listBadgeCls}`}>
-                  <CheckSquare size={12} />
+                <span className={`hidden md:flex lg:hidden items-center justify-center gap-[3px] px-1 h-[22px] rounded cursor-pointer text-[10px] font-medium ${listBadgeCls}`}>
+                  <CheckSquare size={11} />{listCount > 1 && <span>{listCount}</span>}
                 </span>
-                <span className={`flex md:hidden cursor-pointer ${cmp < 0 ? 'text-[#e8a045]/70' : 'text-emerald-500/70'}`}>
-                  <CheckSquare size={13} />
+                <span className={`flex md:hidden items-center gap-[2px] text-[10px] font-medium cursor-pointer ${cmp < 0 ? 'text-[#e8a045]/70' : 'text-emerald-500/70'}`}>
+                  <CheckSquare size={12} />{listCount > 1 && <span>{listCount}</span>}
                 </span>
               </span>
             )}
 
-            {hasNote && (
+            {/* Notes badge */}
+            {noteCount > 0 && (
               <span
                 className="min-w-0 lg:w-full"
                 onClick={(e) => { e.stopPropagation(); onNoteClick?.() }}
               >
                 <span className="hidden lg:flex items-center gap-1 w-full px-1.5 py-[3px] rounded-md text-[10px] font-medium transition-all duration-150 hover:brightness-125 hover:shadow-md hover:scale-[1.03] bg-slate-100 text-slate-500 dark:bg-white/[0.07] dark:text-white/35">
-                  <FileText size={13} />
+                  <FileText size={13} className="shrink-0" />
+                  {noteCount > 1 && <span>{noteCount} notes</span>}
                 </span>
-                <span className="hidden md:flex lg:hidden items-center justify-center w-[22px] h-[22px] rounded bg-slate-100 text-slate-500 dark:bg-white/[0.07] dark:text-white/35">
-                  <FileText size={13} />
+                <span className="hidden md:flex lg:hidden items-center justify-center gap-[3px] px-1 h-[22px] rounded bg-slate-100 text-slate-500 dark:bg-white/[0.07] dark:text-white/35 text-[10px] font-medium">
+                  <FileText size={12} />{noteCount > 1 && <span>{noteCount}</span>}
                 </span>
-                <span className="flex md:hidden text-slate-300 dark:text-white/20">
-                  <FileText size={13} />
+                <span className="flex md:hidden items-center gap-[2px] text-[10px] font-medium text-slate-300 dark:text-white/20">
+                  <FileText size={12} />{noteCount > 1 && <span>{noteCount}</span>}
                 </span>
-              </span>
-            )}
-
-            {reminders.length > 4 && (
-              <span className="text-[9px] text-slate-400 dark:text-white/25 leading-none lg:px-1">
-                +{reminders.length - 4}
               </span>
             )}
           </div>

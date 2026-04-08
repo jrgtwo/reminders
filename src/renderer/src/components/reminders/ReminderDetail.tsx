@@ -3,6 +3,8 @@ import { Clock, Repeat, CalendarDays, ArrowRight, FileText } from 'lucide-react'
 import { Temporal } from '@js-temporal/polyfill'
 import type { Reminder } from '../../types/models'
 import Dialog from '../ui/Dialog'
+import { useUIStore } from '../../store/ui.store'
+import { formatTime } from '../../utils/dates'
 
 function formatDate(dateStr: string): string {
   const d = Temporal.PlainDate.from(dateStr)
@@ -30,6 +32,7 @@ interface Props {
 
 export default function ReminderDetail({ reminder, dateStr, onClose }: Props) {
   const navigate = useNavigate()
+  const timeFormat = useUIStore((s) => s.timeFormat)
 
   function goToDay() {
     onClose()
@@ -49,7 +52,7 @@ export default function ReminderDetail({ reminder, dateStr, onClose }: Props) {
           {reminder.startTime && (
             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
               <Clock size={14} className="shrink-0 text-[#6498c8]" />
-              <span>{reminder.startTime}{reminder.endTime ? ` – ${reminder.endTime}` : ''}</span>
+              <span>{formatTime(reminder.startTime, timeFormat)}{reminder.endTime ? ` – ${formatTime(reminder.endTime, timeFormat)}` : ''}</span>
             </div>
           )}
           {reminder.recurrence && (

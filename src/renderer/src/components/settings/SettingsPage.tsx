@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ArrowLeft, Download, Upload, Check, AlertCircle, LogOut, Mail, RefreshCw, Cloud, CloudOff, ShieldCheck, Trash2, RotateCcw } from 'lucide-react'
 import { rotateEncryptionKey } from '../../lib/keyRotation'
 import { useNavigate } from 'react-router-dom'
-import { useUIStore, type Theme } from '../../store/ui.store'
+import { useUIStore, type Theme, type TimeFormat } from '../../store/ui.store'
 import { useAuthStore } from '../../store/auth.store'
 import { useSyncStore } from '../../store/sync.store'
 import Button from '../ui/Button'
@@ -20,6 +20,8 @@ export default function SettingsPage() {
   const navigate = useNavigate()
   const theme = useUIStore((s) => s.theme)
   const setTheme = useUIStore((s) => s.setTheme)
+  const timeFormat = useUIStore((s) => s.timeFormat)
+  const setTimeFormat = useUIStore((s) => s.setTimeFormat)
   const { user, isLoggedIn, sendMagicLink, signOut } = useAuthStore()
   const syncStatus = useSyncStore((s) => s.status)
   const lastSyncedAt = useSyncStore((s) => s.lastSyncedAt)
@@ -359,6 +361,26 @@ export default function SettingsPage() {
                 </span>
               </button>
             ))}
+          </div>
+        </div>
+        <div className="p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium">Time format</p>
+            <div className="flex items-center gap-1 p-1 rounded-lg bg-gray-200 dark:bg-[var(--bg-elevated)]">
+              {(['12h', '24h'] as TimeFormat[]).map((fmt) => (
+                <button
+                  key={fmt}
+                  onClick={() => setTimeFormat(fmt)}
+                  className={`px-2.5 py-1 text-xs rounded-md font-medium transition-all ${
+                    timeFormat === fmt
+                      ? 'bg-white dark:bg-[var(--bg-card)] text-gray-900 dark:text-gray-100 shadow-sm'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  }`}
+                >
+                  {fmt}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </section>

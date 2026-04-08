@@ -1,5 +1,7 @@
 import { Check, Clock, Edit2, RefreshCw, Trash2 } from 'lucide-react'
 import type { Reminder } from '../../types/models'
+import { useUIStore } from '../../store/ui.store'
+import { formatTime } from '../../utils/dates'
 
 interface Props {
   reminder: Reminder
@@ -11,6 +13,7 @@ interface Props {
 
 export default function ReminderItem({ reminder, date, onToggle, onEdit, onDelete }: Props) {
   const isCompleted = reminder.completedDates.includes(date)
+  const timeFormat = useUIStore((s) => s.timeFormat)
 
   return (
     <div
@@ -51,7 +54,7 @@ export default function ReminderItem({ reminder, date, onToggle, onEdit, onDelet
             {reminder.startTime && (
               <span className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-1.5 py-0.5 rounded">
                 <Clock size={9} />
-                {reminder.startTime}{reminder.endTime ? ` – ${reminder.endTime}` : ''}
+                {formatTime(reminder.startTime, timeFormat)}{reminder.endTime ? ` – ${formatTime(reminder.endTime, timeFormat)}` : ''}
               </span>
             )}
             {reminder.recurrence && (

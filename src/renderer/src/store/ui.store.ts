@@ -4,6 +4,7 @@ import { capture } from '../lib/analytics'
 
 type View = 'month' | 'week' | 'day'
 export type Theme = 'light' | 'dark' | 'warm' | 'midnight' | 'dim' | 'nord' | 'forest' | 'dusk' | 'grey'
+export type TimeFormat = '12h' | '24h'
 
 interface UIState {
   leftOpen: boolean
@@ -11,6 +12,7 @@ interface UIState {
   currentView: View
   selectedDate: string   // 'YYYY-MM-DD'
   theme: Theme
+  timeFormat: TimeFormat
   triggerNewTodo: boolean
   triggerNewReminder: boolean
   newReminderDate: string | null
@@ -20,6 +22,7 @@ interface UIState {
   setView: (v: View) => void
   setSelectedDate: (d: string) => void
   setTheme: (theme: Theme) => void
+  setTimeFormat: (f: TimeFormat) => void
   setTriggerNewTodo: (v: boolean) => void
   setTriggerNewReminder: (v: boolean) => void
   setNewReminderDate: (date: string | null) => void
@@ -42,9 +45,10 @@ export const useUIStore = create<UIState>()(
     (set) => ({
       leftOpen: true,
       rightOpen: true,
-      currentView: 'week',
+      currentView: 'month',
       selectedDate: today(),
       theme: 'dark',
+      timeFormat: '12h',
       triggerNewTodo: false,
       triggerNewReminder: false,
       newReminderDate: null,
@@ -63,6 +67,7 @@ export const useUIStore = create<UIState>()(
         capture('ui_theme_changed', { theme })
         set({ theme })
       },
+      setTimeFormat: (timeFormat) => set({ timeFormat }),
     }),
     {
       name: 'reminders-ui-v3',
@@ -71,6 +76,7 @@ export const useUIStore = create<UIState>()(
         rightOpen: s.rightOpen,
         currentView: s.currentView,
         theme: s.theme,
+        timeFormat: s.timeFormat,
       }),
     }
   )

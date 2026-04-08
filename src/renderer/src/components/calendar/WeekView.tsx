@@ -14,7 +14,8 @@ const HOURS = Array.from({ length: 24 }, (_, i) => i)
 const SLOT_H = 64
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-function formatHour(h: number): string {
+function formatHour(h: number, format: '12h' | '24h'): string {
+  if (format === '24h') return `${String(h).padStart(2, '0')}:00`
   if (h === 0) return '12 AM'
   if (h < 12) return `${h} AM`
   if (h === 12) return '12 PM'
@@ -35,6 +36,7 @@ export default function WeekView({ displayDate }: Props) {
   const lists = useTodoListsStore((s) => s.lists)
   const selectedDate = useUIStore((s) => s.selectedDate)
   const setSelectedDate = useUIStore((s) => s.setSelectedDate)
+  const timeFormat = useUIStore((s) => s.timeFormat)
   const scrollRef = useRef<HTMLDivElement>(null)
   const saveReminder = useRemindersStore((s) => s.save)
   const [newForm, setNewForm] = useState<{ date: string; time: string } | null>(null)
@@ -248,7 +250,7 @@ export default function WeekView({ displayDate }: Props) {
               >
                 {hour !== 0 && (
                   <span className="text-[10px] font-medium text-slate-300 dark:text-white/20 -translate-y-[0.45em]">
-                    {formatHour(hour)}
+                    {formatHour(hour, timeFormat)}
                   </span>
                 )}
               </div>

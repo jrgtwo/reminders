@@ -81,6 +81,17 @@ export function getMonthGrid(date: Temporal.PlainDate): Temporal.PlainDate[] {
   return days
 }
 
+// Format a "HH:MM" time string as either 12h or 24h
+export function formatTime(time: string, format: '12h' | '24h'): string {
+  const [hStr, mStr] = time.split(':')
+  const h = parseInt(hStr, 10)
+  const m = mStr ?? '00'
+  if (format === '24h') return `${String(h).padStart(2, '0')}:${m}`
+  const period = h < 12 ? 'AM' : 'PM'
+  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h
+  return `${h12}:${m} ${period}`
+}
+
 export function getWeekDays(date: Temporal.PlainDate): Temporal.PlainDate[] {
   const weekStart = date.subtract({ days: date.dayOfWeek % 7 })
   return Array.from({ length: 7 }, (_, i) => weekStart.add({ days: i }))
