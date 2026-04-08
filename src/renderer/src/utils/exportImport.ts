@@ -3,6 +3,8 @@ import { useRemindersStore } from '../store/reminders.store'
 import { useTodoListsStore } from '../store/todo_lists.store'
 import { useNoteFoldersStore } from '../store/note_folders.store'
 import type { Reminder, Note, NoteFolder, TodoList, TodoListItem } from '../types/models'
+import { remindersToIcal } from './icalExport'
+import { parseIcal } from './icalImport'
 
 const SCHEMA_VERSION = 3
 
@@ -117,6 +119,77 @@ export async function importFromFile(): Promise<{ success: boolean; message: str
     return {
       success: true,
       message: `Imported ${data.reminders.length} reminders, ${data.notes.length} notes, ${data.noteFolders.length} note folders, ${data.lists.length} lists, ${items.length} items`
+    }
+  } catch {
+    return { success: false, message: 'Import failed — error saving data' }
+  }
+}
+
+export async function exportToIcalFile(): Promise<void> {
+  const storage = getStorage()
+  const reminders = await storage.getReminders()
+  const icsContent = remindersToIcal(reminders)
+  const filename = `reminders-export-${new Date().toISOString().slice(0, 10)}.ics`
+
+  const api = (window as any).electronAPI
+  if (api?.dialog) {
+    await api.dialog.save(filename, icsContent)
+    return
+  }
+
+  const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+export async function importFromIcalFile(): Promise<{ success: boolean; message: string }> {
+  let icsText: string | null = null
+
+  const api = (window as any).electronAPI
+  if (api?.dialog) {
+    icsText = await api.dialog.open()
+  } else {
+    icsText = await new Promise<string | null>((resolve) => {
+      const input = document.createElement('input')
+      input.type = 'file'
+      input.accept = '.ics,text/calendar'
+      input.onchange = () => {
+        const file = input.files?.[0]
+        if (!file) { resolve(null); return }
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result as string)
+        reader.readAsText(file)
+      }
+      input.click()
+    })
+  }
+
+  if (!icsText) return { success: false, message: 'No file selected' }
+
+  let result: ReturnType<typeof parseIcal>
+  try {
+    result = parseIcal(icsText)
+  } catch {
+    return { success: false, message: 'Failed to parse file — not a valid iCal file' }
+  }
+
+  if (result.reminders.length === 0) {
+    return { success: false, message: 'No calendar events found in file' }
+  }
+
+  try {
+    const storage = getStorage()
+    for (const r of result.reminders) await storage.saveReminder(r)
+    await useRemindersStore.getState().load()
+
+    const skippedNote = result.skipped > 0 ? `, ${result.skipped} skipped (missing title or date)` : ''
+    return {
+      success: true,
+      message: `Imported ${result.reminders.length} reminder${result.reminders.length !== 1 ? 's' : ''}${skippedNote}`,
     }
   } catch {
     return { success: false, message: 'Import failed — error saving data' }

@@ -6,7 +6,7 @@ import { useUIStore, type Theme } from '../../store/ui.store'
 import { useAuthStore } from '../../store/auth.store'
 import { useSyncStore } from '../../store/sync.store'
 import Button from '../ui/Button'
-import { exportToFile, importFromFile } from '../../utils/exportImport'
+import { exportToFile, importFromFile, exportToIcalFile, importFromIcalFile } from '../../utils/exportImport'
 
 function formatLastSynced(isoStr: string): string {
   const minutes = Math.floor((Date.now() - new Date(isoStr).getTime()) / 60_000)
@@ -41,6 +41,8 @@ export default function SettingsPage() {
   const [importStatus, setImportStatus] = useState<{ ok: boolean; msg: string } | null>(null)
   const [exporting, setExporting] = useState(false)
   const [importing, setImporting] = useState(false)
+  const [exportingIcal, setExportingIcal] = useState(false)
+  const [importingIcal, setImportingIcal] = useState(false)
   const [rotateStatus, setRotateStatus] = useState<'idle' | 'confirm' | 'rotating' | 'done' | 'error'>('idle')
   const [resetStatus, setResetStatus] = useState<'idle' | 'confirm' | 'running' | 'done' | 'error'>('idle')
   const [clearStatus, setClearStatus] = useState<'idle' | 'confirm' | 'running' | 'done'>('idle')
@@ -89,6 +91,26 @@ export default function SettingsPage() {
       setImportStatus({ ok: result.success, msg: result.message })
     } finally {
       setImporting(false)
+    }
+  }
+
+  async function handleExportIcal() {
+    setExportingIcal(true)
+    try {
+      await exportToIcalFile()
+    } finally {
+      setExportingIcal(false)
+    }
+  }
+
+  async function handleImportIcal() {
+    setImportingIcal(true)
+    setImportStatus(null)
+    try {
+      const result = await importFromIcalFile()
+      setImportStatus({ ok: result.success, msg: result.message })
+    } finally {
+      setImportingIcal(false)
     }
   }
 
@@ -369,6 +391,30 @@ export default function SettingsPage() {
             <Button variant="ghost" size="sm" onClick={handleImport} disabled={importing}>
               <Upload size={14} />
               {importing ? 'Importing…' : 'Import'}
+            </Button>
+          </div>
+          <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
+            <div>
+              <p className="text-sm font-medium">Export as iCal</p>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Download reminders as an .ics file for Google Calendar, Apple Calendar, Outlook, and more
+              </p>
+            </div>
+            <Button variant="ghost" size="sm" onClick={handleExportIcal} disabled={exportingIcal}>
+              <Download size={14} />
+              {exportingIcal ? 'Exporting…' : 'Export .ics'}
+            </Button>
+          </div>
+          <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
+            <div>
+              <p className="text-sm font-medium">Import from iCal</p>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Import events from an .ics file exported by Google Calendar, Apple Calendar, Outlook, and more
+              </p>
+            </div>
+            <Button variant="ghost" size="sm" onClick={handleImportIcal} disabled={importingIcal}>
+              <Upload size={14} />
+              {importingIcal ? 'Importing…' : 'Import .ics'}
             </Button>
           </div>
           {importStatus && (
