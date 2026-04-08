@@ -39,7 +39,7 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete }: Props) {
         <button
           {...attributes}
           {...listeners}
-          className="cursor-grab active:cursor-grabbing text-slate-300 dark:text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+          className="cursor-grab active:cursor-grabbing text-slate-300 dark:text-slate-600 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0"
           tabIndex={-1}
           aria-label="Drag to reorder"
         >
@@ -82,7 +82,7 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete }: Props) {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+        <div className="flex items-center gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0">
           <button
             onClick={() => onEdit(todo)}
             className="w-6 h-6 flex items-center justify-center rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"

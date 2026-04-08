@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Milkdown, MilkdownProvider, useEditor } from '@milkdown/react'
 import { Editor, rootCtx, defaultValueCtx } from '@milkdown/core'
@@ -221,9 +221,10 @@ function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
       .use(listener)
   )
 
+  const wrapperRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
-  const [visibleCount, setVisibleCount] = useState(DEFS.length)
+  const [visibleCount, setVisibleCount] = useState(0)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [linkOpen, setLinkOpen] = useState(false)
   const [linkUrl, setLinkUrl] = useState('')
@@ -245,14 +246,14 @@ function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
     setLinkOpen(false)
   }
 
-  useEffect(() => {
-    const el = containerRef.current
+  useLayoutEffect(() => {
+    const el = wrapperRef.current
     if (!el) return
+    setVisibleCount(calcVisibleCount(el.getBoundingClientRect().width))
     const ro = new ResizeObserver(([entry]) =>
       setVisibleCount(calcVisibleCount(entry.contentRect.width))
     )
     ro.observe(el)
-    setVisibleCount(calcVisibleCount(el.getBoundingClientRect().width))
     return () => ro.disconnect()
   }, [])
 
@@ -272,49 +273,59 @@ function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
 
   return (
     <>
-      <div className="border-b border-slate-100 dark:border-white/[0.05]">
-        <div ref={containerRef} className="flex items-center gap-0.5 px-2 py-1">
-          {visibleDefs.map((def) =>
-            def.type === 'divider' ? (
-              <div
-                key={def.key}
-                className="w-px h-5 bg-gray-200 dark:bg-[var(--bg-elevated)] mx-1 flex-shrink-0"
-              />
-            ) : (
-              <TBtn
-                key={def.key}
-                icon={def.icon}
-                label={def.label}
-                onClick={() => handleDef(def)}
-              />
-            )
-          )}
-          {hasOverflow && (
-            <div ref={dropdownRef} className="relative flex-shrink-0 ml-auto">
-              <TBtn
-                icon={<MoreHorizontal size={14} />}
-                label="More"
-                onClick={() => setDropdownOpen((o) => !o)}
-              />
-              {dropdownOpen && (
-                <div className="absolute right-0 top-full mt-1 z-50 bg-white dark:bg-[var(--bg-card)] border border-gray-200 dark:border-[var(--border)] rounded-lg shadow-lg py-1 min-w-[168px]">
-                  {overflowDefs.map((def) => (
-                    <button
-                      key={def.key}
-                      type="button"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => handleDef(def)}
-                      className="w-full flex items-center gap-3 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[var(--bg-elevated)] transition-colors"
-                    >
-                      <span className="text-gray-500 dark:text-gray-400">{def.icon}</span>
-                      {def.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+      <div className="border-b border-slate-100 dark:border-white/[0.05] relative">
+        {/* overflow-hidden clips the button row so it can never widen the page;
+            ResizeObserver on this div always gets the true available width */}
+        <div ref={wrapperRef} className="overflow-hidden">
+          <div
+            ref={containerRef}
+            className="flex items-center gap-0.5 px-2 py-1"
+            style={{ paddingRight: hasOverflow ? OVERFLOW_W + 8 : undefined }}
+          >
+            {visibleDefs.map((def) =>
+              def.type === 'divider' ? (
+                <div
+                  key={def.key}
+                  className="w-px h-5 bg-gray-200 dark:bg-[var(--bg-elevated)] mx-1 flex-shrink-0"
+                />
+              ) : (
+                <TBtn
+                  key={def.key}
+                  icon={def.icon}
+                  label={def.label}
+                  onClick={() => handleDef(def)}
+                />
+              )
+            )}
+          </div>
         </div>
+        {/* ... button lives outside overflow-hidden so the dropdown is never clipped */}
+        {hasOverflow && (
+          <div ref={dropdownRef} className="absolute right-2 top-1 z-10 bg-[var(--bg-app)]">
+            <TBtn
+              icon={<MoreHorizontal size={14} />}
+              label="More"
+              onClick={() => setDropdownOpen((o) => !o)}
+            />
+            {dropdownOpen && (
+              <div className="absolute right-0 top-full mt-1 z-50 bg-white dark:bg-[var(--bg-card)] border border-gray-200 dark:border-[var(--border)] rounded-lg shadow-lg py-1 min-w-[168px]">
+                {overflowDefs.map((def) => (
+                  <button
+                    key={def.key}
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => handleDef(def)}
+                    className="w-full flex items-center gap-3 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[var(--bg-elevated)] transition-colors"
+                  >
+                    <span className="text-gray-500 dark:text-gray-400">{def.icon}</span>
+                    {def.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {linkOpen && (
           <div className="flex items-center gap-2 px-2 pb-2">
             <input
