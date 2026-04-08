@@ -180,7 +180,7 @@ export function SidebarNavItem({
         onDragStart?.(id)
       }}
       onDragEnd={() => onDragEnd?.()}
-      className={`group flex items-center gap-2 mx-1.5 mb-0.5 py-2 rounded-lg transition-all ${onDragStart ? 'cursor-grab active:cursor-grabbing' : ''} ${indent ? 'pl-7 pr-2' : 'pl-3 pr-2'} ${
+      className={`group relative flex items-center gap-2 mx-1.5 mb-0.5 py-2 rounded-lg transition-all ${onDragStart ? 'cursor-grab active:cursor-grabbing' : ''} ${indent ? 'pl-7 pr-2' : 'pl-3 pr-2'} ${
         active
           ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.12]'
           : 'hover:bg-slate-50 dark:hover:bg-white/[0.03]'
@@ -197,14 +197,14 @@ export function SidebarNavItem({
           }
         />
         <span
-          className={`text-[15px] truncate flex-1 ${active ? 'font-medium text-[#6498c8]' : 'text-slate-600 dark:text-white/60'}`}
+          className={`text-[15px] truncate flex-1 pr-6 md:pr-0 md:group-hover:pr-6 ${active ? 'font-medium text-[#6498c8]' : 'text-slate-600 dark:text-white/60'}`}
         >
           {label}
         </span>
       </button>
       <button
         onClick={() => onDelete(id)}
-        className="shrink-0 p-1 rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+        className="absolute right-1 p-1 rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors md:opacity-0 md:group-hover:opacity-100"
         title={deleteTitle}
       >
         <Trash2 size={15} />
@@ -273,7 +273,7 @@ export function FolderTree<F extends { id: string; name: string }, I>({
       >
         <div
           onClick={() => onToggleFolder(folder.id)}
-          className="group flex items-center gap-1.5 w-full py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors cursor-pointer rounded"
+          className="group relative flex items-center gap-1.5 w-full py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors cursor-pointer rounded"
           style={{ paddingLeft: `${pl}px`, paddingRight: '8px' }}
         >
           {collapsed ? (
@@ -281,43 +281,45 @@ export function FolderTree<F extends { id: string; name: string }, I>({
           ) : (
             <ChevronDown size={16} className="text-slate-300 dark:text-white/20 shrink-0" />
           )}
-          <span className="text-[15px] font-semibold text-slate-400 dark:text-white/30 truncate flex-1 text-left">
+          <span className="text-[15px] font-semibold text-slate-400 dark:text-white/30 truncate flex-1 text-left pr-20 md:pr-0 md:group-hover:pr-20">
             {folder.name}
           </span>
-          {onEditFolder && (
+          <div className="absolute right-1 flex items-center md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+            {onEditFolder && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onEditFolder(folder) }}
+                className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                title="Rename folder"
+              >
+                <Pencil size={15} />
+              </button>
+            )}
+            {onDeleteFolder && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onDeleteFolder(folder.id) }}
+                className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors"
+                title="Delete folder"
+              >
+                <Trash2 size={15} />
+              </button>
+            )}
+            {onNewSubfolder && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onNewSubfolder(folder.id) }}
+                className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                title="New subfolder"
+              >
+                <FolderPlus size={15} />
+              </button>
+            )}
             <button
-              onClick={(e) => { e.stopPropagation(); onEditFolder(folder) }}
-              className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors opacity-0 group-hover:opacity-100"
-              title="Rename folder"
+              onClick={(e) => { e.stopPropagation(); onNewItemInFolder(folder.id) }}
+              className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+              title="New item in folder"
             >
-              <Pencil size={15} />
+              <Plus size={16} />
             </button>
-          )}
-          {onDeleteFolder && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onDeleteFolder(folder.id) }}
-              className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-              title="Delete folder"
-            >
-              <Trash2 size={15} />
-            </button>
-          )}
-          {onNewSubfolder && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onNewSubfolder(folder.id) }}
-              className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors opacity-0 group-hover:opacity-100"
-              title="New subfolder"
-            >
-              <FolderPlus size={15} />
-            </button>
-          )}
-          <button
-            onClick={(e) => { e.stopPropagation(); onNewItemInFolder(folder.id) }}
-            className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors opacity-0 group-hover:opacity-100"
-            title="New item in folder"
-          >
-            <Plus size={16} />
-          </button>
+          </div>
         </div>
         {!collapsed && (
           <>

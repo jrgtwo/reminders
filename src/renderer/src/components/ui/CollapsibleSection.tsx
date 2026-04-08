@@ -43,7 +43,7 @@ export function CollapsibleSection({
           onClick={() => setOpen((o) => !o)}
           className="flex items-center gap-2 flex-1 text-left hover:opacity-80 transition-opacity"
         >
-          <span className={`text-[10px] font-bold uppercase tracking-wide flex-1 ${labelCls}`}>
+          <span className={`text-[13px] font-bold uppercase tracking-wide flex-1 ${labelCls}`}>
             {label}
           </span>
           {count > 0 && (
