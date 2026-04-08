@@ -30,7 +30,7 @@ const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
 
   function handleNoteClick(n: Note) {
     setQuery('')
-    navigate(`/day/${n.date}`)
+    navigate(`/notes/${n.id}`)
   }
 
   return (
@@ -117,7 +117,7 @@ const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
                     <p className="text-sm text-gray-900 dark:text-white/80 truncate leading-snug">
                       {n.content.split('\n').find((l) => l.trim()) ?? n.date}
                     </p>
-                    <p className="text-xs text-gray-400 dark:text-white/30">{formatNoteDate(n.date)}</p>
+                    {n.date && <p className="text-xs text-gray-400 dark:text-white/30">{formatNoteDate(n.date)}</p>}
                   </div>
                 </button>
               ))}
