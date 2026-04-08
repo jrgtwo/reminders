@@ -500,7 +500,7 @@ export default function NoteView() {
         onBack={() => navigate('/notes')}
       />
       <div className="flex-1 overflow-y-auto">
-        <MilkdownProvider>
+        <MilkdownProvider key={id}>
           <EditorWithToolbar initialContent={note.content} onChange={handleContentChange} />
         </MilkdownProvider>
       </div>

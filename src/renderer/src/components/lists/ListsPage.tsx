@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { ChevronLeft, List, Pencil } from 'lucide-react'
+import { useParams } from 'react-router-dom'
+import { List, Pencil } from 'lucide-react'
 import { useTodoListsStore } from '../../store/todo_lists.store'
 import { useTodoFoldersStore } from '../../store/todo_folders.store'
 import type { TodoListItem, TodoList } from '../../types/models'
@@ -10,7 +10,6 @@ import ListForm from './ListForm'
 
 export default function ListsPage() {
   const { listId } = useParams<{ listId?: string }>()
-  const navigate = useNavigate()
 
   const folders = useTodoFoldersStore((s) => s.folders)
   const lists = useTodoListsStore((s) => s.lists)
@@ -56,14 +55,6 @@ export default function ListsPage() {
   return (
     <div className="overflow-y-auto h-full">
       <div className="max-w-2xl mx-auto px-6 py-8">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-1 text-[12px] text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/60 transition-colors mb-6"
-        >
-          <ChevronLeft size={14} />
-          Back
-        </button>
-
         {!selectedList ? (
           <div className="flex flex-col items-center justify-center py-24 text-slate-400 dark:text-white/25 gap-2">
             <List size={32} className="opacity-30" />

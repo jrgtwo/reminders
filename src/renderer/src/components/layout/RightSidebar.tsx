@@ -4,7 +4,6 @@ import {
   CheckSquare,
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
   Plus,
   List,
   FolderOpen,
@@ -24,161 +23,7 @@ import FolderForm from '../lists/FolderForm'
 import ListForm from '../lists/ListForm'
 import NotesNav from '../notes/NotesNav'
 import { CollapsibleSection } from '../ui/CollapsibleSection'
-import { SidebarNavItem, FolderTree } from '../ui/FolderNav'
-
-// --- Date hierarchy helpers ---
-const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
-]
-
-type DayMap = Record<string, TodoList[]>
-type MonthMap = Record<string, DayMap>
-type YearMap = Record<string, MonthMap>
-
-function buildDateTree(lists: TodoList[]): YearMap {
-  const tree: YearMap = {}
-  for (const l of lists) {
-    if (!l.dueDate) continue
-    const [year, month, day] = l.dueDate.split('-')
-    if (!tree[year]) tree[year] = {}
-    if (!tree[year][month]) tree[year][month] = {}
-    if (!tree[year][month][day]) tree[year][month][day] = []
-    tree[year][month][day].push(l)
-  }
-  return tree
-}
-
-function DateSection({
-  lists,
-  activeListId,
-  onNewListForDate,
-  onDeleteList
-}: {
-  lists: TodoList[]
-  activeListId?: string
-  onNewListForDate: (date: string) => void
-  onDeleteList: (id: string) => void
-}) {
-  const tree = useMemo(() => buildDateTree(lists), [lists])
-  const years = Object.keys(tree).sort((a, b) => b.localeCompare(a))
-
-  const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set())
-  const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set())
-
-  if (years.length === 0) {
-    return (
-      <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2">
-        No date-based lists yet
-      </p>
-    )
-  }
-
-  return (
-    <>
-      {years.map((year) => {
-        const yearCollapsed = !expandedYears.has(year)
-        const months = Object.keys(tree[year]).sort((a, b) => b.localeCompare(a))
-        return (
-          <div key={year}>
-            <button
-              onClick={() =>
-                setExpandedYears((prev) => {
-                  const next = new Set(prev)
-                  next.has(year) ? next.delete(year) : next.add(year)
-                  return next
-                })
-              }
-              className="flex items-center gap-1.5 w-full px-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
-            >
-              {yearCollapsed ? (
-                <ChevronRight size={10} className="text-slate-300 dark:text-white/20 shrink-0" />
-              ) : (
-                <ChevronDown size={10} className="text-slate-300 dark:text-white/20 shrink-0" />
-              )}
-              <span className="text-[11px] font-bold text-slate-500 dark:text-white/40 uppercase tracking-wide">
-                {year}
-              </span>
-            </button>
-
-            {!yearCollapsed &&
-              months.map((month) => {
-                const monthKey = `${year}-${month}`
-                const monthCollapsed = !expandedMonths.has(monthKey)
-                const days = Object.keys(tree[year][month]).sort((a, b) => b.localeCompare(a))
-                const monthName = MONTH_NAMES[parseInt(month, 10) - 1]
-
-                return (
-                  <div key={month}>
-                    <button
-                      onClick={() =>
-                        setExpandedMonths((prev) => {
-                          const next = new Set(prev)
-                          next.has(monthKey) ? next.delete(monthKey) : next.add(monthKey)
-                          return next
-                        })
-                      }
-                      className="flex items-center gap-1.5 w-full pl-6 pr-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
-                    >
-                      {monthCollapsed ? (
-                        <ChevronRight
-                          size={9}
-                          className="text-slate-300 dark:text-white/20 shrink-0"
-                        />
-                      ) : (
-                        <ChevronDown
-                          size={9}
-                          className="text-slate-300 dark:text-white/20 shrink-0"
-                        />
-                      )}
-                      <span className="text-[11px] font-semibold text-slate-400 dark:text-white/30">
-                        {monthName}
-                      </span>
-                    </button>
-
-                    {!monthCollapsed &&
-                      days.map((day) => {
-                        const dayLists = tree[year][month][day]
-                        const dateStr = `${year}-${month}-${day}`
-                        return (
-                          <div key={day}>
-                            <div className="flex items-center pl-10 pr-4 py-0.5">
-                              <span className="text-[11px] font-semibold text-slate-400 dark:text-white/25 flex-1">
-                                {parseInt(day, 10)}
-                              </span>
-                              <button
-                                onClick={() => onNewListForDate(dateStr)}
-                                className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-                                title={`New list for ${dateStr}`}
-                              >
-                                <Plus size={10} />
-                              </button>
-                            </div>
-                            {dayLists.map((l) => (
-                              <SidebarNavItem
-                                key={l.id}
-                                id={l.id}
-                                label={l.name}
-                                active={activeListId === l.id}
-                                route={`/lists/${l.id}`}
-                                icon={List}
-                                indent
-                                onDelete={onDeleteList}
-                                deleteTitle="Delete list"
-                              />
-                            ))}
-                          </div>
-                        )
-                      })}
-                  </div>
-                )
-              })}
-          </div>
-        )
-      })}
-    </>
-  )
-}
+import { SidebarNavItem, FolderTree, DateTree } from '../ui/FolderNav'
 
 export default function RightSidebar() {
   const navigate = useNavigate()
@@ -705,11 +550,24 @@ export default function RightSidebar() {
                         accent="slate"
                         defaultOpen={false}
                       >
-                        <DateSection
-                          lists={dateLists}
-                          activeListId={activeListId}
-                          onNewListForDate={(date) => openNewList({ dueDate: date })}
-                          onDeleteList={handleDeleteList}
+                        <DateTree
+                          items={dateLists}
+                          getDate={(l) => l.dueDate}
+                          renderItem={(l) => (
+                            <SidebarNavItem
+                              id={l.id}
+                              label={l.name}
+                              active={activeListId === l.id}
+                              route={`/lists/${l.id}`}
+                              icon={List}
+                              indent
+                              onDelete={handleDeleteList}
+                              deleteTitle="Delete list"
+                            />
+                          )}
+                          onNewForDate={(date) => openNewList({ dueDate: date })}
+                          emptyMessage="No date-based lists yet"
+                          newItemTitle="New list"
                         />
                       </CollapsibleSection>
                     </div>

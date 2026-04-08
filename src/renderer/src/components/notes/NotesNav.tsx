@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { ChevronRight, ChevronDown, Plus, FolderOpen, FileText, ArrowUpRight } from 'lucide-react'
+import { Plus, FolderOpen, FileText, ArrowUpRight } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useNotesStore } from '../../store/notes.store'
 import { useNoteFoldersStore } from '../../store/note_folders.store'
@@ -8,195 +8,7 @@ import { buildFolderTree, getDescendantIds } from '../../lib/folderTree'
 import type { Note, NoteFolder } from '../../types/models'
 import NoteFolderForm from './NoteFolderForm'
 import { CollapsibleSection } from '../ui/CollapsibleSection'
-import { SidebarNavItem, FolderTree } from '../ui/FolderNav'
-
-const MONTH_NAMES = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December'
-]
-
-type NoteDayMap = Record<string, Note[]>
-type NoteMonthMap = Record<string, NoteDayMap>
-type NoteYearMap = Record<string, NoteMonthMap>
-
-function buildNoteDateTree(notes: Note[]): NoteYearMap {
-  const tree: NoteYearMap = {}
-  for (const n of notes) {
-    if (!n.date) continue
-    const [year, month, day] = n.date.split('-')
-    if (!tree[year]) tree[year] = {}
-    if (!tree[year][month]) tree[year][month] = {}
-    if (!tree[year][month][day]) tree[year][month][day] = []
-    tree[year][month][day].push(n)
-  }
-  return tree
-}
-
-function DateNoteSection({
-  notes,
-  activeNoteId,
-  onNewNoteForDate,
-  onDeleteNote
-}: {
-  notes: Note[]
-  activeNoteId?: string
-  onNewNoteForDate: (date: string) => void
-  onDeleteNote: (id: string) => void
-}) {
-  const tree = useMemo(() => buildNoteDateTree(notes), [notes])
-  const years = Object.keys(tree).sort((a, b) => b.localeCompare(a))
-  const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set())
-  const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set())
-  const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set())
-
-  if (years.length === 0) {
-    return (
-      <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2">
-        No date-based notes yet
-      </p>
-    )
-  }
-
-  return (
-    <>
-      {years.map((year) => {
-        const yearCollapsed = !expandedYears.has(year)
-        const months = Object.keys(tree[year]).sort((a, b) => b.localeCompare(a))
-        return (
-          <div key={year}>
-            <button
-              onClick={() =>
-                setExpandedYears((prev) => {
-                  const next = new Set(prev)
-                  next.has(year) ? next.delete(year) : next.add(year)
-                  return next
-                })
-              }
-              className="flex items-center gap-1.5 w-full px-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
-            >
-              {yearCollapsed ? (
-                <ChevronRight size={10} className="text-slate-300 dark:text-white/20 shrink-0" />
-              ) : (
-                <ChevronDown size={10} className="text-slate-300 dark:text-white/20 shrink-0" />
-              )}
-              <span className="text-[11px] font-bold text-slate-500 dark:text-white/40 uppercase tracking-wide">
-                {year}
-              </span>
-            </button>
-
-            {!yearCollapsed &&
-              months.map((month) => {
-                const monthKey = `${year}-${month}`
-                const monthCollapsed = !expandedMonths.has(monthKey)
-                const days = Object.keys(tree[year][month]).sort((a, b) => b.localeCompare(a))
-                const monthName = MONTH_NAMES[parseInt(month, 10) - 1]
-
-                return (
-                  <div key={month}>
-                    <button
-                      onClick={() =>
-                        setExpandedMonths((prev) => {
-                          const next = new Set(prev)
-                          next.has(monthKey) ? next.delete(monthKey) : next.add(monthKey)
-                          return next
-                        })
-                      }
-                      className="flex items-center gap-1.5 w-full pl-6 pr-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
-                    >
-                      {monthCollapsed ? (
-                        <ChevronRight
-                          size={9}
-                          className="text-slate-300 dark:text-white/20 shrink-0"
-                        />
-                      ) : (
-                        <ChevronDown
-                          size={9}
-                          className="text-slate-300 dark:text-white/20 shrink-0"
-                        />
-                      )}
-                      <span className="text-[11px] font-semibold text-slate-400 dark:text-white/30">
-                        {monthName}
-                      </span>
-                    </button>
-
-                    {!monthCollapsed &&
-                      days.map((day) => {
-                        const dayNotes = tree[year][month][day]
-                        const dateStr = `${year}-${month}-${day}`
-                        const dayKey = `${year}-${month}-${day}`
-                        const dayCollapsed = !expandedDays.has(dayKey)
-                        return (
-                          <div key={day}>
-                            <div className="flex items-center pl-8 pr-4 py-0.5">
-                              <button
-                                onClick={() =>
-                                  setExpandedDays((prev) => {
-                                    const next = new Set(prev)
-                                    next.has(dayKey) ? next.delete(dayKey) : next.add(dayKey)
-                                    return next
-                                  })
-                                }
-                                className="flex items-center gap-1.5 flex-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
-                              >
-                                {dayCollapsed ? (
-                                  <ChevronRight
-                                    size={9}
-                                    className="text-slate-300 dark:text-white/20 shrink-0"
-                                  />
-                                ) : (
-                                  <ChevronDown
-                                    size={9}
-                                    className="text-slate-300 dark:text-white/20 shrink-0"
-                                  />
-                                )}
-                                <span className="text-[11px] font-semibold text-slate-400 dark:text-white/25">
-                                  {parseInt(day, 10)}
-                                </span>
-                              </button>
-                              <button
-                                onClick={() => onNewNoteForDate(dateStr)}
-                                className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-                                title={`New note for ${dateStr}`}
-                              >
-                                <Plus size={10} />
-                              </button>
-                            </div>
-                            {!dayCollapsed &&
-                              dayNotes.map((n) => (
-                                <SidebarNavItem
-                                  key={n.id}
-                                  id={n.id}
-                                  label={n.title || 'Untitled'}
-                                  active={activeNoteId === n.id}
-                                  route={`/notes/${n.id}`}
-                                  icon={FileText}
-                                  indent
-                                  onDelete={onDeleteNote}
-                                  deleteTitle="Delete note"
-                                />
-                              ))}
-                          </div>
-                        )
-                      })}
-                  </div>
-                )
-              })}
-          </div>
-        )
-      })}
-    </>
-  )
-}
+import { SidebarNavItem, FolderTree, DateTree } from '../ui/FolderNav'
 
 export default function NotesNav() {
   const navigate = useNavigate()
@@ -440,10 +252,22 @@ export default function NotesNav() {
                 </button>
               }
             >
-              <DateNoteSection
-                notes={dateNotes}
-                activeNoteId={activeNoteId}
-                onNewNoteForDate={(date) => {
+              <DateTree
+                items={dateNotes}
+                getDate={(n) => n.date}
+                renderItem={(n) => (
+                  <SidebarNavItem
+                    id={n.id}
+                    label={n.title || 'Untitled'}
+                    active={activeNoteId === n.id}
+                    route={`/notes/${n.id}`}
+                    icon={FileText}
+                    indent
+                    onDelete={handleDeleteNote}
+                    deleteTitle="Delete note"
+                  />
+                )}
+                onNewForDate={(date) => {
                   const now = new Date()
                   const note = {
                     id: crypto.randomUUID(),
@@ -456,7 +280,8 @@ export default function NotesNav() {
                   saveNote(note)
                   navigate(`/notes/${note.id}`)
                 }}
-                onDeleteNote={handleDeleteNote}
+                emptyMessage="No date-based notes yet"
+                newItemTitle="New note"
               />
             </CollapsibleSection>
           </div>

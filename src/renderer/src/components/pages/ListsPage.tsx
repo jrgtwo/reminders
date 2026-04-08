@@ -1,24 +1,24 @@
 import { useOutlet } from 'react-router-dom'
-import { FileText, ChevronLeft, ChevronRight } from 'lucide-react'
+import { List, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRef, useState, useCallback } from 'react'
-import NotesNav from '../notes/NotesNav'
+import ListsNav from '../lists/ListsNav'
 
 const MIN_WIDTH = 160
 const MAX_WIDTH = 480
 const DEFAULT_WIDTH = 256
 
-function NotesEmptyState() {
+function ListsEmptyState() {
   return (
     <div className="flex flex-col items-center justify-center h-full gap-3">
-      <FileText size={40} className="text-slate-200 dark:text-white/10" />
-      <p className="text-sm text-slate-400 dark:text-white/25">Select a note or create a new one</p>
+      <List size={40} className="text-slate-200 dark:text-white/10" />
+      <p className="text-sm text-slate-400 dark:text-white/25">Select a list or create a new one</p>
     </div>
   )
 }
 
-export default function NotesPage() {
+export default function ListsPage() {
   const outlet = useOutlet()
-  const hasNote = !!outlet
+  const hasList = !!outlet
   const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_WIDTH)
   const [collapsed, setCollapsed] = useState(false)
   const dragging = useRef(false)
@@ -52,9 +52,9 @@ export default function NotesPage() {
 
   return (
     <div className="h-full flex overflow-hidden">
-      {/* Mobile sidebar: full-width when no note open, hidden otherwise */}
-      <div className={`md:hidden shrink-0 border-r border-slate-200 dark:border-white/[0.07] overflow-y-auto bg-[var(--bg-app)] w-full ${hasNote ? 'hidden' : 'block'}`}>
-        <NotesNav />
+      {/* Mobile sidebar: full-width when no list open, hidden otherwise */}
+      <div className={`md:hidden shrink-0 border-r border-slate-200 dark:border-white/[0.07] overflow-y-auto bg-[var(--bg-app)] w-full ${hasList ? 'hidden' : 'block'}`}>
+        <ListsNav />
       </div>
 
       {/* Desktop sidebar: resizable + collapsible */}
@@ -63,7 +63,7 @@ export default function NotesPage() {
         style={{ width: effectiveWidth }}
       >
         <div className="overflow-y-auto h-full" style={{ width: sidebarWidth, minWidth: sidebarWidth }}>
-          <NotesNav />
+          <ListsNav />
         </div>
       </div>
 
@@ -90,9 +90,9 @@ export default function NotesPage() {
       {/* Right panel */}
       <div
         className={`flex-1 flex flex-col overflow-hidden bg-[var(--bg-app)]
-          ${hasNote ? 'flex' : 'hidden md:flex'}`}
+          ${hasList ? 'flex' : 'hidden md:flex'}`}
       >
-        {outlet ?? <NotesEmptyState />}
+        {outlet ?? <ListsEmptyState />}
       </div>
     </div>
   )

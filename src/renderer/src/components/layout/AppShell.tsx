@@ -1,5 +1,5 @@
 import { useRef, useCallback, useState, useEffect, useMemo } from 'react'
-import { Outlet, useNavigate } from 'react-router-dom'
+import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { Settings, Cloud, CloudOff, Loader2, X } from 'lucide-react'
 import RightSidebar from './RightSidebar'
 import BottomNav from './BottomNav'
@@ -26,6 +26,9 @@ function formatLastSynced(isoStr: string): string {
 export default function AppShell() {
   const searchRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
+  const location = useLocation()
+  const isNotesPage = location.pathname.startsWith('/notes')
+  const isListsPage = location.pathname.startsWith('/lists')
   const focusSearch = useCallback(() => searchRef.current?.focus(), [])
   const [errorDismissed, setErrorDismissed] = useState(false)
 
@@ -263,9 +266,11 @@ export default function AppShell() {
         <main className="flex-1 h-full overflow-auto bg-[var(--bg-app)]">
           <Outlet />
         </main>
-        <div className="hidden lg:flex shrink-0">
-          <RightSidebar />
-        </div>
+        {!isNotesPage && !isListsPage && (
+          <div className="hidden lg:flex shrink-0">
+            <RightSidebar />
+          </div>
+        )}
       </div>
 
       <BottomNav />

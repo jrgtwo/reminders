@@ -25,7 +25,8 @@ import DayView from './components/DayView'
 import SettingsPage from './components/settings/SettingsPage'
 import RemindersPage from './components/mobile/RemindersPage'
 import TodosPage from './components/mobile/TodosPage'
-import ListsPage from './components/lists/ListsPage'
+import ListsView from './components/lists/ListsPage'
+import ListsPage from './components/pages/ListsPage'
 import NoteView from './components/notes/NoteView'
 import NotesPage from './components/pages/NotesPage'
 import {
@@ -104,11 +105,22 @@ const routes = [
       { path: 'day/:date', element: <DayPage /> },
       { path: 'reminders', element: <RemindersPage /> },
       { path: 'todos', element: <TodosPage /> },
-      { path: 'lists/:listId', element: <ListsPage /> },
+      {
+        path: 'lists',
+        element: <ListsPage />,
+        children: [
+          { path: ':listId', element: <ListsView /> }
+        ]
+      },
       { path: 'settings', element: <SettingsPage /> },
-      { path: 'notes', element: <NotesPage /> },
-      { path: 'notes/:id', element: <NoteView /> },
-      { path: 'notes/folder/:folderId', element: <NotesPage /> }
+      {
+        path: 'notes',
+        element: <NotesPage />,
+        children: [
+          { path: ':id', element: <NoteView /> },
+          { path: 'folder/:folderId', element: null }
+        ]
+      }
     ]
   }
 ]
