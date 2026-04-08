@@ -129,21 +129,6 @@ export default function AppShell() {
                   upcoming
                 </span>
               </button>
-              <button
-                onClick={() => navigate('/todos')}
-                className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
-              >
-                <span
-                  className={`text-[11px] font-bold tabular-nums ${todoCount > 0 ? 'text-blue-400' : 'text-white/25'}`}
-                >
-                  {todoCount}
-                </span>
-                <span
-                  className={`text-[11px] ${todoCount > 0 ? 'text-blue-400/70' : 'text-white/20'}`}
-                >
-                  todos
-                </span>
-              </button>
             </div>
           </div>
           {/* Center: search */}
