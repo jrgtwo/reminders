@@ -104,8 +104,19 @@ export default function WeekView({ displayDate }: Props) {
 
   useEffect(() => {
     if (scrollRef.current) {
-      const target = Math.max(0, (now.hour - 2) * SLOT_H)
-      scrollRef.current.scrollTop = target
+      const container = scrollRef.current
+
+      // Vertical: scroll to current time
+      container.scrollTop = Math.max(0, (now.hour - 2) * SLOT_H)
+
+      // Horizontal: center today's column if it exists in this week
+      const todayIndex = days.findIndex((d) => d.toString() === todayStr)
+      if (todayIndex !== -1) {
+        const labelWidth = 56 // 3.5rem in px
+        const colWidth = (container.scrollWidth - labelWidth) / 7
+        const colLeft = labelWidth + todayIndex * colWidth
+        container.scrollLeft = Math.max(0, colLeft - (container.clientWidth - colWidth) / 2)
+      }
     }
   }, [])
 
@@ -117,14 +128,15 @@ export default function WeekView({ displayDate }: Props) {
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
-      <div ref={scrollRef} className="flex-1 overflow-y-auto bg-[var(--bg-app)]">
+      <div ref={scrollRef} className="flex-1 overflow-auto bg-[var(--bg-app)]">
+      <div style={{ minWidth: 'calc(3.5rem + 7 * 96px)' }}>
 
         {/* Day header row */}
         <div
           className="sticky top-0 z-20 grid border-b border-slate-200/60 dark:border-white/[0.06] bg-[var(--bg-app)]"
           style={{ gridTemplateColumns: '3.5rem repeat(7, 1fr)' }}
         >
-          <div />
+          <div className="sticky left-0 z-10 bg-[var(--bg-app)]" />
           {days.map((day) => {
             const isToday = day.toString() === todayStr
             const isSelected = isSameDay(day, selectedPlainDate)
@@ -162,7 +174,7 @@ export default function WeekView({ displayDate }: Props) {
             {/* Multi-day spanning reminders */}
             {multiDayReminders.length > 0 && (
               <div className="flex py-[3px]">
-                <div style={{ width: '3.5rem', flexShrink: 0 }} />
+                <div className="sticky left-0 z-10 bg-[var(--bg-app)]" style={{ width: '3.5rem', flexShrink: 0 }} />
                 <div className="flex-1 relative" style={{ height: '22px' }}>
                   {multiDayReminders.map((r) => {
                     const { startCol, endCol } = getColSpan(r)
@@ -189,7 +201,7 @@ export default function WeekView({ displayDate }: Props) {
                 className="grid"
                 style={{ gridTemplateColumns: '3.5rem repeat(7, 1fr)' }}
               >
-                <div className="flex items-center justify-end pr-2 py-1">
+                <div className="sticky left-0 z-10 flex items-center justify-end pr-2 py-1 bg-[var(--bg-app)]">
                   <span className="text-[9px] font-medium uppercase tracking-wide text-slate-300 dark:text-white/20">all‑day</span>
                 </div>
                 {days.map((day) => {
@@ -233,7 +245,7 @@ export default function WeekView({ displayDate }: Props) {
           style={{ gridTemplateColumns: '3.5rem repeat(7, 1fr)', minHeight: `${SLOT_H * 24}px` }}
         >
           {days.some((d) => d.toString() === todayStr) && (
-            <div className="absolute left-0 right-0 z-20 pointer-events-none" style={{ top: `${nowTop}px` }}>
+            <div className="absolute left-0 right-0 z-[5] pointer-events-none" style={{ top: `${nowTop}px` }}>
               <div className="absolute left-14 right-0 flex items-center">
                 <div className="w-2 h-2 rounded-full bg-blue-500 -ml-1 shrink-0" />
                 <div className="flex-1 h-px bg-blue-500" />
@@ -245,7 +257,7 @@ export default function WeekView({ displayDate }: Props) {
             <>
               <div
                 key={`label-${hour}`}
-                className="flex items-start justify-end pr-2 pt-1"
+                className="sticky left-0 z-10 flex items-start justify-end pr-2 pt-1 bg-[var(--bg-app)]"
                 style={{ height: `${SLOT_H}px` }}
               >
                 {hour !== 0 && (
@@ -261,7 +273,7 @@ export default function WeekView({ displayDate }: Props) {
                   <div
                     key={`${dateStr}-${hour}`}
                     className={[
-                      'border-t border-l border-slate-200/50 dark:border-white/[0.04] min-w-0 cursor-pointer',
+                      'border-t border-l border-slate-300/70 dark:border-white/[0.10] min-w-0 cursor-pointer',
                       'opacity-80 hover:opacity-100 hover:brightness-105 transition-all duration-150',
                       isToday ? 'bg-blue-50/60 dark:bg-[#6498c8]/[0.07]' : 'hover:bg-slate-50/80 dark:hover:bg-white/[0.02]',
                     ].filter(Boolean).join(' ')}
@@ -313,6 +325,7 @@ export default function WeekView({ displayDate }: Props) {
             )
           })}
         </div>
+      </div>
       </div>
 
       {newForm && (
