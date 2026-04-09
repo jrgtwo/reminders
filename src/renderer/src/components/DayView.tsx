@@ -432,122 +432,137 @@ export default function DayView() {
       )}
 
       {tab === 'todos' && (
-        <div className="flex flex-col gap-3">
-          {dayLists.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-16 gap-3">
-              <p className="text-[13px] text-slate-400 dark:text-white/25">No lists for this day yet.</p>
+        <div className="mb-8 flex flex-col gap-2">
+          {dayLists.length === 0 ? (
+            <div className="min-h-[400px] bg-white/[0.03] dark:bg-white/[0.03] rounded-xl border border-slate-200 dark:border-white/[0.08]">
+              <div className="flex items-center justify-center h-64">
+                <div className="text-center">
+                  <p className="text-[13px] text-slate-400 dark:text-white/25 mb-4">No lists for this day yet.</p>
+                  <button
+                    onClick={handleCreateInlineList}
+                    className="text-[12px] font-medium text-[#6498c8] hover:opacity-80 transition-opacity"
+                  >
+                    + New list
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              {dayLists.map((l) => {
+                const isExpanded = expandedListIds.has(l.id)
+                const listItems = (items.get(l.id) ?? []).filter((i) => !i.completed).sort((a, b) => a.order - b.order)
+                const completedItems = (items.get(l.id) ?? []).filter((i) => i.completed).sort((a, b) => a.order - b.order)
+                const totalCount = listItems.length + completedItems.length
+                return (
+                  <div key={l.id} className="bg-white dark:bg-white/[0.06] border border-slate-200/60 dark:border-white/[0.08] rounded-xl shadow-sm">
+                    <div className="flex items-center justify-between px-4 py-3">
+                      <button
+                        onClick={() => toggleListExpanded(l.id)}
+                        className="flex items-center gap-1.5 min-w-0 flex-1 group"
+                      >
+                        <ChevronRight
+                          size={15}
+                          className={`shrink-0 text-slate-400 dark:text-white/30 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                        />
+                        {editingListTitleId === l.id ? (
+                          <input
+                            autoFocus
+                            defaultValue={l.name}
+                            placeholder="List name"
+                            className="flex-1 bg-transparent text-[14px] font-medium text-slate-800 dark:text-white/80 placeholder:text-slate-300 dark:placeholder:text-white/20 focus:outline-none"
+                            onClick={(e) => e.stopPropagation()}
+                            onBlur={(e) => handleSaveListTitle(l.id, e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') { e.preventDefault(); handleSaveListTitle(l.id, e.currentTarget.value) }
+                              if (e.key === 'Escape') { e.preventDefault(); handleSaveListTitle(l.id, e.currentTarget.value) }
+                            }}
+                          />
+                        ) : (
+                          <span className="text-[14px] font-medium text-slate-800 dark:text-white/80 truncate">
+                            {l.name || <span className="italic text-slate-400 dark:text-white/35">Untitled</span>}
+                          </span>
+                        )}
+                        {!isExpanded && totalCount > 0 && (
+                          <span className="shrink-0 text-[11px] text-slate-400 dark:text-white/30 ml-1">{totalCount}</span>
+                        )}
+                      </button>
+                      <div className="flex items-center gap-2 shrink-0 ml-2">
+                        <button
+                          onClick={() => setEditingListTitleId(l.id)}
+                          className="p-1.5 rounded-lg text-slate-400 dark:text-white/30 hover:text-slate-700 dark:hover:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
+                        >
+                          <Pencil size={13} />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            removeList(l.id)
+                          }}
+                          className="p-1.5 rounded-lg text-slate-400 dark:text-white/30 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                        {isExpanded && (
+                          <button
+                            onClick={() => handleAddItem(l.id)}
+                            className="text-[12px] font-medium text-[#6498c8] hover:opacity-80 transition-opacity"
+                          >
+                            + Add item
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    {isExpanded && (
+                      <div className="px-4 pb-3 pt-0 border-t border-slate-100 dark:border-white/[0.05]">
+                        {listItems.length === 0 && completedItems.length === 0 ? (
+                          <p className="text-[13px] text-slate-400 dark:text-white/25 pt-3">No items yet. Add one above.</p>
+                        ) : (
+                          <>
+                            <div className="pt-2">
+                              <SortableTodoList
+                                todos={listItems}
+                                onToggle={handleToggleItem}
+                                onEdit={(i) => setEditingItemId(i.id)}
+                                onDelete={deleteItem}
+                                onReorder={(ids) => reorderItems(l.id, ids)}
+                                editingItemId={editingItemId}
+                                onSaveEdit={handleSaveEdit}
+                                onCancelEdit={handleCancelEdit}
+                                onSaveDesc={handleSaveDesc}
+                              />
+                            </div>
+                            {completedItems.length > 0 && (
+                              <div className="mt-4 border-t border-slate-100 dark:border-white/[0.05] pt-3">
+                                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 dark:text-white/25 mb-2">Done</p>
+                                <SortableTodoList
+                                  todos={completedItems}
+                                  onToggle={handleToggleItem}
+                                  onEdit={(i) => setEditingItemId(i.id)}
+                                  onDelete={deleteItem}
+                                  onReorder={(ids) => reorderItems(l.id, ids)}
+                                  editingItemId={editingItemId}
+                                  onSaveEdit={handleSaveEdit}
+                                  onCancelEdit={handleCancelEdit}
+                                  onSaveDesc={handleSaveDesc}
+                                />
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
               <button
                 onClick={handleCreateInlineList}
-                className="text-[12px] font-medium text-[#6498c8] hover:opacity-80 transition-opacity"
+                className="flex items-center gap-2 w-full px-4 py-3 rounded-xl text-left bg-transparent border border-dashed border-slate-300 dark:border-white/[0.06] hover:border-[#6498c8] dark:hover:border-[#6498c8] text-[#6498c8] dark:text-[#6498c8] text-[13px] font-medium transition-colors"
               >
-                + New list
+                <span className="text-lg leading-none">+</span>
+                New list
               </button>
-            </div>
-          )}
-          {dayLists.map((l) => {
-            const isExpanded = expandedListIds.has(l.id)
-            const listItems = (items.get(l.id) ?? []).filter((i) => !i.completed).sort((a, b) => a.order - b.order)
-            const completedItems = (items.get(l.id) ?? []).filter((i) => i.completed).sort((a, b) => a.order - b.order)
-            const totalCount = listItems.length + completedItems.length
-            return (
-              <div key={l.id}>
-                <div className="flex items-center justify-between">
-                  <button
-                    onClick={() => toggleListExpanded(l.id)}
-                    className="flex items-center gap-1.5 min-w-0 flex-1 group"
-                  >
-                    <ChevronRight
-                      size={15}
-                      className={`shrink-0 text-slate-400 dark:text-white/30 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
-                    />
-                    {editingListTitleId === l.id ? (
-                      <input
-                        autoFocus
-                        defaultValue={l.name}
-                        placeholder="List name"
-                        className="flex-1 bg-transparent text-[15px] font-semibold text-slate-900 dark:text-white/80 tracking-tight placeholder:text-slate-300 dark:placeholder:text-white/20 focus:outline-none"
-                        style={{ fontFamily: "'Bree Serif', serif" }}
-                        onClick={(e) => e.stopPropagation()}
-                        onBlur={(e) => handleSaveListTitle(l.id, e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') { e.preventDefault(); handleSaveListTitle(l.id, e.currentTarget.value) }
-                          if (e.key === 'Escape') { e.preventDefault(); handleSaveListTitle(l.id, e.currentTarget.value) }
-                        }}
-                      />
-                    ) : (
-                      <span className="text-[15px] font-semibold text-slate-900 dark:text-white/80 tracking-tight truncate" style={{ fontFamily: "'Bree Serif', serif" }}>
-                        {l.name || <span className="italic text-slate-400 dark:text-white/25">Untitled</span>}
-                      </span>
-                    )}
-                    {!isExpanded && totalCount > 0 && (
-                      <span className="shrink-0 text-[11px] text-slate-400 dark:text-white/30 ml-1">{totalCount}</span>
-                    )}
-                  </button>
-                  <div className="flex items-center gap-2 shrink-0 ml-2">
-                    <button
-                      onClick={() => setEditingListTitleId(l.id)}
-                      className="p-1.5 rounded-lg text-slate-400 dark:text-white/30 hover:text-slate-700 dark:hover:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
-                    >
-                      <Pencil size={13} />
-                    </button>
-                    {isExpanded && (
-                      <button
-                        onClick={() => handleAddItem(l.id)}
-                        className="text-[12px] font-medium text-[#6498c8] hover:opacity-80 transition-opacity"
-                      >
-                        + Add
-                      </button>
-                    )}
-                  </div>
-                </div>
-                {isExpanded && (
-                  <div className="mt-3 pl-5">
-                    {listItems.length === 0 && completedItems.length === 0 ? (
-                      <p className="text-[13px] text-slate-400 dark:text-white/25">No items yet. Add one above.</p>
-                    ) : (
-                      <>
-                        <SortableTodoList
-                          todos={listItems}
-                          onToggle={handleToggleItem}
-                          onEdit={(i) => setEditingItemId(i.id)}
-                          onDelete={deleteItem}
-                          onReorder={(ids) => reorderItems(l.id, ids)}
-                          editingItemId={editingItemId}
-                          onSaveEdit={handleSaveEdit}
-                          onCancelEdit={handleCancelEdit}
-                          onSaveDesc={handleSaveDesc}
-                        />
-                        {completedItems.length > 0 && (
-                          <div className="mt-4 border-t border-slate-100 dark:border-white/[0.05] pt-3">
-                            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 dark:text-white/25 mb-2">Done</p>
-                            <SortableTodoList
-                              todos={completedItems}
-                              onToggle={handleToggleItem}
-                              onEdit={(i) => setEditingItemId(i.id)}
-                              onDelete={deleteItem}
-                              onReorder={(ids) => reorderItems(l.id, ids)}
-                              editingItemId={editingItemId}
-                              onSaveEdit={handleSaveEdit}
-                              onCancelEdit={handleCancelEdit}
-                              onSaveDesc={handleSaveDesc}
-                            />
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            )
-          })}
-          {dayLists.length > 0 && (
-            <button
-              onClick={handleCreateInlineList}
-              className="flex items-center gap-2 w-full px-4 py-3 rounded-xl text-left bg-transparent border border-dashed border-slate-300 dark:border-white/[0.06] hover:border-[#6498c8] dark:hover:border-[#6498c8] text-[#6498c8] dark:text-[#6498c8] text-[13px] font-medium transition-colors"
-            >
-              <span className="text-lg leading-none">+</span>
-              New list
-            </button>
+            </>
           )}
         </div>
       )}

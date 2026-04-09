@@ -11,7 +11,20 @@ interface Props {
   onToggle: (id: string, date: string) => void
 }
 
+function SectionHeader({ label }: { label: string }) {
+  return (
+    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-300 dark:text-white/25 px-4 mt-4 mb-1">
+      {label}
+    </p>
+  )
+}
+
 export default function ReminderList({ date, reminders, onAdd, onEdit, onDelete, onToggle }: Props) {
+  const allDay = reminders.filter((r) => !r.startTime)
+  const timed = reminders
+    .filter((r) => !!r.startTime)
+    .sort((a, b) => (a.startTime! < b.startTime! ? -1 : a.startTime! > b.startTime! ? 1 : 0))
+
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
@@ -33,16 +46,36 @@ export default function ReminderList({ date, reminders, onAdd, onEdit, onDelete,
         </p>
       ) : (
         <div className="flex flex-col -mx-4">
-          {reminders.map((r) => (
-            <ReminderItem
-              key={r.id}
-              reminder={r}
-              date={date}
-              onToggle={onToggle}
-              onEdit={onEdit}
-              onDelete={onDelete}
-            />
-          ))}
+          {allDay.length > 0 && (
+            <>
+              <SectionHeader label="All Day" />
+              {allDay.map((r) => (
+                <ReminderItem
+                  key={r.id}
+                  reminder={r}
+                  date={date}
+                  onToggle={onToggle}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                />
+              ))}
+            </>
+          )}
+          {timed.length > 0 && (
+            <>
+              <SectionHeader label="Timed" />
+              {timed.map((r) => (
+                <ReminderItem
+                  key={r.id}
+                  reminder={r}
+                  date={date}
+                  onToggle={onToggle}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                />
+              ))}
+            </>
+          )}
         </div>
       )}
     </div>
