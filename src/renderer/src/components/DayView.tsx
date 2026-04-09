@@ -1,17 +1,16 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
-import { ArrowLeft, List, ArrowRight, Trash2, Edit3 } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Trash2, Edit3, Pencil, ChevronRight } from 'lucide-react'
 import { Temporal } from '@js-temporal/polyfill'
 import { parseDateStr, today } from '../utils/dates'
 import { getOccurrencesInRange } from '../utils/recurrence'
 import { useRemindersStore } from '../store/reminders.store'
 import { useTodoListsStore } from '../store/todo_lists.store'
 import { useUIStore } from '../store/ui.store'
-import type { Reminder, TodoList, Note } from '../types/models'
+import type { Reminder, TodoList, TodoListItem, Note } from '../types/models'
 import ReminderList from './reminders/ReminderList'
 import ReminderForm from './reminders/ReminderForm'
-import ListForm from './lists/ListForm'
-import { useTodoFoldersStore } from '../store/todo_folders.store'
+import SortableTodoList from './todos/TodoList'
 import { useNotesStore } from '../store/notes.store'
 import NoteEditor from './notes/NoteEditor'
 
@@ -53,7 +52,13 @@ export default function DayView() {
   const lists = useTodoListsStore((s) => s.lists)
   const loadLists = useTodoListsStore((s) => s.load)
   const saveList = useTodoListsStore((s) => s.save)
-  const folders = useTodoFoldersStore((s) => s.folders)
+  const removeList = useTodoListsStore((s) => s.remove)
+  const items = useTodoListsStore((s) => s.items)
+  const loadItems = useTodoListsStore((s) => s.loadItems)
+  const saveItem = useTodoListsStore((s) => s.saveItem)
+  const deleteItem = useTodoListsStore((s) => s.deleteItem)
+  const reorderItems = useTodoListsStore((s) => s.reorderItems)
+
 
   const notes = useNotesStore((s) => s.notes)
   const saveNote = useNotesStore((s) => s.saveNote)
@@ -80,9 +85,10 @@ export default function DayView() {
 
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<Reminder | null>(null)
-  const [listFormOpen, setListFormOpen] = useState(false)
-  const [editingList, setEditingList] = useState<TodoList | null>(null)
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
+  const [editingItemId, setEditingItemId] = useState<string | null>(null)
+  const [editingListTitleId, setEditingListTitleId] = useState<string | null>(null)
+  const [expandedListIds, setExpandedListIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (!triggerNewReminder) return
@@ -114,6 +120,86 @@ export default function DayView() {
     () => lists.filter((l) => l.dueDate === dateStr).sort((a, b) => a.order - b.order),
     [lists, dateStr]
   )
+
+  useEffect(() => {
+    dayLists.forEach((l) => loadItems(l.id))
+  }, [dayLists, loadItems])
+
+  function handleToggleItem(item: TodoListItem) {
+    const now = new Date().toISOString()
+    saveItem({ ...item, completed: !item.completed, completedAt: !item.completed ? now : undefined, updatedAt: now })
+  }
+
+  async function handleAddItem(listId: string) {
+    const now = new Date().toISOString()
+    const newItem: TodoListItem = {
+      id: crypto.randomUUID(),
+      listId,
+      title: '',
+      order: Date.now(),
+      completed: false,
+      createdAt: now,
+      updatedAt: now,
+    }
+    await saveItem(newItem)
+    setEditingItemId(newItem.id)
+  }
+
+  async function handleSaveEdit(item: TodoListItem, title: string) {
+    const trimmed = title.trim()
+    if (!trimmed) {
+      await deleteItem(item.id)
+    } else {
+      await saveItem({ ...item, title: trimmed, updatedAt: new Date().toISOString() })
+    }
+    setEditingItemId(null)
+  }
+
+  async function handleSaveDesc(item: TodoListItem, description: string) {
+    await saveItem({ ...item, description: description || undefined, updatedAt: new Date().toISOString() })
+  }
+
+  async function handleCancelEdit(item: TodoListItem) {
+    if (!item.title.trim()) {
+      await deleteItem(item.id)
+    }
+    setEditingItemId(null)
+  }
+
+  function toggleListExpanded(listId: string) {
+    setExpandedListIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(listId)) next.delete(listId)
+      else next.add(listId)
+      return next
+    })
+  }
+
+  async function handleCreateInlineList() {
+    const now = new Date().toISOString()
+    const newList: TodoList = {
+      id: crypto.randomUUID(),
+      name: '',
+      dueDate: dateStr,
+      order: Date.now(),
+      createdAt: now,
+      updatedAt: now,
+    }
+    await saveList(newList)
+    setExpandedListIds((prev) => new Set([...prev, newList.id]))
+    setEditingListTitleId(newList.id)
+  }
+
+  async function handleSaveListTitle(listId: string, name: string) {
+    const trimmed = name.trim()
+    if (!trimmed) {
+      await removeList(listId)
+    } else {
+      const list = dayLists.find((l) => l.id === listId)
+      if (list) await saveList({ ...list, name: trimmed, updatedAt: new Date().toISOString() })
+    }
+    setEditingListTitleId(null)
+  }
 
   const { weekday, rest } = formatDayHeading(plainDate)
   const status = getDayStatus(plainDate)
@@ -346,38 +432,122 @@ export default function DayView() {
       )}
 
       {tab === 'todos' && (
-        <div>
-          <div className="flex justify-end mb-3">
-            <button
-              onClick={() => {
-                setEditingList(null)
-                setListFormOpen(true)
-              }}
-              className="text-[12px] font-medium text-[#6498c8] hover:opacity-80 transition-opacity"
-            >
-              + New list
-            </button>
-          </div>
-          {dayLists.length > 0 ? (
-            <div className="flex flex-col gap-2">
-              {dayLists.map((l) => (
-                <button
-                  key={l.id}
-                  onClick={() => navigate(`/lists/${l.id}`)}
-                  className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-left bg-white dark:bg-white/[0.06] border border-slate-200/60 dark:border-white/[0.08] hover:bg-slate-50 dark:hover:bg-white/[0.09] transition-colors shadow-sm"
-                >
-                  <List size={15} className="shrink-0 text-[#6498c8]" />
-                  <span className="text-[14px] font-medium text-slate-800 dark:text-white/80 flex-1 truncate">
-                    {l.name}
-                  </span>
-                  <ArrowRight size={13} className="shrink-0 text-slate-300 dark:text-white/20" />
-                </button>
-              ))}
+        <div className="flex flex-col gap-3">
+          {dayLists.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-16 gap-3">
+              <p className="text-[13px] text-slate-400 dark:text-white/25">No lists for this day yet.</p>
+              <button
+                onClick={handleCreateInlineList}
+                className="text-[12px] font-medium text-[#6498c8] hover:opacity-80 transition-opacity"
+              >
+                + New list
+              </button>
             </div>
-          ) : (
-            <p className="text-[13px] text-slate-400 dark:text-white/25">
-              No lists for this day yet.
-            </p>
+          )}
+          {dayLists.map((l) => {
+            const isExpanded = expandedListIds.has(l.id)
+            const listItems = (items.get(l.id) ?? []).filter((i) => !i.completed).sort((a, b) => a.order - b.order)
+            const completedItems = (items.get(l.id) ?? []).filter((i) => i.completed).sort((a, b) => a.order - b.order)
+            const totalCount = listItems.length + completedItems.length
+            return (
+              <div key={l.id}>
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={() => toggleListExpanded(l.id)}
+                    className="flex items-center gap-1.5 min-w-0 flex-1 group"
+                  >
+                    <ChevronRight
+                      size={15}
+                      className={`shrink-0 text-slate-400 dark:text-white/30 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                    />
+                    {editingListTitleId === l.id ? (
+                      <input
+                        autoFocus
+                        defaultValue={l.name}
+                        placeholder="List name"
+                        className="flex-1 bg-transparent text-[15px] font-semibold text-slate-900 dark:text-white/80 tracking-tight placeholder:text-slate-300 dark:placeholder:text-white/20 focus:outline-none"
+                        style={{ fontFamily: "'Bree Serif', serif" }}
+                        onClick={(e) => e.stopPropagation()}
+                        onBlur={(e) => handleSaveListTitle(l.id, e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') { e.preventDefault(); handleSaveListTitle(l.id, e.currentTarget.value) }
+                          if (e.key === 'Escape') { e.preventDefault(); handleSaveListTitle(l.id, e.currentTarget.value) }
+                        }}
+                      />
+                    ) : (
+                      <span className="text-[15px] font-semibold text-slate-900 dark:text-white/80 tracking-tight truncate" style={{ fontFamily: "'Bree Serif', serif" }}>
+                        {l.name || <span className="italic text-slate-400 dark:text-white/25">Untitled</span>}
+                      </span>
+                    )}
+                    {!isExpanded && totalCount > 0 && (
+                      <span className="shrink-0 text-[11px] text-slate-400 dark:text-white/30 ml-1">{totalCount}</span>
+                    )}
+                  </button>
+                  <div className="flex items-center gap-2 shrink-0 ml-2">
+                    <button
+                      onClick={() => setEditingListTitleId(l.id)}
+                      className="p-1.5 rounded-lg text-slate-400 dark:text-white/30 hover:text-slate-700 dark:hover:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
+                    >
+                      <Pencil size={13} />
+                    </button>
+                    {isExpanded && (
+                      <button
+                        onClick={() => handleAddItem(l.id)}
+                        className="text-[12px] font-medium text-[#6498c8] hover:opacity-80 transition-opacity"
+                      >
+                        + Add
+                      </button>
+                    )}
+                  </div>
+                </div>
+                {isExpanded && (
+                  <div className="mt-3 pl-5">
+                    {listItems.length === 0 && completedItems.length === 0 ? (
+                      <p className="text-[13px] text-slate-400 dark:text-white/25">No items yet. Add one above.</p>
+                    ) : (
+                      <>
+                        <SortableTodoList
+                          todos={listItems}
+                          onToggle={handleToggleItem}
+                          onEdit={(i) => setEditingItemId(i.id)}
+                          onDelete={deleteItem}
+                          onReorder={(ids) => reorderItems(l.id, ids)}
+                          editingItemId={editingItemId}
+                          onSaveEdit={handleSaveEdit}
+                          onCancelEdit={handleCancelEdit}
+                          onSaveDesc={handleSaveDesc}
+                        />
+                        {completedItems.length > 0 && (
+                          <div className="mt-4 border-t border-slate-100 dark:border-white/[0.05] pt-3">
+                            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 dark:text-white/25 mb-2">Done</p>
+                            <SortableTodoList
+                              todos={completedItems}
+                              onToggle={handleToggleItem}
+                              onEdit={(i) => setEditingItemId(i.id)}
+                              onDelete={deleteItem}
+                              onReorder={(ids) => reorderItems(l.id, ids)}
+                              editingItemId={editingItemId}
+                              onSaveEdit={handleSaveEdit}
+                              onCancelEdit={handleCancelEdit}
+                              onSaveDesc={handleSaveDesc}
+                            />
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+          {dayLists.length > 0 && (
+            <button
+              onClick={handleCreateInlineList}
+              className="flex items-center gap-2 w-full px-4 py-3 rounded-xl text-left bg-transparent border border-dashed border-slate-300 dark:border-white/[0.06] hover:border-[#6498c8] dark:hover:border-[#6498c8] text-[#6498c8] dark:text-[#6498c8] text-[13px] font-medium transition-colors"
+            >
+              <span className="text-lg leading-none">+</span>
+              New list
+            </button>
           )}
         </div>
       )}
@@ -394,19 +564,6 @@ export default function DayView() {
         />
       )}
 
-      {listFormOpen && (
-        <ListForm
-          list={editingList}
-          folders={folders}
-          defaultDueDate={dateStr}
-          onSave={async (l) => {
-            await saveList(l)
-            setListFormOpen(false)
-            navigate(`/lists/${l.id}`)
-          }}
-          onClose={() => setListFormOpen(false)}
-        />
-      )}
     </div>
   )
 }
