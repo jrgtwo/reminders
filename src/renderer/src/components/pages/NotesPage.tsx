@@ -1,7 +1,7 @@
 import { useOutlet } from 'react-router-dom'
-import { FileText, ChevronLeft, ChevronRight } from 'lucide-react'
+import { FileText, ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { useRef, useState, useCallback } from 'react'
-import NotesNav from '../notes/NotesNav'
+import NotesNav, { type NotesNavHandle } from '../notes/NotesNav'
 
 const MIN_WIDTH = 160
 const MAX_WIDTH = 480
@@ -24,6 +24,7 @@ export default function NotesPage() {
   const dragging = useRef(false)
   const startX = useRef(0)
   const startWidth = useRef(DEFAULT_WIDTH)
+  const notesNavRef = useRef<NotesNavHandle>(null)
 
   const onMouseDown = useCallback((e: React.MouseEvent) => {
     dragging.current = true
@@ -53,8 +54,19 @@ export default function NotesPage() {
   return (
     <div className="h-full flex overflow-hidden">
       {/* Mobile sidebar: full-width when no note open, hidden otherwise */}
-      <div className={`md:hidden shrink-0 border-r border-slate-200 dark:border-white/[0.07] overflow-y-auto bg-[var(--bg-app)] w-full ${hasNote ? 'hidden' : 'block'}`}>
-        <NotesNav />
+      <div className={`md:hidden shrink-0 border-r border-slate-200 dark:border-white/[0.07] bg-[var(--bg-app)] w-full flex flex-col ${hasNote ? 'hidden' : 'flex'}`}>
+        <div className="flex-1 overflow-y-auto">
+          <NotesNav ref={notesNavRef} />
+        </div>
+        <div className="p-3 border-t border-slate-200 dark:border-white/[0.07]">
+          <button
+            onClick={() => notesNavRef.current?.openNewNote()}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-[#f0f0f0] text-sm font-medium transition-colors"
+          >
+            <Plus size={16} />
+            New Note
+          </button>
+        </div>
       </div>
 
       {/* Desktop sidebar: resizable + collapsible */}

@@ -146,7 +146,7 @@ export default function WeekView({ displayDate }: Props) {
                 <span className={[
                   'flex items-center justify-center w-8 h-8 text-[15px] font-bold leading-none',
                   isToday ? 'text-blue-500 dark:text-[#6498c8]'
-                    : isSelected ? 'text-slate-900 dark:text-white'
+                    : isSelected ? 'text-slate-900 dark:text-[#f0f0f0]'
                     : 'text-slate-700 dark:text-white/80',
                 ].filter(Boolean).join(' ')}>
                   {day.day}

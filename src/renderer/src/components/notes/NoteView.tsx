@@ -346,7 +346,7 @@ function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
             <button
               type="button"
               onClick={submitLink}
-              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
+              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-[#f0f0f0] text-sm rounded-lg transition-colors"
             >
               Apply
             </button>

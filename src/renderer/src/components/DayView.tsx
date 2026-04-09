@@ -172,7 +172,7 @@ export default function DayView() {
             onClick={() => setTab(id)}
             className={`relative flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium transition-colors ${
               tab === id
-                ? 'text-slate-900 dark:text-white'
+                ? 'text-slate-900 dark:text-[#f0f0f0]'
                 : 'text-slate-400 dark:text-white/35 hover:text-slate-600 dark:hover:text-white/60'
             }`}
           >

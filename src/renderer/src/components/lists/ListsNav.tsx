@@ -1,16 +1,19 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, forwardRef, useImperativeHandle } from 'react'
 import { Plus, FolderOpen, List } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useTodoFoldersStore } from '../../store/todo_folders.store'
 import { useTodoListsStore } from '../../store/todo_lists.store'
 import { buildFolderTree } from '../../lib/folderTree'
 import type { TodoFolder, TodoList } from '../../types/models'
-import ListForm from './ListForm'
 import FolderForm from './FolderForm'
 import { CollapsibleSection } from '../ui/CollapsibleSection'
 import { SidebarNavItem, FolderTree, DateTree } from '../ui/FolderNav'
 
-export default function ListsNav() {
+export interface ListsNavHandle {
+  openNewList: () => void
+}
+
+const ListsNav = forwardRef<ListsNavHandle>(function ListsNav(_, ref) {
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -21,16 +24,13 @@ export default function ListsNav() {
 
   const lists = useTodoListsStore((s) => s.lists)
   const loadLists = useTodoListsStore((s) => s.load)
-  const saveList = useTodoListsStore((s) => s.save)
   const removeList = useTodoListsStore((s) => s.remove)
 
-  const [listFormOpen, setListFormOpen] = useState(false)
-  const [editingList, setEditingList] = useState<TodoList | null>(null)
-  const [newListDefaultDate, setNewListDefaultDate] = useState<string | undefined>()
-  const [newListFolderId, setNewListFolderId] = useState<string | undefined>()
   const [folderFormOpen, setFolderFormOpen] = useState(false)
   const [editingFolder, setEditingFolder] = useState<TodoFolder | null>(null)
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
+
+  useImperativeHandle(ref, () => ({ openNewList: () => openNewList() }))
 
   useEffect(() => {
     loadLists()
@@ -65,10 +65,7 @@ export default function ListsNav() {
   }
 
   function openNewList(opts: { folderId?: string; dueDate?: string } = {}) {
-    setEditingList(null)
-    setNewListDefaultDate(opts.dueDate)
-    setNewListFolderId(opts.folderId)
-    setListFormOpen(true)
+    navigate('/lists/new', { state: opts })
   }
 
   function handleDeleteList(id: string) {
@@ -195,22 +192,6 @@ export default function ListsNav() {
         )}
       </CollapsibleSection>
 
-      {listFormOpen && (
-        <ListForm
-          list={editingList}
-          folders={folders}
-          defaultFolderId={newListFolderId}
-          defaultDueDate={newListDefaultDate}
-          onSave={async (l) => {
-            await saveList(l)
-            setListFormOpen(false)
-            setEditingList(null)
-            navigate(`/lists/${l.id}`)
-          }}
-          onClose={() => { setListFormOpen(false); setEditingList(null) }}
-        />
-      )}
-
       {folderFormOpen && (
         <FolderForm
           folder={editingFolder}
@@ -218,6 +199,9 @@ export default function ListsNav() {
           onClose={() => { setFolderFormOpen(false); setEditingFolder(null) }}
         />
       )}
+
     </>
   )
-}
+})
+
+export default ListsNav

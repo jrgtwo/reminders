@@ -27,11 +27,11 @@ button, a { cursor: pointer; }
 :root {
   --bg-app:              #F3F4F6;
   --bg-header:           #1c1f26;
-  --bg-surface:          #ffffff;
+  --bg-surface:          #fafafa;
   --bg-surface-muted:    #f8fafc;
-  --bg-surface-selected: #ffffff;
+  --bg-surface-selected: #fafafa;
   --bg-grid:             rgb(203 213 225);
-  --bg-search:           #ffffff;
+  --bg-search:           #fafafa;
   --bg-card:             #f9fafb;
   --bg-elevated:         #f3f4f6;
   --border:              #d1d5db;

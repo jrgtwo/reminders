@@ -16,9 +16,13 @@ interface Props {
   onEdit: (t: TodoListItem) => void
   onDelete: (id: string) => void
   onReorder: (orderedIds: string[]) => void
+  editingItemId?: string | null
+  onSaveEdit: (item: TodoListItem, title: string) => void
+  onCancelEdit: (item: TodoListItem) => void
+  onSaveDesc: (item: TodoListItem, description: string) => void
 }
 
-export default function SortableTodoList({ todos, onToggle, onEdit, onDelete, onReorder }: Props) {
+export default function SortableTodoList({ todos, onToggle, onEdit, onDelete, onReorder, editingItemId, onSaveEdit, onCancelEdit, onSaveDesc }: Props) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
   function handleDragStart() {
@@ -49,6 +53,10 @@ export default function SortableTodoList({ todos, onToggle, onEdit, onDelete, on
               onToggle={onToggle}
               onEdit={onEdit}
               onDelete={onDelete}
+              isEditing={editingItemId === todo.id}
+              onSaveEdit={onSaveEdit}
+              onCancelEdit={onCancelEdit}
+              onSaveDesc={onSaveDesc}
             />
           ))}
         </div>

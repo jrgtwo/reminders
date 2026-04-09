@@ -235,7 +235,7 @@ export default function LeftSidebar() {
           >
             {variant === 'overdue' ? formatOverdueDate(dateStr) : formatUpcomingDate(dateStr)}
           </div>
-          <div className="text-[13px] font-medium text-slate-700 dark:text-white/75 truncate group-hover:text-slate-900 dark:group-hover:text-white">
+          <div className="text-[13px] font-medium text-slate-700 dark:text-white/75 truncate group-hover:text-slate-900 dark:group-hover:text-[#f0f0f0]">
             {title}
           </div>
           {time && (

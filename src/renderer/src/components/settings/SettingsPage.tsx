@@ -153,7 +153,7 @@ export default function SettingsPage() {
         {isLoggedIn && user ? (
           <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-medium">
+              <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-[#f0f0f0] text-sm font-medium">
                 {(user.email ?? '?')[0].toUpperCase()}
               </div>
               <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.email}</p>

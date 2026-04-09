@@ -1,15 +1,16 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { List, Pencil } from 'lucide-react'
 import { useTodoListsStore } from '../../store/todo_lists.store'
 import { useTodoFoldersStore } from '../../store/todo_folders.store'
 import type { TodoListItem, TodoList } from '../../types/models'
 import SortableTodoList from '../todos/TodoList'
-import TodoForm from '../todos/TodoForm'
 import ListForm from './ListForm'
 
 export default function ListsPage() {
   const { listId } = useParams<{ listId?: string }>()
+  const navigate = useNavigate()
+  const location = useLocation()
 
   const folders = useTodoFoldersStore((s) => s.folders)
   const lists = useTodoListsStore((s) => s.lists)
@@ -21,17 +22,40 @@ export default function ListsPage() {
   const deleteItem = useTodoListsStore((s) => s.deleteItem)
   const reorderItems = useTodoListsStore((s) => s.reorderItems)
 
-  const [itemFormOpen, setItemFormOpen] = useState(false)
-  const [editingItem, setEditingItem] = useState<TodoListItem | null>(null)
+  const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [renameOpen, setRenameOpen] = useState(false)
+
+  // Inline date editing for existing lists
+  const [editingDate, setEditingDate] = useState(false)
+
+  // New list creation state
+  const isNew = listId === 'new'
+  const [newName, setNewName] = useState('')
+  const [newDate, setNewDate] = useState('')
+  const [newFolderId, setNewFolderId] = useState('')
+  const [createError, setCreateError] = useState('')
+  const [creating, setCreating] = useState(false)
+  const nameInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     loadLists()
   }, [loadLists])
 
   useEffect(() => {
-    if (listId) loadItems(listId)
+    if (listId && listId !== 'new') loadItems(listId)
   }, [listId, loadItems])
+
+  useEffect(() => {
+    if (isNew) {
+      const state = (location.state ?? {}) as { folderId?: string; dueDate?: string }
+      setNewName('')
+      setNewDate(state.dueDate ?? '')
+      setNewFolderId(state.folderId ?? '')
+      setCreateError('')
+      setCreating(false)
+      setTimeout(() => nameInputRef.current?.focus(), 50)
+    }
+  }, [isNew, listId, location.state])
 
   const selectedList = useMemo<TodoList | null>(
     () => lists.find((l) => l.id === listId) ?? null,
@@ -52,6 +76,152 @@ export default function ListsPage() {
     saveItem({ ...item, completed: !item.completed, completedAt: !item.completed ? now : undefined, updatedAt: now })
   }
 
+  async function handleAddItem() {
+    if (!listId) return
+    const now = new Date().toISOString()
+    const newItem: TodoListItem = {
+      id: crypto.randomUUID(),
+      listId,
+      title: '',
+      order: Date.now(),
+      completed: false,
+      createdAt: now,
+      updatedAt: now,
+    }
+    await saveItem(newItem)
+    setEditingItemId(newItem.id)
+  }
+
+  async function handleSaveEdit(item: TodoListItem, title: string) {
+    const trimmed = title.trim()
+    if (!trimmed) {
+      await deleteItem(item.id)
+    } else {
+      await saveItem({ ...item, title: trimmed, updatedAt: new Date().toISOString() })
+    }
+    setEditingItemId(null)
+  }
+
+  async function handleSaveDesc(item: TodoListItem, description: string) {
+    await saveItem({ ...item, description: description || undefined, updatedAt: new Date().toISOString() })
+  }
+
+  async function handleCancelEdit(item: TodoListItem) {
+    if (!item.title.trim()) {
+      await deleteItem(item.id)
+    }
+    setEditingItemId(null)
+  }
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault()
+    if (!newName.trim()) { setCreateError('Name is required'); return }
+    setCreating(true)
+    const now = new Date().toISOString()
+    const l: TodoList = {
+      id: crypto.randomUUID(),
+      name: newName.trim(),
+      folderId: newFolderId || undefined,
+      dueDate: newDate || undefined,
+      order: Date.now(),
+      createdAt: now,
+      updatedAt: now,
+    }
+    try {
+      await saveList(l)
+      navigate(`/lists/${l.id}`, { replace: true })
+    } catch {
+      setCreateError('Failed to create list')
+      setCreating(false)
+    }
+  }
+
+  function handleNewDateChange(val: string) {
+    setNewDate(val)
+    if (val) setNewFolderId('')
+  }
+
+  function handleNewFolderChange(val: string) {
+    setNewFolderId(val)
+    if (val) setNewDate('')
+  }
+
+  async function handleDateChange(val: string) {
+    if (!selectedList) return
+    const now = new Date().toISOString()
+    await saveList({ ...selectedList, dueDate: val || undefined, updatedAt: now })
+    setEditingDate(false)
+  }
+
+  if (isNew) {
+    return (
+      <div className="overflow-y-auto h-full">
+        <div className="max-w-2xl mx-auto px-6 py-8">
+          <form onSubmit={handleCreate} className="flex flex-col gap-5">
+            <div>
+              <input
+                ref={nameInputRef}
+                value={newName}
+                onChange={(e) => { setNewName(e.target.value); setCreateError('') }}
+                placeholder="List name"
+                className="w-full bg-transparent text-2xl text-slate-900 dark:text-white/80 tracking-tight placeholder:text-slate-300 dark:placeholder:text-white/20 focus:outline-none"
+                style={{ fontFamily: "'Bree Serif', serif" }}
+              />
+              {createError && <p className="text-[12px] text-red-500 mt-1">{createError}</p>}
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-white/30">
+                Date <span className="font-normal normal-case tracking-normal text-slate-300 dark:text-white/20">(optional)</span>
+              </label>
+              <input
+                type="date"
+                value={newDate}
+                onChange={(e) => handleNewDateChange(e.target.value)}
+                className="w-fit rounded-md border border-slate-200 dark:border-white/[0.08] bg-transparent px-2 py-1 text-[13px] text-slate-700 dark:text-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {!newDate && (
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-white/30">
+                  Folder <span className="font-normal normal-case tracking-normal text-slate-300 dark:text-white/20">(optional)</span>
+                </label>
+                <select
+                  value={newFolderId}
+                  onChange={(e) => handleNewFolderChange(e.target.value)}
+                  className="w-fit rounded-md border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-transparent px-2 py-1 text-[13px] text-slate-700 dark:text-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">No folder</option>
+                  {folders.map((f) => (
+                    <option key={f.id} value={f.id}>{f.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="flex items-center gap-3 pt-2 border-t border-slate-100 dark:border-white/[0.05]">
+              <button
+                type="submit"
+                disabled={creating}
+                className="px-4 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-[#f0f0f0] text-[13px] font-medium transition-colors disabled:opacity-50"
+              >
+                {creating ? 'Creating…' : 'Create List'}
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="px-3 py-1.5 rounded-lg text-[13px] text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="overflow-y-auto h-full">
       <div className="max-w-2xl mx-auto px-6 py-8">
@@ -67,9 +237,24 @@ export default function ListsPage() {
                 <h1 className="text-2xl text-slate-900 dark:text-white/80 tracking-tight" style={{ fontFamily: "'Bree Serif', serif" }}>
                   {selectedList.name}
                 </h1>
-                {selectedList.dueDate && (
-                  <p className="text-[12px] text-slate-400 dark:text-white/30 mt-0.5">{selectedList.dueDate}</p>
-                )}
+                <div className="mt-1">
+                  {editingDate ? (
+                    <input
+                      type="date"
+                      defaultValue={selectedList.dueDate ?? ''}
+                      autoFocus
+                      onBlur={(e) => handleDateChange(e.target.value)}
+                      className="rounded border border-slate-200 dark:border-white/[0.08] bg-transparent px-1.5 py-0.5 text-[12px] text-slate-500 dark:text-white/40 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                  ) : (
+                    <button
+                      onClick={() => setEditingDate(true)}
+                      className="text-[12px] text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/50 transition-colors"
+                    >
+                      {selectedList.dueDate ?? '+ Add date'}
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -79,7 +264,7 @@ export default function ListsPage() {
                   <Pencil size={14} />
                 </button>
                 <button
-                  onClick={() => { setEditingItem(null); setItemFormOpen(true) }}
+                  onClick={handleAddItem}
                   className="text-[12px] font-medium text-[#6498c8] hover:opacity-80 transition-opacity"
                 >
                   + Add
@@ -94,9 +279,13 @@ export default function ListsPage() {
                 <SortableTodoList
                   todos={listItems}
                   onToggle={handleToggle}
-                  onEdit={(i) => { setEditingItem(i); setItemFormOpen(true) }}
+                  onEdit={(i) => setEditingItemId(i.id)}
                   onDelete={deleteItem}
                   onReorder={(ids) => reorderItems(listId!, ids)}
+                  editingItemId={editingItemId}
+                  onSaveEdit={handleSaveEdit}
+                  onCancelEdit={handleCancelEdit}
+                  onSaveDesc={handleSaveDesc}
                 />
                 {completedItems.length > 0 && (
                   <div className="mt-4 border-t border-slate-100 dark:border-white/[0.05] pt-3">
@@ -104,9 +293,13 @@ export default function ListsPage() {
                     <SortableTodoList
                       todos={completedItems}
                       onToggle={handleToggle}
-                      onEdit={(i) => { setEditingItem(i); setItemFormOpen(true) }}
+                      onEdit={(i) => setEditingItemId(i.id)}
                       onDelete={deleteItem}
                       onReorder={(ids) => reorderItems(listId!, ids)}
+                      editingItemId={editingItemId}
+                      onSaveEdit={handleSaveEdit}
+                      onCancelEdit={handleCancelEdit}
+                      onSaveDesc={handleSaveDesc}
                     />
                   </div>
                 )}
@@ -115,15 +308,6 @@ export default function ListsPage() {
           </>
         )}
       </div>
-
-      {itemFormOpen && listId && (
-        <TodoForm
-          item={editingItem}
-          listId={listId}
-          onSave={async (item) => { await saveItem(item); setItemFormOpen(false); setEditingItem(null) }}
-          onClose={() => { setItemFormOpen(false); setEditingItem(null) }}
-        />
-      )}
 
       {renameOpen && selectedList && (
         <ListForm

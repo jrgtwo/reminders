@@ -160,7 +160,7 @@ export default function RemindersPage() {
             onClick={(e) => { e.stopPropagation(); toggleComplete(item.id, item.dateStr) }}
             className={`mt-[3px] w-4 h-4 rounded-full border-[1.5px] flex-shrink-0 flex items-center justify-center transition-all ${
               isCompleted
-                ? 'bg-emerald-500 border-emerald-500 text-white'
+                ? 'bg-emerald-500 border-emerald-500 text-[#f0f0f0]'
                 : variant === 'overdue'
                   ? 'border-[#e8a045]/50 dark:border-[#e8a045]/30 hover:border-emerald-400'
                   : 'border-slate-300 dark:border-white/20 hover:border-emerald-400'

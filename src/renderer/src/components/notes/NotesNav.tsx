@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, forwardRef, useImperativeHandle } from 'react'
 import type { ReactNode } from 'react'
 import { Plus, FolderOpen, FileText, ArrowUpRight } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
@@ -10,7 +10,11 @@ import NoteFolderForm from './NoteFolderForm'
 import { CollapsibleSection } from '../ui/CollapsibleSection'
 import { SidebarNavItem, FolderTree, DateTree } from '../ui/FolderNav'
 
-export default function NotesNav() {
+export interface NotesNavHandle {
+  openNewNote: () => void
+}
+
+const NotesNav = forwardRef<NotesNavHandle>(function NotesNav(_, ref) {
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -30,6 +34,8 @@ export default function NotesNav() {
   const [editingNoteFolder, setEditingNoteFolder] = useState<NoteFolder | null>(null)
   const [pendingParentNoteFolderId, setPendingParentNoteFolderId] = useState<string | undefined>()
   const [expandedNoteFolders, setExpandedNoteFolders] = useState<Set<string>>(new Set())
+
+  useImperativeHandle(ref, () => ({ openNewNote: () => handleNewNote(undefined) }))
 
   useEffect(() => {
     loadNoteFolders()
@@ -305,6 +311,9 @@ export default function NotesNav() {
           }}
         />
       )}
+
     </>
   )
-}
+})
+
+export default NotesNav

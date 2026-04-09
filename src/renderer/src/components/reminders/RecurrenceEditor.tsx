@@ -75,7 +75,7 @@ export default function RecurrenceEditor({ value, onChange }: Props) {
                   }}
                   className={`w-9 h-9 rounded-full text-xs font-medium transition-colors ${
                     active
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-blue-600 text-[#f0f0f0]'
                       : 'bg-gray-100 dark:bg-[var(--bg-elevated)] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[var(--bg-elevated)]'
                   }`}
                 >
