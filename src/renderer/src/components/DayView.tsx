@@ -1,15 +1,14 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, Trash2, Edit3, Pencil, ChevronRight } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Trash2, Edit3, Pencil, ChevronRight, Check, Clock, RefreshCw } from 'lucide-react'
 import { Temporal } from '@js-temporal/polyfill'
-import { parseDateStr, today } from '../utils/dates'
+import { parseDateStr, today, formatTime } from '../utils/dates'
 import { getOccurrencesInRange } from '../utils/recurrence'
 import { useRemindersStore } from '../store/reminders.store'
 import { useTodoListsStore } from '../store/todo_lists.store'
 import { useUIStore } from '../store/ui.store'
 import type { Reminder, TodoList, TodoListItem, Note } from '../types/models'
-import ReminderList from './reminders/ReminderList'
-import ReminderForm from './reminders/ReminderForm'
+import ReminderInlineEditor from './reminders/ReminderInlineEditor'
 import SortableTodoList from './todos/TodoList'
 import { useNotesStore } from '../store/notes.store'
 import NoteEditor from './notes/NoteEditor'
@@ -70,6 +69,7 @@ export default function DayView() {
 
   const triggerNewReminder = useUIStore((s) => s.triggerNewReminder)
   const setTriggerNewReminder = useUIStore((s) => s.setTriggerNewReminder)
+  const timeFormat = useUIStore((s) => s.timeFormat)
 
   const initialTab = (location.state as { tab?: string } | null)?.tab
   const [tab, setTab] = useState<'notes' | 'reminders' | 'todos'>(
@@ -83,8 +83,7 @@ export default function DayView() {
     }
   }, [location.state])
 
-  const [formOpen, setFormOpen] = useState(false)
-  const [editing, setEditing] = useState<Reminder | null>(null)
+  const [expandedReminderId, setExpandedReminderId] = useState<string | null>(null)
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [editingListTitleId, setEditingListTitleId] = useState<string | null>(null)
@@ -93,9 +92,20 @@ export default function DayView() {
   useEffect(() => {
     if (!triggerNewReminder) return
     setTriggerNewReminder(false)
-    setEditing(null)
-    setFormOpen(true)
-  }, [triggerNewReminder, setTriggerNewReminder])
+    const now = new Date().toISOString()
+    const newReminder: Reminder = {
+      id: crypto.randomUUID(),
+      title: '',
+      date: dateStr,
+      completedDates: [],
+      createdAt: now,
+      updatedAt: now,
+    }
+    save(newReminder).then(() => {
+      setTab('reminders')
+      setExpandedReminderId(newReminder.id)
+    })
+  }, [triggerNewReminder, setTriggerNewReminder, dateStr, save])
 
   const dayReminders = useMemo(
     () => reminders.filter((r) => getOccurrencesInRange(r, plainDate, plainDate).length > 0),
@@ -415,20 +425,133 @@ export default function DayView() {
       )}
 
       {tab === 'reminders' && (
-        <ReminderList
-          date={dateStr}
-          reminders={dayReminders}
-          onAdd={() => {
-            setEditing(null)
-            setFormOpen(true)
-          }}
-          onEdit={(r) => {
-            setEditing(r)
-            setFormOpen(true)
-          }}
-          onDelete={remove}
-          onToggle={toggleComplete}
-        />
+        <div className="mb-8 flex flex-col gap-2">
+          {(() => {
+            const sortedReminders = [
+              ...dayReminders.filter((r) => r.startTime).sort((a, b) => (a.startTime! < b.startTime! ? -1 : 1)),
+              ...dayReminders.filter((r) => !r.startTime),
+            ]
+
+            async function handleAddReminder() {
+              const now = new Date().toISOString()
+              const newReminder: Reminder = {
+                id: crypto.randomUUID(),
+                title: '',
+                date: dateStr,
+                completedDates: [],
+                createdAt: now,
+                updatedAt: now,
+              }
+              await save(newReminder)
+              setExpandedReminderId(newReminder.id)
+            }
+
+            function handleCancelReminder(reminder: Reminder) {
+              if (!reminder.title.trim()) remove(reminder.id)
+              setExpandedReminderId(null)
+            }
+
+            if (sortedReminders.length === 0) {
+              return (
+                <div className="min-h-[400px] bg-white/[0.03] dark:bg-white/[0.03] rounded-xl border border-slate-200 dark:border-white/[0.08]">
+                  <div className="flex items-center justify-center h-64">
+                    <div className="text-center">
+                      <p className="text-[13px] text-slate-400 dark:text-white/25 mb-4">No reminders for this day yet.</p>
+                      <button
+                        onClick={handleAddReminder}
+                        className="text-[12px] font-medium text-[#6498c8] hover:opacity-80 transition-opacity"
+                      >
+                        + Add your first reminder
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )
+            }
+
+            return (
+              <>
+                {sortedReminders.map((reminder) => {
+                  const isExpanded = expandedReminderId === reminder.id
+                  const isCompleted = reminder.completedDates.includes(dateStr)
+                  return (
+                    <div key={reminder.id}>
+                      <button
+                        onClick={() => setExpandedReminderId(isExpanded ? null : reminder.id)}
+                        className={`flex items-start gap-3 w-full px-4 py-3 text-left bg-white dark:bg-white/[0.06] border border-slate-200/60 dark:border-white/[0.08] hover:bg-slate-50 dark:hover:bg-white/[0.09] transition-colors shadow-sm group ${
+                          isExpanded ? 'rounded-t-xl' : 'rounded-xl'
+                        } ${isCompleted ? 'opacity-60' : ''}`}
+                      >
+                        <span
+                          onClick={(e) => { e.stopPropagation(); toggleComplete(reminder.id, dateStr) }}
+                          role="checkbox"
+                          aria-checked={isCompleted}
+                          className={`mt-[3px] w-4 h-4 rounded-full border-[1.5px] flex-shrink-0 flex items-center justify-center transition-all cursor-pointer ${
+                            isCompleted
+                              ? 'bg-emerald-500 border-emerald-500 text-[#f0f0f0]'
+                              : 'border-slate-300 dark:border-white/20 hover:border-emerald-400 dark:hover:border-emerald-400'
+                          }`}
+                        >
+                          {isCompleted && <Check size={9} strokeWidth={3} />}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-[14px] font-medium leading-snug ${isCompleted ? 'line-through text-slate-300 dark:text-white/20' : 'text-slate-800 dark:text-white/80'}`}>
+                            {reminder.title || <span className="italic text-slate-400 dark:text-white/35">Untitled</span>}
+                          </p>
+                          {reminder.description && (
+                            <p className="text-xs text-slate-400 dark:text-white/30 mt-0.5 leading-snug">{reminder.description}</p>
+                          )}
+                          {(reminder.startTime || reminder.recurrence) && (
+                            <div className="flex items-center gap-1.5 mt-1.5">
+                              {reminder.startTime && (
+                                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-1.5 py-0.5 rounded">
+                                  <Clock size={9} />
+                                  {formatTime(reminder.startTime, timeFormat)}{reminder.endTime ? ` – ${formatTime(reminder.endTime, timeFormat)}` : ''}
+                                </span>
+                              )}
+                              {reminder.recurrence && (
+                                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-400/10 px-1.5 py-0.5 rounded">
+                                  <RefreshCw size={9} />
+                                  {reminder.recurrence.frequency}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <ArrowRight
+                          size={13}
+                          className={`shrink-0 text-slate-300 dark:text-white/20 transition-transform mt-1 ${isExpanded ? 'rotate-90' : ''}`}
+                        />
+                        <button
+                          onClick={(e) => { e.stopPropagation(); remove(reminder.id) }}
+                          className="opacity-0 group-hover:opacity-100 w-8 h-8 flex items-center justify-center rounded text-gray-600 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                          title="Delete reminder"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </button>
+                      {isExpanded && (
+                        <ReminderInlineEditor
+                          reminder={reminder}
+                          onSave={async (r) => { await save(r); setExpandedReminderId(null) }}
+                          onCancel={() => handleCancelReminder(reminder)}
+                          onDelete={() => { remove(reminder.id); setExpandedReminderId(null) }}
+                        />
+                      )}
+                    </div>
+                  )
+                })}
+                <button
+                  onClick={handleAddReminder}
+                  className="flex items-center gap-2 w-full px-4 py-3 rounded-xl text-left bg-transparent border border-dashed border-slate-300 dark:border-white/[0.06] hover:border-[#6498c8] dark:hover:border-[#6498c8] text-[#6498c8] dark:text-[#6498c8] text-[13px] font-medium transition-colors"
+                >
+                  <span className="text-lg leading-none">+</span>
+                  Add reminder
+                </button>
+              </>
+            )
+          })()}
+        </div>
       )}
 
       {tab === 'todos' && (
@@ -567,17 +690,6 @@ export default function DayView() {
         </div>
       )}
 
-      {formOpen && (
-        <ReminderForm
-          date={dateStr}
-          reminder={editing}
-          onSave={async (r) => {
-            await save(r)
-            setFormOpen(false)
-          }}
-          onClose={() => setFormOpen(false)}
-        />
-      )}
 
     </div>
   )
