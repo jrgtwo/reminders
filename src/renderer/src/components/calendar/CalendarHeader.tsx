@@ -31,7 +31,13 @@ export default function CalendarHeader({
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-6 py-4 border-b border-slate-200 dark:border-white/[0.07] shrink-0 bg-[var(--bg-surface)] gap-2">
       <div className="flex items-end gap-3">
         <div className="flex items-baseline gap-2.5 leading-none">
-          <h2 className="text-4xl tracking-tight text-slate-900 dark:text-white/80" style={{ fontFamily: "'Bree Serif', serif" }}>
+          <h2
+            className={[
+              'tracking-tight text-slate-900 dark:text-white/80',
+              isMonth ? 'text-4xl' : 'text-2xl',
+            ].join(' ')}
+            style={{ fontFamily: "'Bree Serif', serif" }}
+          >
             {monthName}
           </h2>
           {yearStr && (

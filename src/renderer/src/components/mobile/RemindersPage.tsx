@@ -45,10 +45,10 @@ function CollapsibleSection({ label, count, accent, defaultOpen = true, indent =
         onClick={() => setOpen((o) => !o)}
         className={`flex items-center gap-2 w-full text-left transition-colors hover:bg-slate-50 dark:hover:bg-white/[0.03] rounded-lg ${indent ? 'px-3 py-1.5' : 'px-4 py-2'}`}
       >
-        <span className={`text-[10px] font-bold uppercase tracking-wide flex-1 ${s.label}`}>
+        <span className={`text-xs font-bold uppercase tracking-wide flex-1 ${s.label}`}>
           {label}
         </span>
-        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${s.count}`}>
+        <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${s.count}`}>
           {count}
         </span>
         {open
@@ -224,7 +224,7 @@ export default function RemindersPage() {
     <div className="flex flex-col h-full bg-[var(--bg-app)]">
       {/* Header */}
       <div className="flex items-center px-4 py-3 border-b border-black/10 dark:border-white/[0.07]">
-        <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-white/40 flex-1">Schedule</span>
+        <span className="text-sm font-black uppercase tracking-[0.2em] text-slate-500 dark:text-white/40 flex-1">Schedule</span>
         <button
           onClick={() => setNewReminderDate(today().toString())}
           className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 dark:text-white/30 hover:text-slate-700 dark:hover:text-white/60 transition-colors px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-white/[0.06]"

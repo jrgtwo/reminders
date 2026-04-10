@@ -170,7 +170,7 @@ export default function WeekView({ displayDate }: Props) {
 
         {/* All-day strip */}
         {hasAllDay && (
-          <div className="sticky top-[65px] z-10 border-b border-slate-200/60 dark:border-white/[0.06] bg-[var(--bg-app)]">
+          <div className="border-b border-slate-200/60 dark:border-white/[0.06] bg-[var(--bg-app)]">
             {/* Multi-day spanning reminders */}
             {multiDayReminders.length > 0 && (
               <div className="flex py-[3px]">
@@ -261,7 +261,7 @@ export default function WeekView({ displayDate }: Props) {
                 style={{ height: `${SLOT_H}px` }}
               >
                 {hour !== 0 && (
-                  <span className="text-[10px] font-medium text-slate-300 dark:text-white/20 -translate-y-[0.45em]">
+                  <span className="text-[10px] font-medium text-slate-400 dark:text-white/40 -translate-y-[0.45em]">
                     {formatHour(hour, timeFormat)}
                   </span>
                 )}
