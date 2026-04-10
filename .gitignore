@@ -8,3 +8,8 @@ out
 .env.local
 supabase
 .idea/
+
+# Android signing — never commit keystores or signing credentials
+*.jks
+*.keystore
+android/keystore.properties
