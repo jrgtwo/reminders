@@ -39,7 +39,7 @@ Schema and migrations mirror `src/main/storage/db.ts`.
 
 Key notes:
 - Add an `init()` method that opens the SQLite connection (same pattern as `WebAdapter.init()`)
-- Reproduce the same 8-table schema: `reminders`, `notes`, `note_folders`, `todo_lists`, `todo_list_items`, `todo_folders`, `sync_meta` — with soft deletes (`deleted_at`) and `last_synced_at`
+- Reproduce the same 8-table schema: `reminders`, `notes`, `note_folders`, `todos`, `todo_folders`, `todo_lists`, `todo_list_items`, `sync_meta` — with soft deletes (`deleted_at`) and `last_synced_at`
 - Serialize `recurrence` and `completedDates` as JSON strings (same as the Electron adapter)
 - Call `await capacitorAdapter.init()` from `initStorage()` in `src/renderer/src/platform/index.ts`, right after constructing the adapter (same place `WebAdapter.init()` is called)
 
@@ -131,7 +131,7 @@ android {
     defaultConfig {
         applicationId "com.reminders.app"
         minSdk 26          // Android 8.0 — covers ~95% of active devices
-        targetSdk 35       // Must be API 35+ for new Play Store submissions in 2025
+        targetSdk 35       // Must be API 35+ for new Play Store submissions (2025+)
         versionCode 1      // Increment with every Play Store release
         versionName "1.0.0"
     }

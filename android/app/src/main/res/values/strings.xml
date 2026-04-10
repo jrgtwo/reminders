@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Reminders</string>
+    <string name="title_activity_main">Reminders</string>
+    <string name="package_name">com.reminders.app</string>
+    <string name="custom_url_scheme">com.reminders.app</string>
+</resources>
