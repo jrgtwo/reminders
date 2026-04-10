@@ -24,7 +24,7 @@
     "cap:open:android": "npm run cap open android",
     "test": "vitest run",
     "test:e2e": "cypress open",
-    "db:schema": "npx supabase gen types typescript --project-id jzkjssgtcuvlartxvspp --schema public > supabase/schema.types.ts && echo 'Schema written to supabase/schema.types.ts'"
+    "db:schema": "yes | npx supabase gen types typescript --project-id jzkjssgtcuvlartxvspp --schema public > supabase/schema.types.ts && echo 'Schema written to supabase/schema.types.ts'"
   },
   "dependencies": {
     "@capacitor/core": "^8.2.0",

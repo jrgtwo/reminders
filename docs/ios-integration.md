@@ -11,6 +11,8 @@ and routes to `CapacitorAdapter` — but that adapter is currently a stub. The s
 
 ## Step 1 — Install Capacitor iOS packages
 
+> **Status:** `@capacitor/core` and `@capacitor/cli` are already installed. Run the following to add the remaining packages:
+
 ```bash
 npm install @capacitor/ios @capacitor/app @capacitor/status-bar @capacitor/keyboard @capacitor/haptics @capacitor/local-notifications
 npm install @capacitor-community/sqlite
