@@ -1,15 +1,10 @@
-import { useState } from 'react'
 import { RefreshCw } from 'lucide-react'
-import type { Reminder, RecurrenceRule } from '../../types/models'
+import type { Reminder } from '../../types/models'
 import Button from '../ui/Button'
 import Dialog from '../ui/Dialog'
 import Input from '../ui/Input'
 import RecurrenceEditor from './RecurrenceEditor'
-
-const DEFAULT_RECURRENCE: RecurrenceRule = {
-  frequency: 'weekly',
-  interval: 1,
-}
+import { useReminderForm } from './hooks/useReminderForm'
 
 interface Props {
   date: string
@@ -20,51 +15,30 @@ interface Props {
 }
 
 export default function ReminderForm({ date, reminder, defaultTime, onSave, onClose }: Props) {
-  const isNew = !reminder
-  const [title, setTitle] = useState(reminder?.title ?? '')
-  const [description, setDescription] = useState(reminder?.description ?? '')
-  const [reminderDate, setReminderDate] = useState(reminder?.date ?? date)
-  const [endDate, setEndDate] = useState(reminder?.endDate ?? '')
-  const [startTime, setStartTime] = useState(reminder?.startTime ?? defaultTime ?? '')
-  const [endTime, setEndTime] = useState(reminder?.endTime ?? '')
-  const isMultiDay = !!endDate && endDate !== reminderDate
-  const [recurring, setRecurring] = useState(!!reminder?.recurrence)
-  const [recurrence, setRecurrence] = useState<RecurrenceRule>(
-    reminder?.recurrence ?? DEFAULT_RECURRENCE,
-  )
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!title.trim()) {
-      setError('Title is required')
-      return
-    }
-
-    setSaving(true)
-    const now = new Date().toISOString()
-    const r: Reminder = {
-      id: reminder?.id ?? crypto.randomUUID(),
-      title: title.trim(),
-      description: description.trim() || undefined,
-      date: reminderDate,
-      startTime: startTime || undefined,
-      endDate: endDate || undefined,
-      endTime: endTime || undefined,
-      recurrence: recurring ? recurrence : undefined,
-      completedDates: reminder?.completedDates ?? [],
-      createdAt: reminder?.createdAt ?? now,
-      updatedAt: now,
-    }
-
-    try {
-      await onSave(r)
-    } catch {
-      setError('Failed to save reminder')
-      setSaving(false)
-    }
-  }
+  const {
+    isNew,
+    title,
+    setTitle,
+    description,
+    setDescription,
+    reminderDate,
+    endDate,
+    startTime,
+    endTime,
+    setEndTime,
+    isMultiDay,
+    recurring,
+    setRecurring,
+    recurrence,
+    setRecurrence,
+    saving,
+    error,
+    setError,
+    handleDateChange,
+    handleEndDateChange,
+    handleStartTimeChange,
+    handleSubmit,
+  } = useReminderForm({ date, reminder, defaultTime, onSave })
 
   return (
     <Dialog title={isNew ? 'New Reminder' : 'Edit Reminder'} onClose={onClose}>
@@ -72,10 +46,7 @@ export default function ReminderForm({ date, reminder, defaultTime, onSave, onCl
         <Input
           label="Title"
           value={title}
-          onChange={(e) => {
-            setTitle(e.target.value)
-            setError('')
-          }}
+          onChange={(e) => { setTitle(e.target.value); setError('') }}
           placeholder="Reminder title"
           autoFocus
           error={error}
@@ -99,25 +70,14 @@ export default function ReminderForm({ date, reminder, defaultTime, onSave, onCl
             label="Date"
             type="date"
             value={reminderDate}
-            onChange={(e) => {
-              const val = e.target.value
-              setReminderDate(val)
-              if (endDate && endDate < val) setEndDate('')
-            }}
+            onChange={(e) => handleDateChange(e.target.value)}
           />
           <Input
             label="End Date (optional)"
             type="date"
             value={endDate}
             min={reminderDate}
-            onChange={(e) => {
-              const val = e.target.value
-              setEndDate(val)
-              if (val && val !== reminderDate) {
-                setStartTime('')
-                setEndTime('')
-              }
-            }}
+            onChange={(e) => handleEndDateChange(e.target.value)}
           />
         </div>
 
@@ -127,11 +87,7 @@ export default function ReminderForm({ date, reminder, defaultTime, onSave, onCl
               label="Start Time (optional)"
               type="time"
               value={startTime}
-              onChange={(e) => {
-                const val = e.target.value
-                setStartTime(val)
-                if (endTime && endTime < val) setEndTime('')
-              }}
+              onChange={(e) => handleStartTimeChange(e.target.value)}
             />
             <Input
               label="End Time (optional)"

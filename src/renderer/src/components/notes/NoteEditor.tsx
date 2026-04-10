@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
 import type { ReactNode } from 'react'
 import { Milkdown, MilkdownProvider, useEditor } from '@milkdown/react'
 import { Editor, rootCtx, defaultValueCtx } from '@milkdown/core'
@@ -16,10 +16,7 @@ import {
   toggleInlineCodeCommand,
   createCodeBlockCommand,
   insertHrCommand,
-  updateLinkCommand
 } from '@milkdown/preset-commonmark'
-import type { $Command } from '@milkdown/utils'
-import { callCommand } from '@milkdown/utils'
 import {
   Undo2,
   Redo2,
@@ -41,10 +38,9 @@ import {
   Trash2
 } from 'lucide-react'
 import type { Note } from '../../types/models'
+import { useEditorToolbar } from './hooks/useEditorToolbar'
+import { useNoteEditor } from './hooks/useNoteEditor'
 
-const DEBOUNCE_MS = 800
-const BUTTON_W = 32
-const DIVIDER_W = 16
 const OVERFLOW_W = 44
 
 // ---------------------------------------------------------------------------
@@ -58,7 +54,8 @@ type ToolbarDef =
       key: string
       label: string
       icon: ReactNode
-      command?: $Command<any>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      command?: { key: any }
       commandPayload?: unknown
       special?: 'link'
     }
@@ -160,21 +157,6 @@ const DEFS: ToolbarDef[] = [
   { type: 'button', key: 'link', label: 'Link', icon: <Link2 size={14} />, special: 'link' }
 ]
 
-function calcVisibleCount(width: number): number {
-  const totalW = DEFS.reduce((s, d) => s + (d.type === 'divider' ? DIVIDER_W : BUTTON_W), 0)
-  if (totalW <= width) return DEFS.length
-  const available = width - OVERFLOW_W
-  let used = 0
-  let count = 0
-  for (const def of DEFS) {
-    const w = def.type === 'divider' ? DIVIDER_W : BUTTON_W
-    if (used + w > available) break
-    used += w
-    count++
-  }
-  while (count > 0 && DEFS[count - 1].type === 'divider') count--
-  return count
-}
 
 function TBtn({ icon, label, onClick }: { icon: ReactNode; label: string; onClick: () => void }) {
   return (
@@ -218,56 +200,22 @@ export function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
       .use(listener)
   )
 
-  // --- Toolbar state ---
-  const wrapperRef = useRef<HTMLDivElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-  const [visibleCount, setVisibleCount] = useState(0)
-  const [dropdownOpen, setDropdownOpen] = useState(false)
-  const [linkOpen, setLinkOpen] = useState(false)
-  const [linkUrl, setLinkUrl] = useState('')
-
-  const handleDef = (def: ToolbarDef) => {
-    if (def.type !== 'button') return
-    if (def.special === 'link') {
-      setDropdownOpen(false)
-      setLinkOpen((o) => !o)
-      return
-    }
-    if (!def.command) return
-    get()?.action(callCommand(def.command.key, def.commandPayload as never))
-  }
-
-  const submitLink = () => {
-    if (linkUrl.trim()) get()?.action(callCommand(updateLinkCommand.key, { href: linkUrl.trim() }))
-    setLinkUrl('')
-    setLinkOpen(false)
-  }
-
-  useLayoutEffect(() => {
-    const el = wrapperRef.current
-    if (!el) return
-    setVisibleCount(calcVisibleCount(el.getBoundingClientRect().width))
-    const ro = new ResizeObserver(([entry]) =>
-      setVisibleCount(calcVisibleCount(entry.contentRect.width))
-    )
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [])
-
-  useEffect(() => {
-    if (!dropdownOpen) return
-    const handler = (e: MouseEvent) => {
-      if (!dropdownRef.current?.contains(e.target as Node)) setDropdownOpen(false)
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [dropdownOpen])
-
-  type ButtonDef = Extract<ToolbarDef, { type: 'button' }>
-  const visibleDefs = DEFS.slice(0, visibleCount)
-  const overflowDefs = DEFS.slice(visibleCount).filter((d): d is ButtonDef => d.type === 'button')
-  const hasOverflow = overflowDefs.length > 0
+  const {
+    wrapperRef,
+    containerRef,
+    dropdownRef,
+    dropdownOpen,
+    setDropdownOpen,
+    linkOpen,
+    linkUrl,
+    setLinkUrl,
+    visibleDefs,
+    overflowDefs,
+    hasOverflow,
+    handleDef,
+    submitLink,
+    cancelLink,
+  } = useEditorToolbar({ defs: DEFS, getEditor: get })
 
   return (
     <>
@@ -308,18 +256,21 @@ export function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
             />
             {dropdownOpen && (
               <div className="absolute right-0 top-full mt-1 z-50 bg-white dark:bg-[var(--bg-card)] border border-gray-200 dark:border-[var(--border)] rounded-lg shadow-lg py-1 min-w-[168px]">
-                {overflowDefs.map((def) => (
-                  <button
-                    key={def.key}
-                    type="button"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => handleDef(def)}
-                    className="w-full flex items-center gap-3 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[var(--bg-elevated)] transition-colors"
-                  >
-                    <span className="text-gray-500 dark:text-gray-400">{def.icon}</span>
-                    {def.label}
-                  </button>
-                ))}
+                {overflowDefs.map((def) => {
+                  if (def.type === 'divider') return null
+                  return (
+                    <button
+                      key={def.key}
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => handleDef(def)}
+                      className="w-full flex items-center gap-3 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[var(--bg-elevated)] transition-colors"
+                    >
+                      <span className="text-gray-500 dark:text-gray-400">{def.icon}</span>
+                      {def.label}
+                    </button>
+                  )
+                })}
               </div>
             )}
           </div>
@@ -335,10 +286,7 @@ export function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
               onChange={(e) => setLinkUrl(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') submitLink()
-                if (e.key === 'Escape') {
-                  setLinkOpen(false)
-                  setLinkUrl('')
-                }
+                if (e.key === 'Escape') cancelLink()
               }}
               placeholder="https://..."
               className="flex-1 rounded-lg border border-gray-300 dark:border-[var(--border)] bg-white dark:bg-[var(--bg-card)] text-gray-900 dark:text-gray-100 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -352,10 +300,7 @@ export function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
             </button>
             <button
               type="button"
-              onClick={() => {
-                setLinkOpen(false)
-                setLinkUrl('')
-              }}
+              onClick={cancelLink}
               className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[var(--bg-elevated)] rounded-lg transition-colors"
             >
               Cancel
@@ -410,26 +355,7 @@ interface Props {
 }
 
 export default function NoteEditor({ note, onChange, onDelete, onBack }: Props) {
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [loaded, setLoaded] = useState(false)
-
-  useEffect(() => {
-    setLoaded(true)
-    return () => {
-      if (saveTimer.current) clearTimeout(saveTimer.current)
-    }
-  }, [])
-
-  function handleContentChange(markdown: string) {
-    if (saveTimer.current) clearTimeout(saveTimer.current)
-    saveTimer.current = setTimeout(() => {
-      onChange({ ...note, content: markdown, updatedAt: new Date().toISOString() })
-    }, DEBOUNCE_MS)
-  }
-
-  function handleTitleChange(newTitle: string) {
-    onChange({ ...note, title: newTitle || undefined, updatedAt: new Date().toISOString() })
-  }
+  const { loaded, handleContentChange, handleTitleChange } = useNoteEditor({ note, onChange })
 
   if (!loaded) return <div className="mb-8 min-h-[200px]" />
 

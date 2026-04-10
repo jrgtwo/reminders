@@ -1,8 +1,8 @@
-import { useState } from 'react'
 import type { TodoListItem } from '../../types/models'
 import Button from '../ui/Button'
 import Dialog from '../ui/Dialog'
 import Input from '../ui/Input'
+import { useTodoForm } from './hooks/useTodoForm'
 
 interface Props {
   item: TodoListItem | null
@@ -12,41 +12,8 @@ interface Props {
 }
 
 export default function TodoForm({ item, listId, onSave, onClose }: Props) {
-  const isNew = !item
-  const [title, setTitle] = useState(item?.title ?? '')
-  const [description, setDescription] = useState(item?.description ?? '')
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!title.trim()) {
-      setError('Title is required')
-      return
-    }
-    setSaving(true)
-    const now = new Date().toISOString()
-    const newItem: TodoListItem = {
-      id: item?.id ?? crypto.randomUUID(),
-      listId,
-      title: title.trim(),
-      description: description.trim() || undefined,
-      order: item?.order ?? Date.now(),
-      completed: item?.completed ?? false,
-      completedAt: item?.completedAt,
-      createdAt: item?.createdAt ?? now,
-      updatedAt: now
-    }
-    console.log('[TodoForm] About to save item:', newItem)
-    try {
-      await onSave(newItem)
-      console.log('[TodoForm] Item saved successfully')
-    } catch (err) {
-      console.error('[TodoForm] Save failed:', err)
-      setError('Failed to save')
-      setSaving(false)
-    }
-  }
+  const { isNew, title, setTitle, description, setDescription, saving, error, clearError, handleSubmit } =
+    useTodoForm({ item, listId, onSave })
 
   return (
     <Dialog title={isNew ? 'New Item' : 'Edit Item'} onClose={onClose}>
@@ -56,7 +23,7 @@ export default function TodoForm({ item, listId, onSave, onClose }: Props) {
           value={title}
           onChange={(e) => {
             setTitle(e.target.value)
-            setError('')
+            clearError()
           }}
           placeholder="What needs to be done?"
           autoFocus

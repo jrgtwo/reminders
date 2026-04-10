@@ -1,9 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
-import { useSortable } from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
 import { AlignLeft, Check, GripVertical, Pencil, Trash2 } from 'lucide-react'
 import type { TodoListItem } from '../../types/models'
 import MarkdownView from '../ui/MarkdownView'
+import { useTodoItem } from './hooks/useTodoItem'
 
 interface Props {
   todo: TodoListItem
@@ -17,48 +15,25 @@ interface Props {
 }
 
 export default function TodoItem({ todo, onToggle, onEdit, onDelete, isEditing, onSaveEdit, onCancelEdit, onSaveDesc }: Props) {
-  const [expanded, setExpanded] = useState(false)
-  const [editingDesc, setEditingDesc] = useState(false)
-  const [draftDesc, setDraftDesc] = useState(todo.description ?? '')
-  const [draftTitle, setDraftTitle] = useState(todo.title)
-  const committedRef = useRef(false)
-
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: todo.id,
-  })
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.4 : 1,
-  }
-
-  const hasDescription = !!todo.description?.trim()
-
-  function commit() {
-    if (committedRef.current) return
-    committedRef.current = true
-    onSaveEdit(todo, draftTitle)
-  }
-
-  function cancel() {
-    if (committedRef.current) return
-    committedRef.current = true
-    onCancelEdit(todo)
-  }
-
-  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter') { e.preventDefault(); commit() }
-    if (e.key === 'Escape') { e.preventDefault(); cancel() }
-  }
-
-  // Sync draft title and reset committed flag when editing starts
-  useEffect(() => {
-    if (isEditing) {
-      setDraftTitle(todo.title)
-      committedRef.current = false
-    }
-  }, [isEditing]) // eslint-disable-line react-hooks/exhaustive-deps
+  const {
+    expanded,
+    editingDesc,
+    draftDesc,
+    setDraftDesc,
+    draftTitle,
+    setDraftTitle,
+    hasDescription,
+    attributes,
+    listeners,
+    setNodeRef,
+    style,
+    commit,
+    handleTitleKeyDown,
+    toggleDescription,
+    handleDescBlur,
+    handleDescKeyDown,
+    startEditingDesc,
+  } = useTodoItem({ todo, isEditing, onSaveEdit, onCancelEdit, onSaveDesc })
 
   return (
     <div
@@ -99,7 +74,7 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete, isEditing, 
               autoFocus
               value={draftTitle}
               onChange={(e) => setDraftTitle(e.target.value)}
-              onKeyDown={handleKeyDown}
+              onKeyDown={handleTitleKeyDown}
               onBlur={commit}
               placeholder="Item title"
               className="flex-1 min-w-0 bg-transparent text-[13px] leading-5 text-slate-700 dark:text-white/75 placeholder:text-slate-300 dark:placeholder:text-white/25 focus:outline-none"
@@ -123,16 +98,7 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete, isEditing, 
         {!isEditing && (
           <div className="flex items-center gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0">
             <button
-              onClick={() => {
-                if (expanded) {
-                  setExpanded(false)
-                  setEditingDesc(false)
-                } else {
-                  setDraftDesc(todo.description ?? '')
-                  setEditingDesc(true)
-                  setExpanded(true)
-                }
-              }}
+              onClick={toggleDescription}
               className={`w-6 h-6 flex items-center justify-center rounded transition-colors ${
                 hasDescription || expanded
                   ? 'text-slate-400 dark:text-white/35 hover:text-slate-600 dark:hover:text-white/60'
@@ -168,19 +134,14 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete, isEditing, 
               autoFocus
               value={draftDesc}
               onChange={(e) => setDraftDesc(e.target.value)}
-              onBlur={() => {
-                onSaveDesc(todo, draftDesc)
-                setEditingDesc(false)
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Escape') { e.preventDefault(); setEditingDesc(false); setDraftDesc(todo.description ?? '') }
-              }}
+              onBlur={handleDescBlur}
+              onKeyDown={handleDescKeyDown}
               placeholder="Add a description…"
               rows={3}
               className="w-full bg-transparent text-[12px] leading-5 text-slate-600 dark:text-white/60 placeholder:text-slate-300 dark:placeholder:text-white/20 focus:outline-none resize-none"
             />
           ) : hasDescription ? (
-            <div onClick={() => { setDraftDesc(todo.description ?? ''); setEditingDesc(true) }} className="cursor-text">
+            <div onClick={startEditingDesc} className="cursor-text">
               <MarkdownView content={todo.description!} />
             </div>
           ) : null}

@@ -1,0 +1,64 @@
+import { useEffect, useRef, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { useNotesStore } from '../../../store/notes.store'
+import { useNoteFoldersStore } from '../../../store/note_folders.store'
+
+const DEBOUNCE_MS = 800
+
+export function useNoteView() {
+  const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const notes = useNotesStore((s) => s.notes)
+  const loadNotes = useNotesStore((s) => s.loadNotes)
+  const saveNote = useNotesStore((s) => s.saveNote)
+  const deleteNote = useNotesStore((s) => s.deleteNote)
+  const loadFolders = useNoteFoldersStore((s) => s.load)
+
+  const [saving, setSaving] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+
+  const note = id ? notes.get(id) : undefined
+
+  useEffect(() => {
+    loadNotes()
+    loadFolders()
+  }, [loadNotes, loadFolders])
+
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  function handleContentChange(markdown: string) {
+    if (saveTimer.current) clearTimeout(saveTimer.current)
+    saveTimer.current = setTimeout(() => {
+      if (!note) return
+      saveNote({ ...note, content: markdown, updatedAt: new Date().toISOString() })
+    }, DEBOUNCE_MS)
+  }
+
+  function handleTitleChange(newTitle: string) {
+    if (!note) return
+    setSaving(true)
+    saveNote({
+      ...note,
+      title: newTitle || undefined,
+      updatedAt: new Date().toISOString(),
+    }).finally(() => setSaving(false))
+  }
+
+  function handleDelete() {
+    if (!note || !id) return
+    deleteNote(id)
+    navigate('/notes')
+  }
+
+  return {
+    id,
+    note,
+    saving,
+    deleteDialogOpen,
+    setDeleteDialogOpen,
+    navigate,
+    handleContentChange,
+    handleTitleChange,
+    handleDelete,
+  }
+}

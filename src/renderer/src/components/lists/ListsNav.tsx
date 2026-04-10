@@ -1,86 +1,38 @@
-import { useEffect, useMemo, useState, forwardRef, useImperativeHandle } from 'react'
+import { forwardRef, useImperativeHandle } from 'react'
 import { Plus, FolderOpen, List } from 'lucide-react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { useTodoFoldersStore } from '../../store/todo_folders.store'
-import { useTodoListsStore } from '../../store/todo_lists.store'
-import { buildFolderTree } from '../../lib/folderTree'
-import type { TodoFolder, TodoList } from '../../types/models'
+import type { TodoList } from '../../types/models'
 import FolderForm from './FolderForm'
 import { CollapsibleSection } from '../ui/CollapsibleSection'
 import { SidebarNavItem, FolderTree, DateTree } from '../ui/FolderNav'
+import { useListsNav } from './hooks/useListsNav'
 
 export interface ListsNavHandle {
   openNewList: () => void
 }
 
 const ListsNav = forwardRef<ListsNavHandle>(function ListsNav(_, ref) {
-  const navigate = useNavigate()
-  const location = useLocation()
-
-  const folders = useTodoFoldersStore((s) => s.folders)
-  const loadFolders = useTodoFoldersStore((s) => s.load)
-  const saveFolder = useTodoFoldersStore((s) => s.save)
-  const removeFolder = useTodoFoldersStore((s) => s.remove)
-
-  const lists = useTodoListsStore((s) => s.lists)
-  const loadLists = useTodoListsStore((s) => s.load)
-  const removeList = useTodoListsStore((s) => s.remove)
-
-  const [folderFormOpen, setFolderFormOpen] = useState(false)
-  const [editingFolder, setEditingFolder] = useState<TodoFolder | null>(null)
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
+  const {
+    folders,
+    lists,
+    adHocLists,
+    dateLists,
+    standaloneLists,
+    folderChildrenMap,
+    rootFolders,
+    expandedFolders,
+    folderFormOpen,
+    editingFolder,
+    activeListId,
+    toggleFolder,
+    openNewList,
+    handleDeleteList,
+    handleDeleteFolder,
+    openFolderForm,
+    closeFolderForm,
+    handleSaveFolder,
+  } = useListsNav()
 
   useImperativeHandle(ref, () => ({ openNewList: () => openNewList() }))
-
-  useEffect(() => {
-    loadLists()
-    loadFolders()
-  }, [loadLists, loadFolders])
-
-  const activeListId = location.pathname.startsWith('/lists/')
-    ? location.pathname.slice('/lists/'.length)
-    : undefined
-
-  const adHocLists = useMemo(
-    () => lists.filter((l) => !l.dueDate).sort((a, b) => a.order - b.order),
-    [lists]
-  )
-  const dateLists = useMemo(() => lists.filter((l) => !!l.dueDate), [lists])
-  const standaloneLists = useMemo(
-    () => adHocLists.filter((l) => !l.folderId),
-    [adHocLists]
-  )
-  const folderChildrenMap = useMemo(() => buildFolderTree(folders), [folders])
-  const rootFolders = useMemo(
-    () => (folderChildrenMap.get(undefined) ?? []).sort((a, b) => a.order - b.order),
-    [folderChildrenMap]
-  )
-
-  function toggleFolder(id: string) {
-    setExpandedFolders((prev) => {
-      const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
-      return next
-    })
-  }
-
-  function openNewList(opts: { folderId?: string; dueDate?: string } = {}) {
-    navigate('/lists/new', { state: opts })
-  }
-
-  function handleDeleteList(id: string) {
-    removeList(id)
-    if (activeListId === id) navigate('/lists')
-  }
-
-  function handleDeleteFolder(id: string) {
-    const affectedLists = lists.filter((l) => l.folderId === id)
-    if (affectedLists.length > 0) {
-      if (!window.confirm(`This folder contains ${affectedLists.length} list(s). Delete everything?`)) return
-      affectedLists.forEach((l) => removeList(l.id))
-    }
-    removeFolder(id)
-  }
 
   function renderList(l: TodoList, indent: boolean) {
     return (
@@ -122,7 +74,7 @@ const ListsNav = forwardRef<ListsNavHandle>(function ListsNav(_, ref) {
               <Plus size={11} />
             </button>
             <button
-              onClick={() => { setEditingFolder(null); setFolderFormOpen(true) }}
+              onClick={() => openFolderForm(null)}
               className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
               title="New folder"
             >
@@ -143,7 +95,7 @@ const ListsNav = forwardRef<ListsNavHandle>(function ListsNav(_, ref) {
             expandedFolders={expandedFolders}
             onToggleFolder={toggleFolder}
             onNewItemInFolder={(folderId) => openNewList({ folderId })}
-            onEditFolder={(folder) => { setEditingFolder(folder); setFolderFormOpen(true) }}
+            onEditFolder={(folder) => openFolderForm(folder)}
             onDeleteFolder={handleDeleteFolder}
           />
 
@@ -195,8 +147,8 @@ const ListsNav = forwardRef<ListsNavHandle>(function ListsNav(_, ref) {
       {folderFormOpen && (
         <FolderForm
           folder={editingFolder}
-          onSave={async (f) => { await saveFolder(f); setFolderFormOpen(false); setEditingFolder(null) }}
-          onClose={() => { setFolderFormOpen(false); setEditingFolder(null) }}
+          onSave={handleSaveFolder}
+          onClose={closeFolderForm}
         />
       )}
 

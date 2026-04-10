@@ -1,58 +1,21 @@
-import { useState } from 'react'
 import type { TodoFolder, TodoList } from '../../types/models'
 import Button from '../ui/Button'
 import Dialog from '../ui/Dialog'
 import Input from '../ui/Input'
+import { useListForm } from './hooks/useListForm'
 
 interface Props {
   list: TodoList | null
   folders: TodoFolder[]
   defaultFolderId?: string
-  defaultDueDate?: string   // pre-fills the date for date-based lists
+  defaultDueDate?: string // pre-fills the date for date-based lists
   onSave: (l: TodoList) => Promise<void>
   onClose: () => void
 }
 
 export default function ListForm({ list, folders, defaultFolderId, defaultDueDate, onSave, onClose }: Props) {
-  const isNew = !list
-  const [name, setName] = useState(list?.name ?? '')
-  const [dueDate, setDueDate] = useState(list?.dueDate ?? defaultDueDate ?? '')
-  const [folderId, setFolderId] = useState(list?.folderId ?? defaultFolderId ?? '')
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
-
-  // dueDate and folderId are mutually exclusive
-  function handleDueDateChange(val: string) {
-    setDueDate(val)
-    if (val) setFolderId('')
-  }
-
-  function handleFolderChange(val: string) {
-    setFolderId(val)
-    if (val) setDueDate('')
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!name.trim()) { setError('Name is required'); return }
-    setSaving(true)
-    const now = new Date().toISOString()
-    const l: TodoList = {
-      id: list?.id ?? crypto.randomUUID(),
-      name: name.trim(),
-      folderId: folderId || undefined,
-      dueDate: dueDate || undefined,
-      order: list?.order ?? Date.now(),
-      createdAt: list?.createdAt ?? now,
-      updatedAt: now,
-    }
-    try {
-      await onSave(l)
-    } catch {
-      setError('Failed to save list')
-      setSaving(false)
-    }
-  }
+  const { isNew, name, setName, dueDate, folderId, saving, error, setError, handleDueDateChange, handleFolderChange, handleSubmit } =
+    useListForm({ list, defaultFolderId, defaultDueDate, onSave })
 
   return (
     <Dialog title={isNew ? 'New List' : 'Edit List'} onClose={onClose}>

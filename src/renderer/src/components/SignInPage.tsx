@@ -1,30 +1,11 @@
-import { useRef, useState } from 'react'
-import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
+import { Turnstile } from '@marsidev/react-turnstile'
 import { Mail, Check, AlertCircle } from 'lucide-react'
-import { useAuthStore } from '../store/auth.store'
 import Button from './ui/Button'
+import { useSignIn } from './hooks/useSignIn'
 
 export default function SignInPage() {
-  const sendMagicLink = useAuthStore((s) => s.sendMagicLink)
-  const [email, setEmail] = useState('')
-  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
-  const turnstileRef = useRef<TurnstileInstance>(null)
-
-  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
-    e.preventDefault()
-    if (!email.trim() || !captchaToken) return
-    setStatus('sending')
-    try {
-      await sendMagicLink(email.trim(), captchaToken)
-      setStatus('sent')
-    } catch {
-      setStatus('error')
-      // Reset widget so the user can get a fresh token and retry
-      turnstileRef.current?.reset()
-      setCaptchaToken(null)
-    }
-  }
+  const { email, setEmail, status, setStatus, captchaToken, setCaptchaToken, turnstileRef, handleSubmit } =
+    useSignIn()
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[var(--bg-app)] px-4">

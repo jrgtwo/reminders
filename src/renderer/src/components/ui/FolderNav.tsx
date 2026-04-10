@@ -1,7 +1,7 @@
 import type { ComponentType, ReactNode } from 'react'
-import { useMemo, useState } from 'react'
 import { ChevronRight, ChevronDown, FolderPlus, Pencil, Trash2, Plus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useDateTree } from './hooks/useDateTree'
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -29,35 +29,13 @@ export function DateTree<I>({
   emptyMessage?: string
   newItemTitle?: string
 }) {
-  const tree = useMemo(() => {
-    const t: Record<string, Record<string, Record<string, I[]>>> = {}
-    for (const item of items) {
-      const date = getDate(item)
-      if (!date) continue
-      const [year, month, day] = date.split('-')
-      if (!t[year]) t[year] = {}
-      if (!t[year][month]) t[year][month] = {}
-      if (!t[year][month][day]) t[year][month][day] = []
-      t[year][month][day].push(item)
-    }
-    return t
-  }, [items, getDate])
-
-  const years = Object.keys(tree).sort((a, b) => b.localeCompare(a))
-  const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set())
-  const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set())
-  const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set())
+  const { tree, years, expandedYears, expandedMonths, expandedDays, toggleYear, toggleMonth, toggleDay } =
+    useDateTree(items, getDate)
 
   if (years.length === 0) {
     return (
       <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2">{emptyMessage}</p>
     )
-  }
-
-  function toggle(set: Set<string>, setFn: (s: Set<string>) => void, key: string) {
-    const next = new Set(set)
-    next.has(key) ? next.delete(key) : next.add(key)
-    setFn(next)
   }
 
   return (
@@ -68,7 +46,7 @@ export function DateTree<I>({
         return (
           <div key={year}>
             <button
-              onClick={() => toggle(expandedYears, setExpandedYears, year)}
+              onClick={() => toggleYear(year)}
               className="flex items-center gap-1.5 w-full px-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
             >
               {yearCollapsed ? (
@@ -90,7 +68,7 @@ export function DateTree<I>({
                 return (
                   <div key={month}>
                     <button
-                      onClick={() => toggle(expandedMonths, setExpandedMonths, monthKey)}
+                      onClick={() => toggleMonth(monthKey)}
                       className="flex items-center gap-1.5 w-full pl-6 pr-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
                     >
                       {monthCollapsed ? (
@@ -112,7 +90,7 @@ export function DateTree<I>({
                           <div key={day}>
                             <div className="flex items-center pl-8 pr-4 py-0.5">
                               <button
-                                onClick={() => toggle(expandedDays, setExpandedDays, dateStr)}
+                                onClick={() => toggleDay(dateStr)}
                                 className="flex items-center gap-1.5 flex-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
                               >
                                 {dayCollapsed ? (

@@ -1,18 +1,9 @@
-import { useRef, useCallback, useState, useEffect, useMemo } from 'react'
-import { Outlet, useNavigate } from 'react-router-dom'
+import { Outlet } from 'react-router-dom'
 import { Settings, Cloud, CloudOff, Loader2, X } from 'lucide-react'
 import BottomNav, { SideNav } from './BottomNav'
 import SearchBar from './SearchBar'
-import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts'
-import { usePageTracking } from '../../hooks/usePageTracking'
-import { useUIStore } from '../../store/ui.store'
-import { useRemindersStore } from '../../store/reminders.store'
-import { useTodoListsStore } from '../../store/todo_lists.store'
-import { useAuthStore } from '../../store/auth.store'
-import { useSyncStore } from '../../store/sync.store'
-import { getOccurrencesInRange } from '../../utils/recurrence'
-import { today } from '../../utils/dates'
 import ReminderForm from '../reminders/ReminderForm'
+import { useAppShell } from './hooks/useAppShell'
 
 function formatLastSynced(isoStr: string): string {
   const minutes = Math.floor((Date.now() - new Date(isoStr).getTime()) / 60_000)
@@ -23,54 +14,20 @@ function formatLastSynced(isoStr: string): string {
 }
 
 export default function AppShell() {
-  const searchRef = useRef<HTMLInputElement>(null)
-  const navigate = useNavigate()
-  const focusSearch = useCallback(() => searchRef.current?.focus(), [])
-  const [errorDismissed, setErrorDismissed] = useState(false)
-
-  const newReminderDate = useUIStore((s) => s.newReminderDate)
-  const setNewReminderDate = useUIStore((s) => s.setNewReminderDate)
-  const saveReminder = useRemindersStore((s) => s.save)
-  const reminders = useRemindersStore((s) => s.reminders)
-  const lists = useTodoListsStore((s) => s.lists)
-  const isLoggedIn = useAuthStore((s) => s.isLoggedIn)
-
-  const overdueCount = useMemo(() => {
-    const end = today().subtract({ days: 1 })
-    const start = end.subtract({ days: 365 })
-    let count = 0
-    for (const r of reminders) {
-      count += getOccurrencesInRange(r, start, end).length
-    }
-    return count
-  }, [reminders])
-
-  const upcomingCount = useMemo(() => {
-    const start = today()
-    const end = start.add({ days: 30 })
-    let count = 0
-    for (const r of reminders) {
-      count += getOccurrencesInRange(r, start, end).length
-    }
-    return count
-  }, [reminders])
-
-  const todoCount = lists.length
-  const syncStatus = useSyncStore((s) => s.status)
-  const lastSyncedAt = useSyncStore((s) => s.lastSyncedAt)
-
-  const prevSyncStatus = useRef(syncStatus)
-  useEffect(() => {
-    if (prevSyncStatus.current === 'syncing' && syncStatus === 'error') {
-      setErrorDismissed(false)
-    }
-    prevSyncStatus.current = syncStatus
-  }, [syncStatus])
-
-  const showErrorBanner = isLoggedIn && syncStatus === 'error' && !errorDismissed
-
-  useKeyboardShortcuts(focusSearch)
-  usePageTracking()
+  const {
+    searchRef,
+    navigate,
+    setErrorDismissed,
+    newReminderDate,
+    setNewReminderDate,
+    saveReminder,
+    isLoggedIn,
+    overdueCount,
+    upcomingCount,
+    syncStatus,
+    lastSyncedAt,
+    showErrorBanner,
+  } = useAppShell()
 
   return (
     <div className="flex flex-col h-screen bg-[var(--bg-app)] text-slate-900 dark:text-slate-100 relative overflow-hidden">

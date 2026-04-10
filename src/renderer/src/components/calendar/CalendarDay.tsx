@@ -1,29 +1,8 @@
-import { useRef, useLayoutEffect } from 'react'
 import { Temporal } from '@js-temporal/polyfill'
 import { Bell, Clock, Repeat, FileText, CheckSquare } from 'lucide-react'
-import { formatDayNum, isToday, isSameMonth } from '../../utils/dates'
+import { formatDayNum } from '../../utils/dates'
 import type { Reminder } from '../../types/models'
-
-function getEventColor(date: Temporal.PlainDate): { dot: string; text: string; chip: string } {
-  const cmp = Temporal.PlainDate.compare(date, Temporal.Now.plainDateISO())
-  if (cmp < 0)
-    return {
-      dot: 'bg-[#e8a045]',
-      text: 'text-red-600 dark:text-[#e8a045]',
-      chip: 'bg-red-50 text-red-700 dark:bg-[#e8a045]/[0.08] dark:text-[#e8a045]'
-    }
-  if (cmp === 0)
-    return {
-      dot: 'bg-[#e8a045]',
-      text: 'text-amber-700 dark:text-[#e8a045]',
-      chip: 'bg-amber-50 text-amber-800 dark:bg-[#e8a045]/[0.07] dark:text-[#e8a045]'
-    }
-  return {
-    dot: 'bg-[#6498c8]',
-    text: 'text-indigo-600 dark:text-[#6498c8]',
-    chip: 'bg-indigo-50 text-indigo-700 dark:bg-[#6498c8]/[0.08] dark:text-[#6498c8]'
-  }
-}
+import { useCalendarDay } from './hooks/useCalendarDay'
 
 interface Props {
   date: Temporal.PlainDate
@@ -52,37 +31,7 @@ export default function CalendarDay({
   onTodoClick,
   tall
 }: Props) {
-  const todayDate = isToday(date)
-  const inMonth = isSameMonth(date, displayMonth)
-  const colors = getEventColor(date)
-
-  const tileRef = useRef<HTMLButtonElement>(null)
-  const rectRef = useRef<DOMRect | null>(null)
-
-  useLayoutEffect(() => {
-    const update = () => {
-      if (tileRef.current) rectRef.current = tileRef.current.getBoundingClientRect()
-    }
-    update()
-    window.addEventListener('resize', update)
-    return () => window.removeEventListener('resize', update)
-  }, [])
-
-  const cmp = Temporal.PlainDate.compare(date, Temporal.Now.plainDateISO())
-  const listBadgeCls = cmp < 0
-    ? 'bg-[#e8a045]/[0.12] text-[#e8a045]'
-    : 'bg-emerald-500/[0.12] text-emerald-600 dark:bg-emerald-500/[0.08] dark:text-emerald-400'
-
-  let bg: string
-  if (todayDate) {
-    bg = 'bg-blue-50 dark:bg-[#6498c8]/[0.15]'
-  } else if (isSelected) {
-    bg = 'bg-white dark:bg-white/[0.10]'
-  } else if (!inMonth) {
-    bg = 'bg-slate-50 dark:bg-white/[0.03]'
-  } else {
-    bg = 'bg-white dark:bg-white/[0.07]'
-  }
+  const { todayDate, inMonth, cmp, colors, listBadgeCls, bg, tileRef } = useCalendarDay({ date, displayMonth, isSelected })
 
   return (
     <button

@@ -1,5 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useRef } from 'react'
 import { Milkdown, MilkdownProvider, useEditor } from '@milkdown/react'
 import { Editor, rootCtx, defaultValueCtx } from '@milkdown/core'
 import { commonmark } from '@milkdown/preset-commonmark'
@@ -16,10 +15,7 @@ import {
   toggleInlineCodeCommand,
   createCodeBlockCommand,
   insertHrCommand,
-  updateLinkCommand
 } from '@milkdown/preset-commonmark'
-import type { $Command } from '@milkdown/utils'
-import { callCommand } from '@milkdown/utils'
 import {
   Undo2,
   Redo2,
@@ -40,14 +36,12 @@ import {
   ArrowLeft,
   Trash2
 } from 'lucide-react'
-import { useNotesStore } from '../../store/notes.store'
-import { useNoteFoldersStore } from '../../store/note_folders.store'
 import Button from '../ui/Button'
 import Dialog from '../ui/Dialog'
+import { useEditorToolbar } from './hooks/useEditorToolbar'
+import { useNoteView } from './hooks/useNoteView'
+import { useTitleBar } from './hooks/useTitleBar'
 
-const DEBOUNCE_MS = 800
-const BUTTON_W = 32
-const DIVIDER_W = 16
 const OVERFLOW_W = 44
 
 type ToolbarDef =
@@ -57,7 +51,8 @@ type ToolbarDef =
       key: string
       label: string
       icon: React.ReactNode
-      command?: $Command<any>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      command?: { key: any }
       commandPayload?: unknown
       special?: 'link'
     }
@@ -159,21 +154,6 @@ const DEFS: ToolbarDef[] = [
   { type: 'button', key: 'link', label: 'Link', icon: <Link2 size={14} />, special: 'link' }
 ]
 
-function calcVisibleCount(width: number): number {
-  const totalW = DEFS.reduce((s, d) => s + (d.type === 'divider' ? DIVIDER_W : BUTTON_W), 0)
-  if (totalW <= width) return DEFS.length
-  const available = width - OVERFLOW_W
-  let used = 0
-  let count = 0
-  for (const def of DEFS) {
-    const w = def.type === 'divider' ? DIVIDER_W : BUTTON_W
-    if (used + w > available) break
-    used += w
-    count++
-  }
-  while (count > 0 && DEFS[count - 1].type === 'divider') count--
-  return count
-}
 
 function TBtn({
   icon,
@@ -221,55 +201,22 @@ function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
       .use(listener)
   )
 
-  const wrapperRef = useRef<HTMLDivElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-  const [visibleCount, setVisibleCount] = useState(0)
-  const [dropdownOpen, setDropdownOpen] = useState(false)
-  const [linkOpen, setLinkOpen] = useState(false)
-  const [linkUrl, setLinkUrl] = useState('')
-
-  const handleDef = (def: ToolbarDef) => {
-    if (def.type !== 'button') return
-    if (def.special === 'link') {
-      setDropdownOpen(false)
-      setLinkOpen((o) => !o)
-      return
-    }
-    if (!def.command) return
-    get()?.action(callCommand(def.command.key, def.commandPayload as never))
-  }
-
-  const submitLink = () => {
-    if (linkUrl.trim()) get()?.action(callCommand(updateLinkCommand.key, { href: linkUrl.trim() }))
-    setLinkUrl('')
-    setLinkOpen(false)
-  }
-
-  useLayoutEffect(() => {
-    const el = wrapperRef.current
-    if (!el) return
-    setVisibleCount(calcVisibleCount(el.getBoundingClientRect().width))
-    const ro = new ResizeObserver(([entry]) =>
-      setVisibleCount(calcVisibleCount(entry.contentRect.width))
-    )
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [])
-
-  useEffect(() => {
-    if (!dropdownOpen) return
-    const handler = (e: MouseEvent) => {
-      if (!dropdownRef.current?.contains(e.target as Node)) setDropdownOpen(false)
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [dropdownOpen])
-
-  type ButtonDef = Extract<ToolbarDef, { type: 'button' }>
-  const visibleDefs = DEFS.slice(0, visibleCount)
-  const overflowDefs = DEFS.slice(visibleCount).filter((d): d is ButtonDef => d.type === 'button')
-  const hasOverflow = overflowDefs.length > 0
+  const {
+    wrapperRef,
+    containerRef,
+    dropdownRef,
+    dropdownOpen,
+    setDropdownOpen,
+    linkOpen,
+    linkUrl,
+    setLinkUrl,
+    visibleDefs,
+    overflowDefs,
+    hasOverflow,
+    handleDef,
+    submitLink,
+    cancelLink,
+  } = useEditorToolbar({ defs: DEFS, getEditor: get })
 
   return (
     <>
@@ -309,18 +256,21 @@ function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
             />
             {dropdownOpen && (
               <div className="absolute right-0 top-full mt-1 z-50 bg-white dark:bg-[var(--bg-card)] border border-gray-200 dark:border-[var(--border)] rounded-lg shadow-lg py-1 min-w-[168px]">
-                {overflowDefs.map((def) => (
-                  <button
-                    key={def.key}
-                    type="button"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => handleDef(def)}
-                    className="w-full flex items-center gap-3 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[var(--bg-elevated)] transition-colors"
-                  >
-                    <span className="text-gray-500 dark:text-gray-400">{def.icon}</span>
-                    {def.label}
-                  </button>
-                ))}
+                {overflowDefs.map((def) => {
+                  if (def.type === 'divider') return null
+                  return (
+                    <button
+                      key={def.key}
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => handleDef(def)}
+                      className="w-full flex items-center gap-3 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[var(--bg-elevated)] transition-colors"
+                    >
+                      <span className="text-gray-500 dark:text-gray-400">{def.icon}</span>
+                      {def.label}
+                    </button>
+                  )
+                })}
               </div>
             )}
           </div>
@@ -335,10 +285,7 @@ function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
               onChange={(e) => setLinkUrl(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') submitLink()
-                if (e.key === 'Escape') {
-                  setLinkOpen(false)
-                  setLinkUrl('')
-                }
+                if (e.key === 'Escape') cancelLink()
               }}
               placeholder="https://..."
               className="flex-1 rounded-lg border border-gray-300 dark:border-[var(--border)] bg-white dark:bg-[var(--bg-card)] text-gray-900 dark:text-gray-100 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -352,10 +299,7 @@ function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
             </button>
             <button
               type="button"
-              onClick={() => {
-                setLinkOpen(false)
-                setLinkUrl('')
-              }}
+              onClick={cancelLink}
               className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[var(--bg-elevated)] rounded-lg transition-colors"
             >
               Cancel
@@ -378,25 +322,8 @@ interface TitleBarProps {
 }
 
 function TitleBar({ title, onSaveTitle, onDelete, onBack }: TitleBarProps) {
-  const [isEditing, setIsEditing] = useState(false)
-  const [titleValue, setTitleValue] = useState(title || '')
-
-  useEffect(() => {
-    setTitleValue(title || '')
-  }, [title])
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSaveTitle(titleValue)
-    setIsEditing(false)
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      setTitleValue(title || '')
-      setIsEditing(false)
-    }
-  }
+  const { isEditing, setIsEditing, titleValue, setTitleValue, handleSubmit, handleKeyDown, handleBlur } =
+    useTitleBar({ title, onSaveTitle })
 
   return (
     <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100 dark:border-white/[0.05]">
@@ -414,10 +341,7 @@ function TitleBar({ title, onSaveTitle, onDelete, onBack }: TitleBarProps) {
             value={titleValue}
             onChange={(e) => setTitleValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            onBlur={() => {
-              onSaveTitle(titleValue)
-              setIsEditing(false)
-            }}
+            onBlur={handleBlur}
             className="w-full text-lg font-semibold text-gray-900 dark:text-gray-100 bg-transparent border-b border-blue-500 focus:outline-none pb-1"
             placeholder="Untitled"
           />
@@ -441,50 +365,17 @@ function TitleBar({ title, onSaveTitle, onDelete, onBack }: TitleBarProps) {
 }
 
 export default function NoteView() {
-  const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-  const notes = useNotesStore((s) => s.notes)
-  const loadNotes = useNotesStore((s) => s.loadNotes)
-  const saveNote = useNotesStore((s) => s.saveNote)
-  const deleteNote = useNotesStore((s) => s.deleteNote)
-
-  const loadFolders = useNoteFoldersStore((s) => s.load)
-
-  const [saving, setSaving] = useState(false)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-
-  const note = id ? notes.get(id) : undefined
-
-  useEffect(() => {
-    loadNotes()
-    loadFolders()
-  }, [loadNotes, loadFolders])
-
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  function handleContentChange(markdown: string) {
-    if (saveTimer.current) clearTimeout(saveTimer.current)
-    saveTimer.current = setTimeout(() => {
-      if (!note) return
-      saveNote({ ...note, content: markdown, updatedAt: new Date().toISOString() })
-    }, DEBOUNCE_MS)
-  }
-
-  function handleTitleChange(newTitle: string) {
-    if (!note) return
-    setSaving(true)
-    saveNote({
-      ...note,
-      title: newTitle || undefined,
-      updatedAt: new Date().toISOString()
-    }).finally(() => setSaving(false))
-  }
-
-  function handleDelete() {
-    if (!note || !id) return
-    deleteNote(id)
-    navigate('/notes')
-  }
+  const {
+    id,
+    note,
+    saving,
+    deleteDialogOpen,
+    setDeleteDialogOpen,
+    navigate,
+    handleContentChange,
+    handleTitleChange,
+    handleDelete,
+  } = useNoteView()
 
   if (!note) {
     return (

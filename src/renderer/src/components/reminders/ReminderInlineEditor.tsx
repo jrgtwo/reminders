@@ -1,12 +1,7 @@
-import { useState } from 'react'
 import { RefreshCw, Trash2 } from 'lucide-react'
-import type { Reminder, RecurrenceRule } from '../../types/models'
+import type { Reminder } from '../../types/models'
 import RecurrenceEditor from './RecurrenceEditor'
-
-const DEFAULT_RECURRENCE: RecurrenceRule = {
-  frequency: 'weekly',
-  interval: 1,
-}
+import { useReminderInlineEditor } from './hooks/useReminderInlineEditor'
 
 interface Props {
   reminder: Reminder
@@ -22,43 +17,29 @@ const labelClass =
   'text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-white/30'
 
 export default function ReminderInlineEditor({ reminder, onSave, onCancel, onDelete }: Props) {
-  const [title, setTitle] = useState(reminder.title)
-  const [description, setDescription] = useState(reminder.description ?? '')
-  const [reminderDate, setReminderDate] = useState(reminder.date)
-  const [endDate, setEndDate] = useState(reminder.endDate ?? '')
-  const [startTime, setStartTime] = useState(reminder.startTime ?? '')
-  const [endTime, setEndTime] = useState(reminder.endTime ?? '')
-  const [recurring, setRecurring] = useState(!!reminder.recurrence)
-  const [recurrence, setRecurrence] = useState<RecurrenceRule>(
-    reminder.recurrence ?? DEFAULT_RECURRENCE,
-  )
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
-
-  const isMultiDay = !!endDate && endDate !== reminderDate
-
-  async function handleSave() {
-    if (!title.trim()) {
-      setError('Title is required')
-      return
-    }
-    setSaving(true)
-    try {
-      await onSave({
-        ...reminder,
-        title: title.trim(),
-        description: description.trim() || undefined,
-        date: reminderDate,
-        endDate: endDate || undefined,
-        startTime: startTime || undefined,
-        endTime: endTime || undefined,
-        recurrence: recurring ? recurrence : undefined,
-        updatedAt: new Date().toISOString(),
-      })
-    } finally {
-      setSaving(false)
-    }
-  }
+  const {
+    title,
+    setTitle,
+    description,
+    setDescription,
+    reminderDate,
+    endDate,
+    startTime,
+    endTime,
+    setEndTime,
+    isMultiDay,
+    recurring,
+    setRecurring,
+    recurrence,
+    setRecurrence,
+    saving,
+    error,
+    setError,
+    handleDateChange,
+    handleEndDateChange,
+    handleStartTimeChange,
+    handleSave,
+  } = useReminderInlineEditor({ reminder, onSave })
 
   return (
     <div className="px-4 py-4 rounded-b-xl bg-white dark:bg-white/[0.06] border border-t-0 border-slate-200/60 dark:border-white/[0.08] flex flex-col gap-3">
@@ -68,10 +49,7 @@ export default function ReminderInlineEditor({ reminder, onSave, onCancel, onDel
           autoFocus
           type="text"
           value={title}
-          onChange={(e) => {
-            setTitle(e.target.value)
-            setError('')
-          }}
+          onChange={(e) => { setTitle(e.target.value); setError('') }}
           placeholder="Title"
           className="w-full text-[14px] font-medium text-slate-800 dark:text-white/80 placeholder:text-slate-300 dark:placeholder:text-white/20 bg-transparent border-b border-slate-200 dark:border-white/[0.08] pb-1.5 focus:outline-none focus:border-[#6498c8] transition-colors"
           onKeyDown={(e) => {
@@ -98,10 +76,7 @@ export default function ReminderInlineEditor({ reminder, onSave, onCancel, onDel
           <input
             type="date"
             value={reminderDate}
-            onChange={(e) => {
-              setReminderDate(e.target.value)
-              if (endDate && endDate < e.target.value) setEndDate('')
-            }}
+            onChange={(e) => handleDateChange(e.target.value)}
             className={fieldClass}
           />
         </div>
@@ -113,13 +88,7 @@ export default function ReminderInlineEditor({ reminder, onSave, onCancel, onDel
             type="date"
             value={endDate}
             min={reminderDate}
-            onChange={(e) => {
-              setEndDate(e.target.value)
-              if (e.target.value && e.target.value !== reminderDate) {
-                setStartTime('')
-                setEndTime('')
-              }
-            }}
+            onChange={(e) => handleEndDateChange(e.target.value)}
             className={fieldClass}
           />
         </div>
@@ -135,10 +104,7 @@ export default function ReminderInlineEditor({ reminder, onSave, onCancel, onDel
             <input
               type="time"
               value={startTime}
-              onChange={(e) => {
-                setStartTime(e.target.value)
-                if (endTime && endTime < e.target.value) setEndTime('')
-              }}
+              onChange={(e) => handleStartTimeChange(e.target.value)}
               className={fieldClass}
             />
           </div>

@@ -1,17 +1,10 @@
-import { useMemo, useRef, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { Temporal } from '@js-temporal/polyfill'
-import { getWeekDays, isSameDay, parseDateStr } from '../../utils/dates'
-import { getOccurrencesInRange } from '../../utils/recurrence'
-import { useRemindersStore } from '../../store/reminders.store'
-import { useTodoListsStore } from '../../store/todo_lists.store'
-import { useUIStore } from '../../store/ui.store'
-import type { Reminder } from '../../types/models'
+import { isSameDay } from '../../utils/dates'
 import ReminderForm from '../reminders/ReminderForm'
 import ReminderDetail from '../reminders/ReminderDetail'
+import { useWeekView } from './hooks/useWeekView'
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
-const SLOT_H = 64
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 function formatHour(h: number, format: '12h' | '24h'): string {
@@ -22,109 +15,34 @@ function formatHour(h: number, format: '12h' | '24h'): string {
   return `${h - 12} PM`
 }
 
-function parseHour(time: string): number {
-  return Math.min(23, Math.max(0, parseInt(time.split(':')[0], 10)))
-}
-
 interface Props {
   displayDate: Temporal.PlainDate
 }
 
 export default function WeekView({ displayDate }: Props) {
-  const navigate = useNavigate()
-  const reminders = useRemindersStore((s) => s.reminders)
-  const lists = useTodoListsStore((s) => s.lists)
-  const selectedDate = useUIStore((s) => s.selectedDate)
-  const setSelectedDate = useUIStore((s) => s.setSelectedDate)
-  const timeFormat = useUIStore((s) => s.timeFormat)
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const saveReminder = useRemindersStore((s) => s.save)
-  const [newForm, setNewForm] = useState<{ date: string; time: string } | null>(null)
-  const [detail, setDetail] = useState<{ reminder: Reminder; dateStr: string } | null>(null)
-
-  const days = useMemo(() => getWeekDays(displayDate), [displayDate])
-
-  const listCountByDate = useMemo(() => {
-    const map: Record<string, number> = {}
-    for (const l of lists) {
-      if (!l.dueDate) continue
-      map[l.dueDate] = (map[l.dueDate] ?? 0) + 1
-    }
-    return map
-  }, [lists])
-
-  const { timedByDate, allDayByDate, multiDayReminders } = useMemo(() => {
-    const timed: Record<string, Reminder[]> = {}
-    const allDay: Record<string, Reminder[]> = {}
-    const multiDay: Reminder[] = []
-    const weekStart = days[0].toString()
-    const weekEnd = days[6].toString()
-
-    for (const reminder of reminders) {
-      if (reminder.endDate && reminder.endDate > reminder.date) {
-        if (reminder.date <= weekEnd && reminder.endDate >= weekStart) {
-          multiDay.push(reminder)
-        }
-        continue
-      }
-      for (const dateStr of getOccurrencesInRange(reminder, days[0], days[6])) {
-        if (reminder.startTime) {
-          if (!timed[dateStr]) timed[dateStr] = []
-          timed[dateStr].push(reminder)
-        } else {
-          if (!allDay[dateStr]) allDay[dateStr] = []
-          allDay[dateStr].push(reminder)
-        }
-      }
-    }
-    return { timedByDate: timed, allDayByDate: allDay, multiDayReminders: multiDay }
-  }, [reminders, days])
-
-  const selectedPlainDate = useMemo(() => parseDateStr(selectedDate), [selectedDate])
-
-  const now = Temporal.Now.plainDateTimeISO()
-  const todayStr = now.toPlainDate().toString()
-  const nowMinutes = now.hour * 60 + now.minute
-  const nowTop = (nowMinutes / 60) * SLOT_H
-
-  const hasSingleDayAllDay = days.some(
-    (d) => (allDayByDate[d.toString()] ?? []).length > 0 || (listCountByDate[d.toString()] ?? 0) > 0
-  )
-  const hasAllDay = multiDayReminders.length > 0 || hasSingleDayAllDay
-
-  function getColSpan(r: Reminder) {
-    const weekStart = days[0].toString()
-    const weekEnd = days[6].toString()
-    const clampedStart = r.date < weekStart ? weekStart : r.date
-    const clampedEnd = r.endDate! > weekEnd ? weekEnd : r.endDate!
-    const startCol = days.findIndex((d) => d.toString() === clampedStart)
-    const endCol = days.findIndex((d) => d.toString() === clampedEnd)
-    return { startCol: startCol === -1 ? 0 : startCol, endCol: endCol === -1 ? 6 : endCol }
-  }
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      const container = scrollRef.current
-
-      // Vertical: scroll to current time
-      container.scrollTop = Math.max(0, (now.hour - 2) * SLOT_H)
-
-      // Horizontal: center today's column if it exists in this week
-      const todayIndex = days.findIndex((d) => d.toString() === todayStr)
-      if (todayIndex !== -1) {
-        const labelWidth = 56 // 3.5rem in px
-        const colWidth = (container.scrollWidth - labelWidth) / 7
-        const colLeft = labelWidth + todayIndex * colWidth
-        container.scrollLeft = Math.max(0, colLeft - (container.clientWidth - colWidth) / 2)
-      }
-    }
-  }, [])
-
-  function handleDayClick(date: Temporal.PlainDate) {
-    const dateStr = date.toString()
-    setSelectedDate(dateStr)
-    navigate(`/day/${dateStr}`)
-  }
+  const {
+    scrollRef,
+    newForm,
+    setNewForm,
+    detail,
+    setDetail,
+    days,
+    listCountByDate,
+    timedByDate,
+    allDayByDate,
+    multiDayReminders,
+    selectedPlainDate,
+    todayStr,
+    nowTop,
+    hasAllDay,
+    hasSingleDayAllDay,
+    timeFormat,
+    navigate,
+    getColSpan,
+    handleDayClick,
+    handleSaveNewReminder,
+    SLOT_H,
+  } = useWeekView({ displayDate })
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
@@ -333,7 +251,7 @@ export default function WeekView({ displayDate }: Props) {
           date={newForm.date}
           reminder={null}
           defaultTime={newForm.time}
-          onSave={async (r) => { await saveReminder(r); setNewForm(null) }}
+          onSave={handleSaveNewReminder}
           onClose={() => setNewForm(null)}
         />
       )}
