@@ -4,110 +4,96 @@
 > Android Studio runs on macOS, Windows, and Linux (including WSL2 with a GUI, or natively on the Windows side).
 
 The app uses [Capacitor 8](https://capacitorjs.com/) to wrap the React web build into a native Android app.
-The platform abstraction layer (`src/renderer/src/platform/`) already detects `Capacitor.isNativePlatform()`
-and routes to `CapacitorAdapter` — but that adapter is currently a stub. Steps 3–5 below complete the integration
-and are **shared with iOS** — implement them once and both platforms benefit.
+The platform abstraction layer (`src/renderer/src/platform/`) detects `Capacitor.isNativePlatform()`
+and routes to `CapacitorAdapter`.
 
 ---
 
-## Step 1 — Install Capacitor Android packages
+## ✅ Step 1 — Install Capacitor Android packages
 
 ```bash
 npm install @capacitor/android @capacitor/app @capacitor/status-bar @capacitor/keyboard @capacitor/haptics @capacitor/local-notifications
 npm install @capacitor-community/sqlite
 ```
 
-> If you've already installed these for iOS (`@capacitor/app`, `@capacitor/local-notifications`, `@capacitor-community/sqlite`), skip the duplicates.
+**Done.** All packages installed at Capacitor 8.
 
-## Step 2 — Add the Android platform
+## ✅ Step 2 — Add the Android platform
 
 ```bash
 npx cap add android
 ```
 
-This generates the `android/` Gradle project folder in the repo root (an Android Studio project).
+**Done.** The `android/` Gradle project exists in the repo root.
 
-## Step 3 — Implement CapacitorAdapter
+## ✅ Step 3 — Implement CapacitorAdapter
 
-> **Shared with iOS** — if this is already done, skip to Step 4.
+**Done.** `src/renderer/src/platform/capacitor.ts` is fully implemented using `@capacitor-community/sqlite`.
+Full schema (all 8 tables with soft deletes and `last_synced_at`) is applied on first open via `CREATE IF NOT EXISTS`.
+`src/renderer/src/platform/index.ts` calls `cap.init()` and routes `isNativePlatform()` correctly.
 
-**File:** `src/renderer/src/platform/capacitor.ts`
+## ✅ Step 4 — Configure auth deep link
 
-Replace the stub with a full implementation using `@capacitor-community/sqlite`.
-The pattern mirrors `WebAdapter` (`src/renderer/src/platform/web.ts`) but uses SQLite instead of IndexedDB.
-Schema and migrations mirror `src/main/storage/db.ts`.
+**Done.**
 
-Key notes:
-- Add an `init()` method that opens the SQLite connection (same pattern as `WebAdapter.init()`)
-- Reproduce the same 8-table schema: `reminders`, `notes`, `note_folders`, `todos`, `todo_folders`, `todo_lists`, `todo_list_items`, `sync_meta` — with soft deletes (`deleted_at`) and `last_synced_at`
-- Serialize `recurrence` and `completedDates` as JSON strings (same as the Electron adapter)
-- Call `await capacitorAdapter.init()` from `initStorage()` in `src/renderer/src/platform/index.ts`, right after constructing the adapter (same place `WebAdapter.init()` is called)
+- `android/app/src/main/AndroidManifest.xml`: `reminders://callback` intent filter added inside `<activity>`
+- `src/renderer/src/lib/mobileAuth.ts`: created — listens for `appUrlOpen`, exchanges PKCE code or sets session tokens
+- `src/renderer/src/store/auth.store.ts`: calls `setupMobileAuth()` on native at init; `sendMagicLink` uses `reminders://callback` redirect on native (same as Electron)
 
-## Step 4 — Configure auth deep link
+## ✅ Step 5 — Local notifications
 
-Supabase magic link auth uses the `reminders://` custom URL scheme. On Android this is configured via an **intent filter** in the manifest rather than `Info.plist`.
+**Done.**
 
-Add to `android/app/src/main/AndroidManifest.xml` inside the `<activity>` tag:
+- `src/renderer/src/lib/mobileNotifications.ts`: created — `requestNotificationPermission`, `scheduleReminderNotification`, `cancelReminderNotification`
+- `src/renderer/src/App.tsx`: requests permission at startup on native platforms
+- `src/renderer/src/store/reminders.store.ts`: schedules notification on `save`, cancels on `remove`
 
-```xml
-<intent-filter>
-    <action android:name="android.intent.action.VIEW" />
-    <category android:name="android.intent.category.DEFAULT" />
-    <category android:name="android.intent.category.BROWSABLE" />
-    <data android:scheme="reminders" android:host="callback" />
-</intent-filter>
-```
+Notification permission confirmed granted in emulator (`{"display":"granted"}`).
 
-Then create `src/renderer/src/lib/mobileAuth.ts` to wire up `@capacitor/app`'s `appUrlOpen` event
-and pass the callback URL to Supabase (mirrors the deep-link handler in `src/main/auth.ts`).
+## ✅ Step 6 — Declare Android permissions
 
-> If `mobileAuth.ts` was already created for iOS, Android will use the same file — the `appUrlOpen` API is cross-platform.
-
-## Step 5 — Local notifications
-
-> **Shared with iOS** — if `src/renderer/src/lib/mobileNotifications.ts` is already created, skip to Step 6.
-
-Create `src/renderer/src/lib/mobileNotifications.ts` using `@capacitor/local-notifications`
-to schedule reminder alerts when a reminder with a future `date` + `startTime` is saved.
-Mirrors the logic in `src/main/notifications.ts` (the Electron version).
-
-**Android-specific:** The plugin automatically creates a notification channel on Android 8+ (API 26+).
-You can customise channel name, sound, and importance level via the plugin's `createChannel` method if needed.
-
-## Step 6 — Declare Android permissions
-
-Add the following to `android/app/src/main/AndroidManifest.xml` before the `<application>` tag:
+**Done.** `android/app/src/main/AndroidManifest.xml` has all required permissions:
 
 ```xml
-<!-- Required for Supabase sync -->
 <uses-permission android:name="android.permission.INTERNET" />
-
-<!-- Required for scheduling exact-time reminder notifications -->
 <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-
-<!-- Required on Android 13+ to show notifications -->
 <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-
-<!-- Optional: re-schedule notifications after device reboot -->
 <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 ```
 
-At runtime, request `POST_NOTIFICATIONS` permission on Android 13+ before scheduling the first notification.
-`@capacitor/local-notifications` exposes `requestPermissions()` for this.
-
-## Step 7 — Build and sync
+## ✅ Step 7 — Build and sync
 
 ```bash
-npm run cap:sync   # builds dist/renderer, then copies assets into android/
+npm run build:web   # builds dist/renderer
+npm run cap:sync    # copies assets into android/
 ```
 
-## Step 8 — Open Android Studio and run
+**Done.** Both complete without errors.
+
+## ✅ Step 8 — Open Android Studio and run
 
 ```bash
 npx cap open android
 ```
 
-Select an emulator or physical device and click **Run**. Watch Logcat for any JS bridge errors.
+**Done.** App launches in Android Emulator. SQLite reads/writes confirmed working in Logcat — reminders, notes, todo lists all persist correctly.
+
+> **Note:** An `IllegalStateException` appears in Android Studio's Logcat when opening certain IDE settings dialogs. This is a known Android Studio bug unrelated to the app — ignore it.
+
+> **Note:** Vercel Analytics (`/_vercel/insights/script.js`) is skipped on native builds — the `<Analytics />` component is conditionally excluded when `isElectronOrCapacitor` is true.
+
+---
+
+## Verification checklist
+
+- [x] `npm run build:web` completes without errors
+- [x] `npx cap sync` copies assets without errors
+- [x] App launches in Android Emulator without JS errors in Logcat
+- [x] Creating data (reminders, notes, lists) persists across app navigations and restarts
+- [x] Notification permission granted at startup
+- [ ] Supabase magic link auth completes and `reminders://callback` deep link returns user to app logged in
+- [ ] Reminder notification fires at the scheduled time
+- [ ] Signed `.aab` installs cleanly via internal testing track
 
 ---
 
@@ -187,22 +173,12 @@ Add the URL to the Play Console listing and optionally to `AndroidManifest.xml`:
 
 | File | Purpose |
 |------|---------|
-| `src/renderer/src/platform/capacitor.ts` | Adapter stub to implement (shared with iOS) |
-| `src/renderer/src/platform/index.ts` | Platform detection — add `init()` call for Capacitor |
-| `src/renderer/src/platform/web.ts` | Reference implementation (IndexedDB) |
-| `src/main/storage/db.ts` | SQLite schema / migrations to mirror |
+| `src/renderer/src/platform/capacitor.ts` | Full SQLite adapter (shared with iOS) |
+| `src/renderer/src/platform/index.ts` | Platform detection — routes to CapacitorAdapter on native |
+| `src/renderer/src/lib/mobileAuth.ts` | Deep link auth handler (shared with iOS) |
+| `src/renderer/src/lib/mobileNotifications.ts` | Local notification scheduling (shared with iOS) |
+| `src/renderer/src/store/auth.store.ts` | Wires `setupMobileAuth()` and `reminders://callback` redirect |
+| `src/renderer/src/store/reminders.store.ts` | Schedules/cancels notifications on save/delete |
 | `capacitor.config.ts` | App ID (`com.reminders.app`) and web dir |
-| `android/app/src/main/AndroidManifest.xml` | Permissions + intent filter for deep links (created in Step 2) |
+| `android/app/src/main/AndroidManifest.xml` | Permissions + intent filter for deep links |
 | `android/app/build.gradle` | SDK versions, version code, signing config |
-
----
-
-## Verification checklist
-
-- [ ] `npm run build:web` completes without errors
-- [ ] `npx cap sync` copies assets without errors
-- [ ] App launches in Android Emulator without JS errors in Logcat
-- [ ] Creating a reminder persists across app restarts
-- [ ] Supabase magic link auth completes and redirects back into the app
-- [ ] Reminder notification fires at the scheduled time
-- [ ] Signed `.aab` installs cleanly via internal testing track

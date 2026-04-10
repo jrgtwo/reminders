@@ -16,7 +16,9 @@ export async function initStorage(): Promise<void> {
       const { Capacitor } = await import('@capacitor/core')
       if (Capacitor.isNativePlatform()) {
         const { CapacitorAdapter } = await import('./capacitor')
-        innerAdapter = new CapacitorAdapter()
+        const cap = new CapacitorAdapter()
+        await cap.init()
+        innerAdapter = cap
       }
     } catch {
       // @capacitor/core not available — running in plain web

@@ -38,6 +38,15 @@ import { create } from 'zustand'
          has_recurrence: !!saved.recurrence,
          recurrence_frequency: saved.recurrence?.frequency ?? null,
        })
+       try {
+         const { Capacitor } = await import('@capacitor/core')
+         if (Capacitor.isNativePlatform()) {
+           const { scheduleReminderNotification } = await import('../lib/mobileNotifications')
+           scheduleReminderNotification(saved).catch(console.error)
+         }
+       } catch {
+         // not a Capacitor build
+       }
      },
 
      remove: async (id) => {
@@ -45,6 +54,15 @@ import { create } from 'zustand'
        await getStorage().deleteReminder(id)
        set((s) => { s.reminders = s.reminders.filter((r) => r.id !== id) })
        capture('reminder_deleted')
+       try {
+         const { Capacitor } = await import('@capacitor/core')
+         if (Capacitor.isNativePlatform()) {
+           const { cancelReminderNotification } = await import('../lib/mobileNotifications')
+           cancelReminderNotification(id).catch(console.error)
+         }
+       } catch {
+         // not a Capacitor build
+       }
        // Propagate delete to Supabase so it doesn't come back on the next pull.
        if (!(window as any).electronAPI) {
          const { useAuthStore } = await import('./auth.store')

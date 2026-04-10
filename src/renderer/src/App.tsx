@@ -148,7 +148,18 @@ export default function App() {
 
   useEffect(() => {
     initStorage()
-      .then(() => setReady(true))
+      .then(async () => {
+        try {
+          const { Capacitor } = await import('@capacitor/core')
+          if (Capacitor.isNativePlatform()) {
+            const { requestNotificationPermission } = await import('./lib/mobileNotifications')
+            await requestNotificationPermission()
+          }
+        } catch {
+          // not a Capacitor build
+        }
+        setReady(true)
+      })
       .catch(() => setReady(true))
     initAuth()
       .then(() => setAuthReady(true))
@@ -184,7 +195,7 @@ export default function App() {
     <>
       <RouterProvider router={router} />
       <FirstLoginDialog />
-      <Analytics />
+      {!isElectronOrCapacitor && <Analytics />}
     </>
   )
 }

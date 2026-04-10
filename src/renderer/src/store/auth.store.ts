@@ -72,12 +72,31 @@ export const useAuthStore = create<AuthState>((set) => ({
       })
     }
 
+    // Capacitor (iOS + Android): receive deep-link OAuth callback via appUrlOpen
+    import('@capacitor/core')
+      .then(({ Capacitor }) => {
+        if (Capacitor.isNativePlatform()) {
+          import('../lib/mobileAuth').then(({ setupMobileAuth }) => setupMobileAuth())
+        }
+      })
+      .catch(() => {
+        // @capacitor/core not available — running in plain web or Electron
+      })
+
     return sessionReady
   },
 
   sendMagicLink: async (email, captchaToken) => {
     const isElectron = !!(window as any).electronAPI
-    const redirectTo = isElectron ? 'reminders://auth/callback' : window.location.origin
+    let isNative = false
+    try {
+      const { Capacitor } = await import('@capacitor/core')
+      isNative = Capacitor.isNativePlatform()
+    } catch {
+      // not available
+    }
+    const redirectTo =
+      isElectron || isNative ? 'reminders://callback' : window.location.origin
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: redirectTo, captchaToken },
