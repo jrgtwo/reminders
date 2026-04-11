@@ -3,12 +3,8 @@ import { Mail, Check, AlertCircle } from 'lucide-react'
 import Button from './ui/Button'
 import { useSignIn } from './hooks/useSignIn'
 
-const isNativePlatform =
-  typeof window !== 'undefined' &&
-  !!(window as any).Capacitor?.isNativePlatform?.()
-
 export default function SignInPage() {
-  const { email, setEmail, status, setStatus, captchaToken, setCaptchaToken, turnstileRef, handleSubmit } =
+  const { email, setEmail, status, setStatus, errorMessage, captchaToken, setCaptchaToken, turnstileRef, handleSubmit } =
     useSignIn()
 
   return (
@@ -45,27 +41,30 @@ export default function SignInPage() {
               required
               className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-[var(--border)] bg-white dark:bg-[var(--bg-card)] text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            {!isNativePlatform && (
-              <Turnstile
-                ref={turnstileRef}
-                siteKey={import.meta.env.VITE_CAPTCHA_SITE_KEY}
-                onSuccess={setCaptchaToken}
-                onExpire={() => setCaptchaToken(null)}
-                onError={() => setCaptchaToken(null)}
-              />
-            )}
+            <Turnstile
+              ref={turnstileRef}
+              siteKey={import.meta.env.VITE_CAPTCHA_SITE_KEY}
+              onSuccess={setCaptchaToken}
+              onExpire={() => setCaptchaToken(null)}
+              onError={() => setCaptchaToken(null)}
+            />
             <Button
               type="submit"
               className="w-full justify-center"
-              disabled={status === 'sending' || (!isNativePlatform && !captchaToken)}
+              disabled={status === 'sending' || !captchaToken}
             >
               <Mail size={20} />
               {status === 'sending' ? 'Sending…' : 'Send sign-in link'}
             </Button>
             {status === 'error' && (
-              <p className="flex items-center gap-1.5 text-xs text-red-600 dark:text-[#e8a045]">
-                <AlertCircle size={20} />
-                Failed to send — check your email and try again.
+              <p className="flex items-start gap-1.5 text-xs text-red-600 dark:text-[#e8a045]">
+                <AlertCircle size={20} className="shrink-0 mt-0.5" />
+                <span>
+                  Failed to send — check your email and try again.
+                  {errorMessage && (
+                    <span className="block opacity-70 mt-0.5">{errorMessage}</span>
+                  )}
+                </span>
               </p>
             )}
           </form>
