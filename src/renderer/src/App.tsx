@@ -84,7 +84,7 @@ export default function App() {
 
   if (!ready || !authReady) return null
 
-  if (!isElectronOrCapacitor && !isLoggedIn) return <SignInPage />
+  if (!isLoggedIn) return <SignInPage />
 
   return (
     <>

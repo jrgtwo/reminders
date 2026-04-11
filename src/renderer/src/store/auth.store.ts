@@ -9,7 +9,7 @@ interface AuthState {
   session: Session | null
   isLoggedIn: boolean
   init: () => Promise<void>
-  sendMagicLink: (email: string, captchaToken: string) => Promise<void>
+  sendMagicLink: (email: string, captchaToken?: string) => Promise<void>
   signOut: () => Promise<void>
 }
 
@@ -96,7 +96,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       // not available
     }
     const redirectTo =
-      isElectron || isNative ? 'reminders://callback' : window.location.origin
+      isElectron || isNative ? 'reminders://auth/callback' : window.location.origin
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: redirectTo, captchaToken },

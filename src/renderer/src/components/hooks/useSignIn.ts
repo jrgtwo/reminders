@@ -11,10 +11,10 @@ export function useSignIn() {
 
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
-    if (!email.trim() || !captchaToken) return
+    if (!email.trim()) return
     setStatus('sending')
     try {
-      await sendMagicLink(email.trim(), captchaToken)
+      await sendMagicLink(email.trim(), captchaToken ?? undefined)
       setStatus('sent')
     } catch {
       setStatus('error')
