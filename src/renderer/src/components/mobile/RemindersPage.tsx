@@ -1,6 +1,16 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { ChevronDown, ChevronUp, Plus, Check, Clock, RefreshCw, SkipForward, Trash2 } from 'lucide-react'
+import {
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Check,
+  Clock,
+  RefreshCw,
+  SkipForward,
+  Trash2,
+  MoreHorizontal
+} from 'lucide-react'
 import { today } from '../../utils/dates'
 import type { ReactNode } from 'react'
 import {
@@ -111,6 +121,74 @@ export default function RemindersPage() {
       ? 'later'
       : null
 
+  function RowMenu({
+    item,
+    variant,
+    isCompleted,
+    onSnooze,
+    onDelete
+  }: {
+    item: ScheduleItem
+    variant: 'overdue' | 'today' | 'upcoming'
+    isCompleted: boolean
+    onSnooze: (item: ScheduleItem) => void
+    onDelete: (id: string, e: React.MouseEvent) => void
+  }) {
+    const [open, setOpen] = useState(false)
+    const ref = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+      if (!open) return
+      function handleClick(e: MouseEvent) {
+        if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+      }
+      document.addEventListener('mousedown', handleClick)
+      return () => document.removeEventListener('mousedown', handleClick)
+    }, [open])
+
+    return (
+      <div ref={ref} className="relative flex-shrink-0">
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            setOpen((o) => !o)
+          }}
+          className="mt-0.5 w-6 h-6 flex items-center justify-center rounded text-slate-300 dark:text-white/20 hover:text-slate-500 dark:hover:text-white/50 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
+        >
+          <MoreHorizontal size={16} />
+        </button>
+        {open && (
+          <div className="absolute right-0 top-7 z-50 min-w-[160px] py-1 bg-white dark:bg-[#232323] rounded-lg shadow-lg dark:shadow-[0_4px_24px_rgba(0,0,0,0.5)] border border-slate-200 dark:border-white/10">
+            {variant === 'overdue' && !isCompleted && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onSnooze(item)
+                  setOpen(false)
+                }}
+                className="flex items-center gap-2 w-full px-3 py-2 text-[13px] text-slate-700 dark:text-white/75 hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-colors"
+              >
+                <SkipForward size={14} className="text-[#e8a045]" />
+                {item.isRecurring ? 'Skip occurrence' : 'Snooze to tomorrow'}
+              </button>
+            )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete(item.id, e)
+                setOpen(false)
+              }}
+              className="flex items-center gap-2 w-full px-3 py-2 text-[13px] text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+            >
+              <Trash2 size={14} />
+              Delete
+            </button>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   function ReminderRow({
     item,
     variant
@@ -189,31 +267,14 @@ export default function RemindersPage() {
             )}
           </button>
 
-          {/* Snooze — overdue only, appears on hover */}
-          {variant === 'overdue' && !isCompleted && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                handleSnooze(item)
-              }}
-              title={item.isRecurring ? 'Skip this occurrence' : 'Snooze to tomorrow'}
-              className="opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 w-6 h-6 flex-shrink-0 flex items-center justify-center rounded text-slate-300 dark:text-white/20 hover:text-[#e8a045] hover:bg-[#e8a045]/10"
-            >
-              <SkipForward size={20} />
-            </button>
-          )}
-
-          {/* Delete */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              handleDeleteReminder(item.id, e)
-            }}
-            title="Delete reminder"
-            className="mt-0.5 w-6 h-6 flex-shrink-0 flex items-center justify-center rounded text-slate-300 dark:text-white/20 hover:text-red-500 hover:bg-red-500/10"
-          >
-            <Trash2 size={20} />
-          </button>
+          {/* More menu */}
+          <RowMenu
+            item={item}
+            variant={variant}
+            isCompleted={isCompleted}
+            onSnooze={handleSnooze}
+            onDelete={handleDeleteReminder}
+          />
         </div>
       </li>
     )

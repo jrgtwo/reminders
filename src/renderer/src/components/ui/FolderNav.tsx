@@ -200,11 +200,16 @@ interface FolderTreeProps<F extends { id: string; name: string }, I> {
   expandedFolders: Set<string>
   onToggleFolder: (id: string) => void
   onNewItemInFolder: (folderId: string) => void
-  // Optional drag-drop
+  // Optional item drag-drop
   draggingItemId?: string | null
   dropTarget?: string | 'standalone' | null
   setDropTarget?: (t: string | null) => void
   onDrop?: (folderId: string) => void
+  // Optional folder drag-drop (move folders into other folders)
+  draggingFolderId?: string | null
+  onFolderDragStart?: (id: string) => void
+  onFolderDragEnd?: () => void
+  onFolderDrop?: (targetFolderId: string | undefined) => void
   // Optional folder actions (omit to hide those buttons)
   onEditFolder?: (folder: F) => void
   onDeleteFolder?: (id: string, e: React.MouseEvent) => void
@@ -224,13 +229,30 @@ export function FolderTree<F extends { id: string; name: string }, I>({
   dropTarget,
   setDropTarget,
   onDrop,
+  draggingFolderId,
+  onFolderDragStart,
+  onFolderDragEnd,
+  onFolderDrop,
   onEditFolder,
   onDeleteFolder,
   onNewSubfolder
 }: FolderTreeProps<F, I>) {
+  function isDescendant(parentId: string, candidateId: string): boolean {
+    const stack = [parentId]
+    while (stack.length) {
+      const id = stack.pop()!
+      for (const c of folderChildrenMap.get(id) ?? []) {
+        if (c.id === candidateId) return true
+        stack.push(c.id)
+      }
+    }
+    return false
+  }
+
   function renderFolder(folder: F, depth: number): ReactNode {
     const items = getItemsInFolder(folder.id)
     const collapsed = !expandedFolders.has(folder.id)
+    const isDragging = draggingItemId || draggingFolderId
     const isDropTarget = dropTarget === folder.id
     const children = (folderChildrenMap.get(folder.id) ?? []).sort(
       (a, b) => getOrder(a) - getOrder(b)
@@ -238,20 +260,39 @@ export function FolderTree<F extends { id: string; name: string }, I>({
     const pl = 16 + depth * 12
 
     return (
-      <div
-        key={folder.id}
-        onDragOver={(e) => {
-          if (draggingItemId) { e.preventDefault(); setDropTarget?.(folder.id) }
-        }}
-        onDragLeave={(e) => {
-          if (!e.currentTarget.contains(e.relatedTarget as Node)) setDropTarget?.(null)
-        }}
-        onDrop={(e) => { e.preventDefault(); onDrop?.(folder.id) }}
-        className={`rounded mx-1 transition-colors ${isDropTarget ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.08] ring-1 ring-[#6498c8]/30' : ''}`}
-      >
+      <div key={folder.id} className="mx-1">
         <div
+          draggable={!!onFolderDragStart}
+          onDragStart={(e) => {
+            e.stopPropagation()
+            e.dataTransfer.setData('folderId', folder.id)
+            onFolderDragStart?.(folder.id)
+          }}
+          onDragEnd={() => onFolderDragEnd?.()}
+          onDragOver={(e) => {
+            if (!isDragging) return
+            if (draggingFolderId === folder.id) return
+            if (draggingFolderId && isDescendant(draggingFolderId, folder.id)) return
+            e.preventDefault()
+            e.stopPropagation()
+            setDropTarget?.(folder.id)
+          }}
+          onDragLeave={(e) => {
+            if (!e.currentTarget.contains(e.relatedTarget as Node)) setDropTarget?.(null)
+          }}
+          onDrop={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            if (draggingFolderId) {
+              if (draggingFolderId === folder.id) return
+              if (isDescendant(draggingFolderId, folder.id)) return
+              onFolderDrop?.(folder.id)
+            } else {
+              onDrop?.(folder.id)
+            }
+          }}
           onClick={() => onToggleFolder(folder.id)}
-          className="group relative flex items-center gap-1.5 w-full py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors cursor-pointer rounded"
+          className={`group relative flex items-center gap-1.5 w-full py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors cursor-pointer rounded ${onFolderDragStart ? 'active:cursor-grabbing' : ''} ${isDropTarget ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.08] ring-1 ring-[#6498c8]/30' : ''}`}
           style={{ paddingLeft: `${pl}px`, paddingRight: '8px' }}
         >
           {collapsed ? (

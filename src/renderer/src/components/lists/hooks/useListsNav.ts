@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useTodoFoldersStore } from '../../../store/todo_folders.store'
 import { useTodoListsStore } from '../../../store/todo_lists.store'
-import { buildFolderTree } from '../../../lib/folderTree'
+import { buildFolderTree, getDescendantIds } from '../../../lib/folderTree'
 import { useConfirmDelete } from '../../../hooks/useConfirmDelete'
 import type { TodoFolder } from '../../../types/models'
 
@@ -22,6 +22,9 @@ export function useListsNav() {
   const [folderFormOpen, setFolderFormOpen] = useState(false)
   const [editingFolder, setEditingFolder] = useState<TodoFolder | null>(null)
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
+  const [draggingListId, setDraggingListId] = useState<string | null>(null)
+  const [listDropTarget, setListDropTarget] = useState<string | 'standalone' | null>(null)
+  const [draggingFolderId, setDraggingFolderId] = useState<string | null>(null)
 
   const activeListId = location.pathname.startsWith('/lists/')
     ? location.pathname.slice('/lists/'.length)
@@ -82,6 +85,31 @@ export function useListsNav() {
     folderDelete.requestDelete(id, rect, msg)
   }
 
+  const saveList = useTodoListsStore((s) => s.save)
+
+  function handleListDrop(targetFolderId: string | undefined) {
+    if (!draggingListId) return
+    const list = lists.find((l) => l.id === draggingListId)
+    if (!list || list.folderId === targetFolderId) return
+    saveList({ ...list, folderId: targetFolderId, updatedAt: new Date().toISOString() })
+    setDraggingListId(null)
+    setListDropTarget(null)
+  }
+
+  function handleFolderDrop(targetFolderId: string | undefined) {
+    if (!draggingFolderId) return
+    if (draggingFolderId === targetFolderId) return
+    const folder = folders.find((f) => f.id === draggingFolderId)
+    if (!folder || folder.parentId === targetFolderId) return
+    if (targetFolderId) {
+      const descendantIds = getDescendantIds(draggingFolderId, folderChildrenMap)
+      if (descendantIds.has(targetFolderId)) return
+    }
+    saveFolder({ ...folder, parentId: targetFolderId, updatedAt: new Date().toISOString() })
+    setDraggingFolderId(null)
+    setListDropTarget(null)
+  }
+
   function openFolderForm(folder: TodoFolder | null = null) {
     setEditingFolder(folder)
     setFolderFormOpen(true)
@@ -116,6 +144,14 @@ export function useListsNav() {
     openFolderForm,
     closeFolderForm,
     handleSaveFolder,
+    draggingListId,
+    setDraggingListId,
+    listDropTarget,
+    setListDropTarget,
+    draggingFolderId,
+    setDraggingFolderId,
+    handleListDrop,
+    handleFolderDrop,
     listDelete,
     folderDelete,
   }

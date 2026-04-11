@@ -32,6 +32,10 @@ export function CollapsibleSection({
   indent = false,
   children,
   headerExtra,
+  onHeaderDragOver,
+  onHeaderDragLeave,
+  onHeaderDrop,
+  isHeaderDropTarget,
 }: {
   label: string
   count: number
@@ -42,6 +46,10 @@ export function CollapsibleSection({
   indent?: boolean
   children: ReactNode
   headerExtra?: ReactNode
+  onHeaderDragOver?: (e: React.DragEvent) => void
+  onHeaderDragLeave?: (e: React.DragEvent) => void
+  onHeaderDrop?: (e: React.DragEvent) => void
+  isHeaderDropTarget?: boolean
 }) {
   const [localOpen, setLocalOpen] = useState(defaultOpen)
   const isControlled = controlledOpen !== undefined
@@ -57,7 +65,10 @@ export function CollapsibleSection({
   return (
     <div>
       <div
-        className={`flex items-center gap-1 ${indent ? 'px-3 py-1.5' : 'px-4 py-2'}`}
+        onDragOver={onHeaderDragOver}
+        onDragLeave={onHeaderDragLeave}
+        onDrop={onHeaderDrop}
+        className={`flex items-center gap-1 transition-colors ${indent ? 'px-3 py-1.5' : 'px-4 py-2'} ${isHeaderDropTarget ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.08] ring-1 ring-[#6498c8]/30 rounded' : ''}`}
       >
         <button
           onClick={handleToggle}

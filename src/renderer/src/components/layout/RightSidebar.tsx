@@ -39,6 +39,9 @@ export default function RightSidebar() {
     setDraggingListId,
     listDropTarget,
     setListDropTarget,
+    draggingFolderId,
+    setDraggingFolderId,
+    handleFolderDrop,
     overdueReminders,
     upcomingReminders,
     overdueYesterday,
@@ -343,6 +346,21 @@ export default function RightSidebar() {
                     count={adHocLists.length}
                     accent="slate"
                     defaultOpen={false}
+                    onHeaderDragOver={(e) => {
+                      if (draggingListId || draggingFolderId) {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setListDropTarget('standalone')
+                      }
+                    }}
+                    onHeaderDragLeave={() => setListDropTarget(null)}
+                    onHeaderDrop={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      if (draggingFolderId) handleFolderDrop(undefined)
+                      else handleListDrop(undefined)
+                    }}
+                    isHeaderDropTarget={listDropTarget === 'standalone' && !!(draggingListId || draggingFolderId)}
                     headerExtra={
                       <div className="flex items-center gap-0.5">
                         <button
@@ -368,14 +386,23 @@ export default function RightSidebar() {
                       </p>
                     )}
                     <div
-                      onDragOver={(e) => { if (draggingListId) { e.preventDefault(); setListDropTarget('standalone') } }}
+                      onDragOver={(e) => {
+                        if (draggingListId || draggingFolderId) { e.preventDefault(); setListDropTarget('standalone') }
+                      }}
                       onDragLeave={() => setListDropTarget(null)}
-                      onDrop={(e) => { e.preventDefault(); handleListDrop(undefined) }}
+                      onDrop={(e) => {
+                        e.preventDefault()
+                        if (draggingFolderId) handleFolderDrop(undefined)
+                        else handleListDrop(undefined)
+                      }}
                       className={`transition-colors rounded mx-1 ${listDropTarget === 'standalone' ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.08] ring-1 ring-[#6498c8]/30' : ''}`}
                     >
                       {standaloneLists.map((l) => renderList(l, false))}
-                      {listDropTarget === 'standalone' && standaloneLists.length === 0 && (
+                      {listDropTarget === 'standalone' && standaloneLists.length === 0 && draggingListId && (
                         <p className="text-[11px] text-[#6498c8]/60 px-4 py-2">Drop here to remove from folder</p>
+                      )}
+                      {listDropTarget === 'standalone' && draggingFolderId && (
+                        <p className="text-[11px] text-[#6498c8]/60 px-4 py-2">Drop here to move to top level</p>
                       )}
                     </div>
                     <FolderTree
@@ -388,6 +415,10 @@ export default function RightSidebar() {
                       dropTarget={listDropTarget}
                       setDropTarget={setListDropTarget}
                       onDrop={handleListDrop}
+                      draggingFolderId={draggingFolderId}
+                      onFolderDragStart={setDraggingFolderId}
+                      onFolderDragEnd={() => { setDraggingFolderId(null); setListDropTarget(null) }}
+                      onFolderDrop={handleFolderDrop}
                       expandedFolders={expandedFolders}
                       onToggleFolder={toggleFolder}
                       onEditFolder={(folder) => openFolderForm(folder)}

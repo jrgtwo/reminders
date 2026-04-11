@@ -87,6 +87,7 @@ export function useRightSidebar() {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
   const [draggingListId, setDraggingListId] = useState<string | null>(null)
   const [listDropTarget, setListDropTarget] = useState<string | 'standalone' | null>(null)
+  const [draggingFolderId, setDraggingFolderId] = useState<string | null>(null)
 
   const reminders = useRemindersStore((s) => s.reminders)
   const t = useMemo(() => today(), [])
@@ -211,6 +212,20 @@ export function useRightSidebar() {
     setListDropTarget(null)
   }
 
+  function handleFolderDrop(targetFolderId: string | undefined) {
+    if (!draggingFolderId) return
+    if (draggingFolderId === targetFolderId) return
+    const folder = folders.find((f) => f.id === draggingFolderId)
+    if (!folder || folder.parentId === targetFolderId) return
+    if (targetFolderId) {
+      const descendantIds = getDescendantIds(draggingFolderId, folderChildrenMap)
+      if (descendantIds.has(targetFolderId)) return
+    }
+    saveFolder({ ...folder, parentId: targetFolderId, updatedAt: new Date().toISOString() })
+    setDraggingFolderId(null)
+    setListDropTarget(null)
+  }
+
   function handleDeleteList(id: string, e: React.MouseEvent) {
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
     listDelete.requestDelete(id, rect, 'Delete this list? This cannot be undone.')
@@ -266,6 +281,9 @@ export function useRightSidebar() {
     setDraggingListId,
     listDropTarget,
     setListDropTarget,
+    draggingFolderId,
+    setDraggingFolderId,
+    handleFolderDrop,
     overdueReminders,
     upcomingReminders,
     overdueYesterday,

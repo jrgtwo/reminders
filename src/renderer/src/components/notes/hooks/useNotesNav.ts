@@ -22,6 +22,7 @@ export function useNotesNav() {
 
   const [draggingNoteId, setDraggingNoteId] = useState<string | null>(null)
   const [noteDropTarget, setNoteDropTarget] = useState<string | 'standalone' | null>(null)
+  const [draggingNoteFolderId, setDraggingNoteFolderId] = useState<string | null>(null)
   const [noteFolderFormOpen, setNoteFolderFormOpen] = useState(false)
   const [editingNoteFolder, setEditingNoteFolder] = useState<NoteFolder | null>(null)
   const [pendingParentNoteFolderId, setPendingParentNoteFolderId] = useState<string | undefined>()
@@ -136,6 +137,20 @@ export function useNotesNav() {
     setNoteDropTarget(null)
   }
 
+  function handleNoteFolderDrop(targetFolderId: string | undefined) {
+    if (!draggingNoteFolderId) return
+    if (draggingNoteFolderId === targetFolderId) return
+    const folder = noteFolders.find((f) => f.id === draggingNoteFolderId)
+    if (!folder || folder.parentId === targetFolderId) return
+    if (targetFolderId) {
+      const descendantIds = getDescendantIds(draggingNoteFolderId, noteFolderChildrenMap)
+      if (descendantIds.has(targetFolderId)) return
+    }
+    saveNoteFolder({ ...folder, parentId: targetFolderId, updatedAt: new Date().toISOString() })
+    setDraggingNoteFolderId(null)
+    setNoteDropTarget(null)
+  }
+
   function openNoteFolderForm(folder: NoteFolder | null = null, parentId?: string) {
     setEditingNoteFolder(folder)
     setPendingParentNoteFolderId(parentId)
@@ -166,6 +181,9 @@ export function useNotesNav() {
     setDraggingNoteId,
     noteDropTarget,
     setNoteDropTarget,
+    draggingNoteFolderId,
+    setDraggingNoteFolderId,
+    handleNoteFolderDrop,
     noteFolderFormOpen,
     editingNoteFolder,
     pendingParentNoteFolderId,
