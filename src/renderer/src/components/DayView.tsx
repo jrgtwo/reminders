@@ -5,6 +5,7 @@ import type { Note } from '../types/models'
 import ReminderInlineEditor from './reminders/ReminderInlineEditor'
 import SortableTodoList from './todos/TodoList'
 import NoteEditor from './notes/NoteEditor'
+import ConfirmDeleteDialog from './ui/ConfirmDeleteDialog'
 import { useDayView } from './hooks/useDayView'
 
 function formatDayHeading(date: Temporal.PlainDate) {
@@ -48,16 +49,13 @@ export default function DayView() {
     saveNote,
     items,
     reorderItems,
-    deleteItem,
     dayReminders,
     overdueReminders,
     upcomingReminders,
     dayLists,
     timeFormat,
     toggleComplete,
-    remove,
     save,
-    removeList,
     handleToggleItem,
     handleAddItem,
     handleSaveEdit,
@@ -70,6 +68,13 @@ export default function DayView() {
     handleCancelReminder,
     handleNewNote,
     handleDeleteNote,
+    handleDeleteReminder,
+    handleDeleteList,
+    handleDeleteItem,
+    reminderDelete,
+    noteDelete,
+    listDelete,
+    itemDelete,
     navigate,
   } = useDayView()
 
@@ -83,7 +88,7 @@ export default function DayView() {
         onClick={() => navigate('/')}
         className="flex items-center gap-1.5 text-[13px] text-slate-400 dark:text-white/30 hover:text-slate-700 dark:hover:text-white/60 mb-8 transition-colors -ml-0.5"
       >
-        <ArrowLeft size={14} />
+        <ArrowLeft size={20} />
         Calendar
       </button>
 
@@ -202,7 +207,7 @@ export default function DayView() {
                       className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-left bg-white dark:bg-white/[0.06] border border-slate-200/60 dark:border-white/[0.08] hover:bg-slate-50 dark:hover:bg-white/[0.09] transition-colors shadow-sm group"
                     >
                       <Edit3
-                        size={15}
+                        size={20}
                         className={`shrink-0 transition-colors ${note.id === editingNoteId ? 'text-[#6498c8]' : 'text-slate-400 dark:text-white/35'}`}
                       />
                       <div className="flex-1 min-w-0">
@@ -223,25 +228,25 @@ export default function DayView() {
                         )}
                       </div>
                       <ArrowRight
-                        size={13}
+                        size={20}
                         className={`shrink-0 text-slate-300 dark:text-white/20 transition-transform ${note.id === editingNoteId ? 'rotate-90' : ''}`}
                       />
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
-                          handleDeleteNote(note.id)
+                          handleDeleteNote(note.id, e)
                         }}
                         className="opacity-0 group-hover:opacity-100 w-8 h-8 flex items-center justify-center rounded text-gray-600 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                         title="Delete note"
                       >
-                        <Trash2 size={16} />
+                        <Trash2 size={20} />
                       </button>
                     </button>
                     {note.id === editingNoteId && (
                       <NoteEditor
                         note={note}
                         onChange={handleNoteChange}
-                        onDelete={() => handleDeleteNote(note.id)}
+                        onDelete={(e) => handleDeleteNote(note.id, e)}
                         onBack={() => setEditingNoteId(null)}
                       />
                     )}
@@ -263,12 +268,18 @@ export default function DayView() {
       {tab === 'reminders' && (
         <div className="mb-8 flex flex-col gap-2">
           {(() => {
-            const sortedReminders = [
-              ...dayReminders.filter((r) => r.startTime).sort((a, b) => (a.startTime! < b.startTime! ? -1 : 1)),
-              ...dayReminders.filter((r) => !r.startTime),
-            ]
+            const uncompleted = dayReminders.filter((r) => !r.completedDates.includes(dateStr))
+            const completed = dayReminders.filter((r) => r.completedDates.includes(dateStr))
+            const sortByTime = (a: typeof dayReminders[0], b: typeof dayReminders[0]) => {
+              if (a.startTime && b.startTime) return a.startTime < b.startTime ? -1 : 1
+              if (a.startTime) return -1
+              if (b.startTime) return 1
+              return 0
+            }
+            const sortedUncompleted = uncompleted.sort(sortByTime)
+            const sortedCompleted = completed.sort(sortByTime)
 
-            if (sortedReminders.length === 0) {
+            if (dayReminders.length === 0) {
               return (
                 <div className="min-h-[400px] bg-white/[0.03] dark:bg-white/[0.03] rounded-xl border border-slate-200 dark:border-white/[0.08]">
                   <div className="flex items-center justify-center h-64">
@@ -286,78 +297,89 @@ export default function DayView() {
               )
             }
 
-            return (
-              <>
-                {sortedReminders.map((reminder) => {
-                  const isExpanded = expandedReminderId === reminder.id
-                  const isCompleted = reminder.completedDates.includes(dateStr)
-                  return (
-                    <div key={reminder.id}>
-                      <button
-                        onClick={() => setExpandedReminderId(isExpanded ? null : reminder.id)}
-                        className={`flex items-start gap-3 w-full px-4 py-3 text-left bg-white dark:bg-white/[0.06] border border-slate-200/60 dark:border-white/[0.08] hover:bg-slate-50 dark:hover:bg-white/[0.09] transition-colors shadow-sm group ${
-                          isExpanded ? 'rounded-t-xl' : 'rounded-xl'
-                        } ${isCompleted ? 'opacity-60' : ''}`}
-                      >
-                        <span
-                          onClick={(e) => { e.stopPropagation(); toggleComplete(reminder.id, dateStr) }}
-                          role="checkbox"
-                          aria-checked={isCompleted}
-                          className={`mt-[3px] w-4 h-4 rounded-full border-[1.5px] flex-shrink-0 flex items-center justify-center transition-all cursor-pointer ${
-                            isCompleted
-                              ? 'bg-emerald-500 border-emerald-500 text-[#f0f0f0]'
-                              : 'border-slate-300 dark:border-white/20 hover:border-emerald-400 dark:hover:border-emerald-400'
-                          }`}
-                        >
-                          {isCompleted && <Check size={9} strokeWidth={3} />}
-                        </span>
-                        <div className="flex-1 min-w-0">
-                          <p className={`text-[14px] font-medium leading-snug ${isCompleted ? 'line-through text-slate-300 dark:text-white/20' : 'text-slate-800 dark:text-white/80'}`}>
-                            {reminder.title || <span className="italic text-slate-400 dark:text-white/35">Untitled</span>}
-                          </p>
-                          {reminder.description && (
-                            <p className="text-xs text-slate-400 dark:text-white/30 mt-0.5 leading-snug">{reminder.description}</p>
+            const renderReminder = (reminder: typeof dayReminders[0], isCompleted: boolean) => {
+              const isExpanded = expandedReminderId === reminder.id
+              return (
+                <div key={reminder.id}>
+                  <button
+                    onClick={() => setExpandedReminderId(isExpanded ? null : reminder.id)}
+                    className={`flex items-start gap-3 w-full px-4 py-3 text-left bg-white dark:bg-white/[0.06] border border-slate-200/60 dark:border-white/[0.08] hover:bg-slate-50 dark:hover:bg-white/[0.09] transition-colors shadow-sm group ${
+                      isExpanded ? 'rounded-t-xl' : 'rounded-xl'
+                    } ${isCompleted ? 'opacity-60' : ''}`}
+                  >
+                    <span
+                      onClick={(e) => { e.stopPropagation(); toggleComplete(reminder.id, dateStr) }}
+                      role="checkbox"
+                      aria-checked={isCompleted}
+                      className={`mt-[3px] w-4 h-4 rounded-full border-[1.5px] flex-shrink-0 flex items-center justify-center transition-all cursor-pointer ${
+                        isCompleted
+                          ? 'bg-emerald-500 border-emerald-500 text-[#f0f0f0]'
+                          : 'border-slate-300 dark:border-white/20 hover:border-emerald-400 dark:hover:border-emerald-400'
+                      }`}
+                    >
+                      {isCompleted && <Check size={20} strokeWidth={3} />}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-[14px] font-medium leading-snug ${isCompleted ? 'line-through text-slate-300 dark:text-white/20' : 'text-slate-800 dark:text-white/80'}`}>
+                        {reminder.title || <span className="italic text-slate-400 dark:text-white/35">Untitled</span>}
+                      </p>
+                      {reminder.description && (
+                        <p className="text-xs text-slate-400 dark:text-white/30 mt-0.5 leading-snug">{reminder.description}</p>
+                      )}
+                      {(reminder.startTime || reminder.recurrence) && (
+                        <div className="flex items-center gap-1.5 mt-1.5">
+                          {reminder.startTime && (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-1.5 py-0.5 rounded">
+                              <Clock size={20} />
+                              {formatTime(reminder.startTime, timeFormat)}{reminder.endTime ? ` – ${formatTime(reminder.endTime, timeFormat)}` : ''}
+                            </span>
                           )}
-                          {(reminder.startTime || reminder.recurrence) && (
-                            <div className="flex items-center gap-1.5 mt-1.5">
-                              {reminder.startTime && (
-                                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-1.5 py-0.5 rounded">
-                                  <Clock size={9} />
-                                  {formatTime(reminder.startTime, timeFormat)}{reminder.endTime ? ` – ${formatTime(reminder.endTime, timeFormat)}` : ''}
-                                </span>
-                              )}
-                              {reminder.recurrence && (
-                                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-400/10 px-1.5 py-0.5 rounded">
-                                  <RefreshCw size={9} />
-                                  {reminder.recurrence.frequency}
-                                </span>
-                              )}
-                            </div>
+                          {reminder.recurrence && (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-400/10 px-1.5 py-0.5 rounded">
+                              <RefreshCw size={20} />
+                              {reminder.recurrence.frequency}
+                            </span>
                           )}
                         </div>
-                        <ArrowRight
-                          size={13}
-                          className={`shrink-0 text-slate-300 dark:text-white/20 transition-transform mt-1 ${isExpanded ? 'rotate-90' : ''}`}
-                        />
-                        <button
-                          onClick={(e) => { e.stopPropagation(); remove(reminder.id) }}
-                          className="opacity-0 group-hover:opacity-100 w-8 h-8 flex items-center justify-center rounded text-gray-600 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                          title="Delete reminder"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </button>
-                      {isExpanded && (
-                        <ReminderInlineEditor
-                          reminder={reminder}
-                          onSave={async (r) => { await save(r); setExpandedReminderId(null) }}
-                          onCancel={() => handleCancelReminder(reminder)}
-                          onDelete={() => { remove(reminder.id); setExpandedReminderId(null) }}
-                        />
                       )}
                     </div>
-                  )
-                })}
+                    <ArrowRight
+                      size={20}
+                      className={`shrink-0 text-slate-300 dark:text-white/20 transition-transform mt-1 ${isExpanded ? 'rotate-90' : ''}`}
+                    />
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDeleteReminder(reminder.id, e) }}
+                      className="w-8 h-8 flex items-center justify-center rounded text-slate-300 dark:text-white/20 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                      title="Delete reminder"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  </button>
+                  {isExpanded && (
+                    <ReminderInlineEditor
+                      reminder={reminder}
+                      onSave={async (r) => { await save(r); setExpandedReminderId(null) }}
+                      onCancel={() => handleCancelReminder(reminder)}
+                      onDelete={(e) => handleDeleteReminder(reminder.id, e)}
+                    />
+                  )}
+                </div>
+              )
+            }
+
+            return (
+              <>
+                {sortedUncompleted.map((r) => renderReminder(r, false))}
+                {sortedCompleted.length > 0 && (
+                  <>
+                    <div className="border-t border-slate-200 dark:border-white/[0.07] mt-2 pt-3">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 dark:text-white/25 mb-2">
+                        Completed
+                      </p>
+                    </div>
+                    {sortedCompleted.map((r) => renderReminder(r, true))}
+                  </>
+                )}
                 <button
                   onClick={handleAddReminder}
                   className="flex items-center gap-2 w-full px-4 py-3 rounded-xl text-left bg-transparent border border-dashed border-slate-300 dark:border-white/[0.06] hover:border-[#6498c8] dark:hover:border-[#6498c8] text-[#6498c8] dark:text-[#6498c8] text-[13px] font-medium transition-colors"
@@ -402,7 +424,7 @@ export default function DayView() {
                         className="flex items-center gap-1.5 min-w-0 flex-1 group"
                       >
                         <ChevronRight
-                          size={15}
+                          size={20}
                           className={`shrink-0 text-slate-400 dark:text-white/30 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
                         />
                         {editingListTitleId === l.id ? (
@@ -432,16 +454,16 @@ export default function DayView() {
                           onClick={() => setEditingListTitleId(l.id)}
                           className="p-1.5 rounded-lg text-slate-400 dark:text-white/30 hover:text-slate-700 dark:hover:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
                         >
-                          <Pencil size={13} />
+                          <Pencil size={20} />
                         </button>
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
-                            removeList(l.id)
+                            handleDeleteList(l.id, e)
                           }}
                           className="p-1.5 rounded-lg text-slate-400 dark:text-white/30 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors"
                         >
-                          <Trash2 size={13} />
+                          <Trash2 size={20} />
                         </button>
                         {isExpanded && (
                           <button
@@ -464,7 +486,7 @@ export default function DayView() {
                                 todos={listItems}
                                 onToggle={handleToggleItem}
                                 onEdit={(i) => setEditingItemId(i.id)}
-                                onDelete={deleteItem}
+                                onDelete={handleDeleteItem}
                                 onReorder={(ids) => reorderItems(l.id, ids)}
                                 editingItemId={editingItemId}
                                 onSaveEdit={handleSaveEdit}
@@ -479,7 +501,7 @@ export default function DayView() {
                                   todos={completedItems}
                                   onToggle={handleToggleItem}
                                   onEdit={(i) => setEditingItemId(i.id)}
-                                  onDelete={deleteItem}
+                                  onDelete={handleDeleteItem}
                                   onReorder={(ids) => reorderItems(l.id, ids)}
                                   editingItemId={editingItemId}
                                   onSaveEdit={handleSaveEdit}
@@ -505,6 +527,41 @@ export default function DayView() {
             </>
           )}
         </div>
+      )}
+      {reminderDelete.pendingId && (
+        <ConfirmDeleteDialog
+          message={reminderDelete.pendingMessage}
+          anchorRect={reminderDelete.anchorRect}
+          onConfirm={reminderDelete.confirmDelete}
+          onCancel={reminderDelete.cancelDelete}
+        />
+      )}
+
+      {noteDelete.pendingId && (
+        <ConfirmDeleteDialog
+          message={noteDelete.pendingMessage}
+          anchorRect={noteDelete.anchorRect}
+          onConfirm={noteDelete.confirmDelete}
+          onCancel={noteDelete.cancelDelete}
+        />
+      )}
+
+      {listDelete.pendingId && (
+        <ConfirmDeleteDialog
+          message={listDelete.pendingMessage}
+          anchorRect={listDelete.anchorRect}
+          onConfirm={listDelete.confirmDelete}
+          onCancel={listDelete.cancelDelete}
+        />
+      )}
+
+      {itemDelete.pendingId && (
+        <ConfirmDeleteDialog
+          message={itemDelete.pendingMessage}
+          anchorRect={itemDelete.anchorRect}
+          onConfirm={itemDelete.confirmDelete}
+          onCancel={itemDelete.cancelDelete}
+        />
       )}
     </div>
   )

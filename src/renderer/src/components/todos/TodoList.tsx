@@ -14,7 +14,7 @@ interface Props {
   todos: TodoListItem[]
   onToggle: (t: TodoListItem) => void
   onEdit: (t: TodoListItem) => void
-  onDelete: (id: string) => void
+  onDelete: (id: string, e: React.MouseEvent) => void
   onReorder: (orderedIds: string[]) => void
   editingItemId?: string | null
   onSaveEdit: (item: TodoListItem, title: string) => void

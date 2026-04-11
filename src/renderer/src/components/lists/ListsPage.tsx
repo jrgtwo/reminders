@@ -148,7 +148,7 @@ export default function ListsPage() {
                   onClick={() => setRenameOpen(true)}
                   className="p-1.5 rounded-lg text-slate-400 dark:text-white/30 hover:text-slate-700 dark:hover:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
                 >
-                  <Pencil size={14} />
+                  <Pencil size={20} />
                 </button>
                 <button
                   onClick={handleAddItem}

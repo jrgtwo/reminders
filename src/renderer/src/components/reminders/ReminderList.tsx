@@ -35,7 +35,7 @@ export default function ReminderList({ date, reminders, onAdd, onEdit, onDelete,
           onClick={onAdd}
           className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 dark:text-white/30 hover:text-slate-700 dark:hover:text-white/60 transition-colors px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-white/[0.06]"
         >
-          <Plus size={12} />
+          <Plus size={20} />
           Add
         </button>
       </div>

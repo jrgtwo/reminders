@@ -2,64 +2,84 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { ChevronUp, ChevronDown } from 'lucide-react'
 
+type Accent = 'blue' | 'red' | 'slate'
+
+const accentStyles: Record<Accent, { label: string; count: string; chevron: string }> = {
+  red: {
+    label: 'text-red-500 dark:text-[#e8a045]',
+    count: 'text-red-500 dark:text-[#e8a045] bg-red-50 dark:bg-[#e8a045]/[0.08]',
+    chevron: 'text-[#e8a045]/60',
+  },
+  blue: {
+    label: 'text-blue-500 dark:text-[#6498c8]',
+    count: 'text-blue-500 dark:text-[#6498c8] bg-blue-50 dark:bg-[#6498c8]/[0.08]',
+    chevron: 'text-[#6498c8]/60',
+  },
+  slate: {
+    label: 'text-slate-500 dark:text-white/40',
+    count: 'text-slate-500 dark:text-white/40 bg-slate-100 dark:bg-white/[0.06]',
+    chevron: 'text-slate-400 dark:text-white/30',
+  },
+}
+
 export function CollapsibleSection({
   label,
   count,
   accent = 'blue',
   defaultOpen = true,
+  open: controlledOpen,
+  onOpenChange,
+  indent = false,
   children,
-  headerExtra
+  headerExtra,
 }: {
   label: string
   count: number
-  accent?: 'blue' | 'red' | 'slate'
+  accent?: Accent
   defaultOpen?: boolean
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  indent?: boolean
   children: ReactNode
   headerExtra?: ReactNode
 }) {
-  const [open, setOpen] = useState(defaultOpen)
-  const labelCls =
-    accent === 'red'
-      ? 'text-red-500 dark:text-[#e8a045]'
-      : accent === 'slate'
-        ? 'text-slate-400 dark:text-white/30'
-        : 'text-blue-500 dark:text-[#6498c8]'
-  const countCls =
-    accent === 'red'
-      ? 'text-red-500 dark:text-[#e8a045] bg-red-50 dark:bg-[#e8a045]/[0.08]'
-      : accent === 'slate'
-        ? 'text-slate-400 dark:text-white/30 bg-slate-100 dark:bg-white/[0.05]'
-        : 'text-blue-500 dark:text-[#6498c8] bg-blue-50 dark:bg-[#6498c8]/[0.08]'
-  const chevronCls =
-    accent === 'red'
-      ? 'text-[#e8a045]/60'
-      : accent === 'slate'
-        ? 'text-slate-300 dark:text-white/20'
-        : 'text-[#6498c8]/60'
+  const [localOpen, setLocalOpen] = useState(defaultOpen)
+  const isControlled = controlledOpen !== undefined
+  const open = isControlled ? controlledOpen : localOpen
+
+  function handleToggle() {
+    if (isControlled) onOpenChange?.(!open)
+    else setLocalOpen((o) => !o)
+  }
+
+  const s = accentStyles[accent]
+
   return (
     <div>
-      <div className="flex items-center gap-1 px-4 py-1.5">
+      <div
+        className={`flex items-center gap-1 ${indent ? 'px-3 py-1.5' : 'px-4 py-2'}`}
+      >
         <button
-          onClick={() => setOpen((o) => !o)}
-          className="flex items-center gap-2 flex-1 text-left hover:opacity-80 transition-opacity"
+          onClick={handleToggle}
+          className={`flex items-center gap-2 flex-1 text-left transition-colors hover:bg-slate-50 dark:hover:bg-white/[0.03] rounded-lg ${indent ? 'px-1 py-0.5' : 'px-1 py-1'}`}
         >
-          <span className={`text-[13px] font-bold uppercase tracking-wide flex-1 ${labelCls}`}>
+          <span
+            className={`text-[13px] font-bold uppercase tracking-wide flex-1 ${s.label}`}
+          >
             {label}
           </span>
-          {count > 0 && (
-            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${countCls}`}>
-              {count}
-            </span>
-          )}
+          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${s.count}`}>
+            {count}
+          </span>
           {open ? (
-            <ChevronUp size={11} className={chevronCls} />
+            <ChevronUp size={20} className={s.chevron} />
           ) : (
-            <ChevronDown size={11} className={chevronCls} />
+            <ChevronDown size={20} className={s.chevron} />
           )}
         </button>
         {headerExtra}
       </div>
-      {open && <div className="animate-in fade-in duration-200 bg-slate-50/70 dark:bg-white/[0.018] rounded-sm">{children}</div>}
+      {open && <div>{children}</div>}
     </div>
   )
 }

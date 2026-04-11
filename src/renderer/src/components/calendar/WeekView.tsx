@@ -36,6 +36,10 @@ export default function WeekView({ displayDate }: Props) {
     nowTop,
     hasAllDay,
     hasSingleDayAllDay,
+    allDayExpanded,
+    setAllDayExpanded,
+    maxAllDayCount,
+    COLLAPSED_LIMIT,
     timeFormat,
     navigate,
     getColSpan,
@@ -47,7 +51,7 @@ export default function WeekView({ displayDate }: Props) {
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
       <div ref={scrollRef} className="flex-1 overflow-auto bg-[var(--bg-app)]">
-      <div style={{ minWidth: 'calc(3.5rem + 7 * 96px)' }}>
+      <div className="pr-4" style={{ minWidth: 'calc(3.5rem + 7 * 96px)' }}>
 
         {/* Day header row */}
         <div
@@ -93,20 +97,26 @@ export default function WeekView({ displayDate }: Props) {
             {multiDayReminders.length > 0 && (
               <div className="flex py-[3px]">
                 <div className="sticky left-0 z-10 bg-[var(--bg-app)]" style={{ width: '3.5rem', flexShrink: 0 }} />
-                <div className="flex-1 relative" style={{ height: '22px' }}>
+                <div className="flex-1 relative" style={{ height: allDayExpanded ? '30px' : '22px' }}>
                   {multiDayReminders.map((r) => {
                     const { startCol, endCol } = getColSpan(r)
                     return (
                       <button
                         key={r.id}
                         onClick={(e) => { e.stopPropagation(); setDetail({ reminder: r, dateStr: r.date }) }}
-                        className="absolute top-0 h-full px-1.5 rounded text-[10px] font-semibold truncate bg-[#6498c8]/[0.18] text-[#6498c8] transition-all duration-150 hover:bg-[#6498c8]/[0.32] hover:brightness-125 hover:shadow-md"
+                        className={[
+                          'absolute top-0 h-full px-1.5 rounded font-semibold truncate bg-[#6498c8]/[0.18] text-[#6498c8] transition-all duration-200 hover:bg-[#6498c8]/[0.32] hover:brightness-125 hover:shadow-md',
+                          allDayExpanded ? 'text-[11px]' : 'text-[10px]',
+                        ].join(' ')}
                         style={{
                           left: `calc(${startCol} * 100% / 7)`,
                           width: `calc(${endCol - startCol + 1} * 100% / 7 - 4px)`,
                         }}
                       >
                         {r.title}
+                        {allDayExpanded && r.description && (
+                          <span className="ml-1.5 font-normal opacity-60">{r.description}</span>
+                        )}
                       </button>
                     )
                   })}
@@ -130,29 +140,75 @@ export default function WeekView({ displayDate }: Props) {
                   const listBadge = isOverdue
                     ? 'bg-[#e8a045]/[0.12] text-[#e8a045] hover:bg-[#e8a045]/[0.28]'
                     : 'bg-emerald-500/[0.12] text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/[0.28]'
+                  const totalItems = dayReminders.length + (dayListCount > 0 ? 1 : 0)
+                  const visibleReminders = allDayExpanded ? dayReminders : dayReminders.slice(0, COLLAPSED_LIMIT)
+                  const hiddenCount = allDayExpanded ? 0 : totalItems - COLLAPSED_LIMIT
                   return (
-                    <div key={dateStr} className={['flex flex-col gap-[2px] px-1 py-1 min-h-[28px] overflow-hidden min-w-0', dateStr === todayStr ? 'bg-blue-50/60 dark:bg-[#6498c8]/[0.07]' : ''].join(' ')}>
-                      {dayReminders.slice(0, 3).map((r) => (
+                    <div key={dateStr} className={['flex flex-col gap-[2px] px-1 py-1 min-h-[28px] overflow-hidden min-w-0 transition-all duration-200', dateStr === todayStr ? 'bg-blue-50/60 dark:bg-[#6498c8]/[0.07]' : ''].join(' ')}>
+                      {visibleReminders.map((r) => (
                         <button
                           key={r.id}
                           onClick={(e) => { e.stopPropagation(); setDetail({ reminder: r, dateStr }) }}
-                          className="w-full text-left px-1.5 py-[2px] rounded text-[10px] font-semibold truncate bg-[#6498c8]/[0.12] text-[#6498c8] transition-all duration-150 hover:bg-[#6498c8]/[0.28] hover:brightness-125 hover:shadow-md hover:scale-[1.03]"
+                          className={[
+                            'w-full text-left px-1.5 rounded bg-[#6498c8]/[0.12] text-[#6498c8] transition-all duration-200 hover:bg-[#6498c8]/[0.28] hover:brightness-125 hover:shadow-md hover:scale-[1.03]',
+                            allDayExpanded ? 'py-1' : 'py-[2px]',
+                          ].join(' ')}
                         >
-                          {r.title}
+                          <span className={[
+                            'block truncate font-semibold',
+                            allDayExpanded ? 'text-[11px]' : 'text-[10px]',
+                          ].join(' ')}>
+                            {r.title}
+                          </span>
+                          {allDayExpanded && r.description && (
+                            <span className="block truncate text-[9px] font-normal opacity-60 mt-[1px]">
+                              {r.description}
+                            </span>
+                          )}
                         </button>
                       ))}
-                      {dayListCount > 0 && (
+                      {(allDayExpanded || hiddenCount <= 0) && dayListCount > 0 && (
                         <button
                           onClick={(e) => { e.stopPropagation(); navigate(`/day/${dateStr}`, { state: { tab: 'todos' } }) }}
-                          className={`w-full text-left px-1.5 py-[2px] rounded text-[10px] font-semibold truncate transition-all duration-150 hover:brightness-125 hover:shadow-md hover:scale-[1.03] ${listBadge}`}
+                          className={[
+                            'w-full text-left px-1.5 rounded font-semibold truncate transition-all duration-200 hover:brightness-125 hover:shadow-md hover:scale-[1.03]',
+                            allDayExpanded ? 'py-1 text-[11px]' : 'py-[2px] text-[10px]',
+                            listBadge,
+                          ].join(' ')}
                         >
                           ☐ {dayListCount} {dayListCount === 1 ? 'list' : 'lists'}
+                        </button>
+                      )}
+                      {!allDayExpanded && hiddenCount > 0 && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setAllDayExpanded(true) }}
+                          className="w-full text-center text-[9px] font-semibold text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/50 transition-colors py-[1px]"
+                        >
+                          +{hiddenCount} more
                         </button>
                       )}
                     </div>
                   )
                 })}
               </div>
+            )}
+            {/* Expand/collapse toggle */}
+            {maxAllDayCount > COLLAPSED_LIMIT && (
+              <button
+                onClick={() => setAllDayExpanded(!allDayExpanded)}
+                className="w-full flex items-center justify-center gap-1 py-[2px] text-[9px] font-semibold text-slate-400 dark:text-white/25 hover:text-slate-600 dark:hover:text-white/50 transition-colors"
+              >
+                <svg
+                  className={['w-3 h-3 transition-transform duration-200', allDayExpanded ? 'rotate-180' : ''].join(' ')}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+                {allDayExpanded ? 'collapse' : 'expand'}
+              </button>
             )}
           </div>
         )}

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { Temporal } from '@js-temporal/polyfill'
 import { parseDateStr, today } from '../../utils/dates'
@@ -7,6 +7,7 @@ import { useRemindersStore } from '../../store/reminders.store'
 import { useTodoListsStore } from '../../store/todo_lists.store'
 import { useUIStore } from '../../store/ui.store'
 import { useNotesStore } from '../../store/notes.store'
+import { useConfirmDelete } from '../../hooks/useConfirmDelete'
 import type { Reminder, TodoList, TodoListItem, Note } from '../../types/models'
 
 export function useDayView() {
@@ -57,6 +58,24 @@ export function useDayView() {
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [editingListTitleId, setEditingListTitleId] = useState<string | null>(null)
   const [expandedListIds, setExpandedListIds] = useState<Set<string>>(new Set())
+
+  const reminderDelete = useConfirmDelete(useCallback((id: string) => {
+    remove(id)
+    if (expandedReminderId === id) setExpandedReminderId(null)
+  }, [remove, expandedReminderId]))
+
+  const noteDelete = useConfirmDelete(useCallback((id: string) => {
+    deleteNote(id)
+    if (editingNoteId === id) setEditingNoteId(null)
+  }, [deleteNote, editingNoteId]))
+
+  const listDelete = useConfirmDelete(useCallback((id: string) => {
+    removeList(id)
+  }, [removeList]))
+
+  const itemDelete = useConfirmDelete(useCallback((id: string) => {
+    deleteItem(id)
+  }, [deleteItem]))
 
   useEffect(() => {
     loadLists()
@@ -218,15 +237,24 @@ export function useDayView() {
     setEditingNoteId(newNote.id)
   }
 
-  function handleDeleteNote(noteId: string) {
-    const note = notes.get(noteId)
-    if (!note) return
-    if (window.confirm('Delete this note?')) {
-      deleteNote(noteId)
-      if (editingNoteId === noteId) {
-        setEditingNoteId(null)
-      }
-    }
+  function handleDeleteNote(noteId: string, e: React.MouseEvent) {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    noteDelete.requestDelete(noteId, rect, 'Delete this note? This cannot be undone.')
+  }
+
+  function handleDeleteReminder(id: string, e: React.MouseEvent) {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    reminderDelete.requestDelete(id, rect, 'Delete this reminder? This cannot be undone.')
+  }
+
+  function handleDeleteList(id: string, e: React.MouseEvent) {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    listDelete.requestDelete(id, rect, 'Delete this list? This cannot be undone.')
+  }
+
+  function handleDeleteItem(id: string, e: React.MouseEvent) {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    itemDelete.requestDelete(id, rect, 'Delete this item?')
   }
 
   return {
@@ -247,16 +275,13 @@ export function useDayView() {
     saveNote,
     items,
     reorderItems,
-    deleteItem,
     dayReminders,
     overdueReminders,
     upcomingReminders,
     dayLists,
     timeFormat,
     toggleComplete,
-    remove,
     save,
-    removeList,
     handleToggleItem,
     handleAddItem,
     handleSaveEdit,
@@ -269,6 +294,13 @@ export function useDayView() {
     handleCancelReminder,
     handleNewNote,
     handleDeleteNote,
+    handleDeleteReminder,
+    handleDeleteList,
+    handleDeleteItem,
+    reminderDelete,
+    noteDelete,
+    listDelete,
+    itemDelete,
     navigate,
   }
 }

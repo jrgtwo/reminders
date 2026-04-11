@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useTodoFoldersStore } from '../../../store/todo_folders.store'
 import { useTodoListsStore } from '../../../store/todo_lists.store'
@@ -7,6 +7,7 @@ import { buildFolderTree, getDescendantIds } from '../../../lib/folderTree'
 import { useRemindersStore } from '../../../store/reminders.store'
 import { getOccurrencesInRange } from '../../../utils/recurrence'
 import { today, parseDateStr } from '../../../utils/dates'
+import { useConfirmDelete } from '../../../hooks/useConfirmDelete'
 import type { TodoFolder, TodoList } from '../../../types/models'
 
 export function formatOverdueDate(dateStr: string): string {
@@ -152,6 +153,20 @@ export function useRightSidebar() {
     [folderChildrenMap]
   )
 
+  const listDelete = useConfirmDelete(useCallback((id: string) => {
+    removeList(id)
+  }, [removeList]))
+
+  const folderDelete = useConfirmDelete(useCallback((id: string) => {
+    const folder = folders.find((f) => f.id === id)
+    if (!folder) return
+    const descendantIds = getDescendantIds(id, folderChildrenMap)
+    const allFolderIds = new Set([id, ...descendantIds])
+    const affectedLists = adHocLists.filter((l) => l.folderId && allFolderIds.has(l.folderId))
+    affectedLists.forEach((l) => removeList(l.id))
+    allFolderIds.forEach((fid) => removeFolder(fid))
+  }, [folders, folderChildrenMap, adHocLists, removeList, removeFolder]))
+
   function toggleFolder(id: string) {
     setExpandedFolders((prev) => {
       const next = new Set(prev)
@@ -169,20 +184,22 @@ export function useRightSidebar() {
 
   const listCount = lists.length
 
-  function handleDeleteFolder(id: string) {
+  function handleDeleteFolder(id: string, e: React.MouseEvent) {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
     const folder = folders.find((f) => f.id === id)
     if (!folder) return
     const descendantIds = getDescendantIds(id, folderChildrenMap)
     const allFolderIds = new Set([id, ...descendantIds])
     const affectedLists = adHocLists.filter((l) => l.folderId && allFolderIds.has(l.folderId))
+    let msg = 'Delete this folder? This cannot be undone.'
     if (affectedLists.length > 0 || descendantIds.size > 0) {
-      const msg = [
+      const parts = [
         descendantIds.size > 0 ? `${descendantIds.size} subfolder(s)` : '',
         affectedLists.length > 0 ? `${affectedLists.length} list(s)` : '',
       ].filter(Boolean).join(' and ')
-      if (!window.confirm(`This folder contains ${msg}. Delete everything?`)) return
+      msg = `This folder contains ${parts}. Delete everything?`
     }
-    allFolderIds.forEach((fid) => removeFolder(fid))
+    folderDelete.requestDelete(id, rect, msg)
   }
 
   function handleListDrop(targetFolderId: string | undefined) {
@@ -194,8 +211,9 @@ export function useRightSidebar() {
     setListDropTarget(null)
   }
 
-  function handleDeleteList(id: string) {
-    removeList(id)
+  function handleDeleteList(id: string, e: React.MouseEvent) {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    listDelete.requestDelete(id, rect, 'Delete this list? This cannot be undone.')
   }
 
   function openFolderForm(folder: TodoFolder | null, parentId?: string) {
@@ -273,5 +291,7 @@ export function useRightSidebar() {
     handleSaveFolder,
     handleSaveListForm,
     closeListForm,
+    listDelete,
+    folderDelete,
   }
 }

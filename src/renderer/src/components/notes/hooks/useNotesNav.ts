@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useNotesStore } from '../../../store/notes.store'
 import { useNoteFoldersStore } from '../../../store/note_folders.store'
 import { buildFolderTree, getDescendantIds } from '../../../lib/folderTree'
+import { useConfirmDelete } from '../../../hooks/useConfirmDelete'
 import type { NoteFolder } from '../../../types/models'
 
 export function useNotesNav() {
@@ -26,6 +27,22 @@ export function useNotesNav() {
   const [pendingParentNoteFolderId, setPendingParentNoteFolderId] = useState<string | undefined>()
   const [expandedNoteFolders, setExpandedNoteFolders] = useState<Set<string>>(new Set())
 
+  const noteDelete = useConfirmDelete(useCallback((id: string) => {
+    deleteNote(id)
+  }, [deleteNote]))
+
+  const noteFolderChildrenMap = useMemo(() => buildFolderTree(noteFolders), [noteFolders])
+
+  const folderDelete = useConfirmDelete(useCallback((id: string) => {
+    const descendantIds = getDescendantIds(id, noteFolderChildrenMap)
+    const allFolderIds = new Set([id, ...descendantIds])
+    const affectedNotes = Array.from(allNotes.values()).filter(
+      (n) => n.folderId && allFolderIds.has(n.folderId)
+    )
+    affectedNotes.forEach((n) => deleteNote(n.id))
+    allFolderIds.forEach((fid) => removeNoteFolder(fid))
+  }, [allNotes, deleteNote, removeNoteFolder, noteFolderChildrenMap]))
+
   useEffect(() => {
     loadNoteFolders()
     loadNotes()
@@ -35,7 +52,6 @@ export function useNotesNav() {
     ? location.pathname.split('/notes/')[1]?.split('/')[0]
     : undefined
 
-  const noteFolderChildrenMap = useMemo(() => buildFolderTree(noteFolders), [noteFolders])
   const rootNoteFolders = useMemo(
     () => (noteFolderChildrenMap.get(undefined) ?? []).sort((a, b) => a.displayOrder - b.displayOrder),
     [noteFolderChildrenMap]
@@ -86,27 +102,29 @@ export function useNotesNav() {
     navigate(`/notes/${note.id}`)
   }
 
-  function handleDeleteNote(id: string) {
-    deleteNote(id)
+  function handleDeleteNote(id: string, e: React.MouseEvent) {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    noteDelete.requestDelete(id, rect, 'Are you sure you want to delete this note? This cannot be undone.')
   }
 
-  function handleDeleteNoteFolder(id: string) {
+  function handleDeleteNoteFolder(id: string, e: React.MouseEvent) {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
     const descendantIds = getDescendantIds(id, noteFolderChildrenMap)
     const allFolderIds = new Set([id, ...descendantIds])
     const affectedNotes = Array.from(allNotes.values()).filter(
       (n) => n.folderId && allFolderIds.has(n.folderId)
     )
+    let msg = 'Delete this folder? This cannot be undone.'
     if (affectedNotes.length > 0 || descendantIds.size > 0) {
-      const msg = [
+      const parts = [
         descendantIds.size > 0 ? `${descendantIds.size} subfolder(s)` : '',
         affectedNotes.length > 0 ? `${affectedNotes.length} note(s)` : '',
       ]
         .filter(Boolean)
         .join(' and ')
-      if (!window.confirm(`This folder contains ${msg}. Delete everything?`)) return
-      affectedNotes.forEach((n) => deleteNote(n.id))
+      msg = `This folder contains ${parts}. Delete everything?`
     }
-    allFolderIds.forEach((fid) => removeNoteFolder(fid))
+    folderDelete.requestDelete(id, rect, msg)
   }
 
   function handleNoteDrop(targetFolderId: string | undefined) {
@@ -162,5 +180,7 @@ export function useNotesNav() {
     closeNoteFolderForm,
     handleSaveNoteFolder,
     navigate,
+    noteDelete,
+    folderDelete,
   }
 }

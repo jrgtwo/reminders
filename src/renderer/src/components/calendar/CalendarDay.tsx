@@ -78,8 +78,8 @@ export default function CalendarDay({
 
       {/* Events + Note */}
       {(reminders.length > 0 || listCount > 0 || noteCount > 0) && (
-        <div className={`flex flex-col w-full ${tall ? 'gap-1' : 'gap-[3px]'}`}>
-          <div className="flex flex-row flex-wrap lg:flex-col w-full gap-1 lg:gap-[3px]">
+        <div className={`flex flex-col w-full ${tall ? 'gap-1' : 'gap-0'}`}>
+          <div className="flex flex-col md:flex-row md:flex-wrap lg:flex-col w-full gap-0 md:gap-1 lg:gap-[3px]">
             {/* Reminders: single badge with count if >1, full badge if exactly 1 */}
             {reminders.length > 1 ? (
               <span
@@ -87,11 +87,11 @@ export default function CalendarDay({
                 onClick={(e) => { e.stopPropagation(); onReminderClick?.() }}
               >
                 <span className={`hidden lg:flex items-center gap-1 w-full px-1.5 py-[3px] rounded-md text-[10px] font-medium overflow-hidden transition-all duration-150 hover:brightness-125 hover:shadow-md hover:scale-[1.03] cursor-pointer ${colors.chip}`}>
-                  <Bell size={11} className="shrink-0" />
+                  <Bell size={20} className="shrink-0" />
                   <span>{reminders.length} reminders</span>
                 </span>
                 <span className={`hidden md:flex lg:hidden items-center justify-center gap-[3px] px-1 h-[22px] rounded cursor-pointer text-[10px] font-medium ${colors.chip}`}>
-                  <Bell size={11} /><span>{reminders.length}</span>
+                  <Bell size={20} /><span>{reminders.length}</span>
                 </span>
                 <span className={`flex md:hidden items-center gap-[2px] text-[10px] font-medium cursor-pointer ${colors.text}`}>
                   <Bell size={12} /><span>{reminders.length}</span>
@@ -99,7 +99,8 @@ export default function CalendarDay({
               </span>
             ) : reminders.length === 1 ? (() => {
               const r = reminders[0]
-              const icon = r.startTime ? <Clock size={13} /> : r.recurrence ? <Repeat size={13} /> : <Bell size={13} />
+              const icon = r.startTime ? <Clock size={20} /> : r.recurrence ? <Repeat size={20} /> : <Bell size={20} />
+              const iconSm = r.startTime ? <Clock size={12} /> : r.recurrence ? <Repeat size={12} /> : <Bell size={12} />
               return (
                 <span
                   key={r.id}
@@ -113,7 +114,7 @@ export default function CalendarDay({
                   <span className={`hidden md:flex lg:hidden items-center justify-center w-[22px] h-[22px] rounded ${colors.chip}`}>
                     {icon}
                   </span>
-                  <span className={`flex md:hidden ${colors.text}`}>{icon}</span>
+                  <span className={`flex md:hidden ${colors.text}`}>{iconSm}</span>
                 </span>
               )
             })() : null}
@@ -125,11 +126,11 @@ export default function CalendarDay({
                 onClick={(e) => { e.stopPropagation(); onTodoClick?.() }}
               >
                 <span className={`hidden lg:flex items-center gap-1 w-full px-1.5 py-[3px] rounded-md text-[10px] font-medium overflow-hidden transition-all duration-150 hover:brightness-125 hover:shadow-md hover:scale-[1.03] cursor-pointer ${listBadgeCls}`}>
-                  <CheckSquare size={11} className="shrink-0" />
+                  <CheckSquare size={20} className="shrink-0" />
                   <span>{listCount} {listCount === 1 ? 'list' : 'lists'}</span>
                 </span>
                 <span className={`hidden md:flex lg:hidden items-center justify-center gap-[3px] px-1 h-[22px] rounded cursor-pointer text-[10px] font-medium ${listBadgeCls}`}>
-                  <CheckSquare size={11} />{listCount > 1 && <span>{listCount}</span>}
+                  <CheckSquare size={20} />{listCount > 1 && <span>{listCount}</span>}
                 </span>
                 <span className={`flex md:hidden items-center gap-[2px] text-[10px] font-medium cursor-pointer ${cmp < 0 ? 'text-[#e8a045]/70' : 'text-emerald-500/70'}`}>
                   <CheckSquare size={12} />{listCount > 1 && <span>{listCount}</span>}
@@ -144,11 +145,11 @@ export default function CalendarDay({
                 onClick={(e) => { e.stopPropagation(); onNoteClick?.() }}
               >
                 <span className="hidden lg:flex items-center gap-1 w-full px-1.5 py-[3px] rounded-md text-[10px] font-medium transition-all duration-150 hover:brightness-125 hover:shadow-md hover:scale-[1.03] bg-slate-100 text-slate-500 dark:bg-white/[0.07] dark:text-white/35">
-                  <FileText size={13} className="shrink-0" />
+                  <FileText size={20} className="shrink-0" />
                   {noteCount > 1 && <span>{noteCount} notes</span>}
                 </span>
                 <span className="hidden md:flex lg:hidden items-center justify-center gap-[3px] px-1 h-[22px] rounded bg-slate-100 text-slate-500 dark:bg-white/[0.07] dark:text-white/35 text-[10px] font-medium">
-                  <FileText size={12} />{noteCount > 1 && <span>{noteCount}</span>}
+                  <FileText size={20} />{noteCount > 1 && <span>{noteCount}</span>}
                 </span>
                 <span className="flex md:hidden items-center gap-[2px] text-[10px] font-medium text-slate-300 dark:text-white/20">
                   <FileText size={12} />{noteCount > 1 && <span>{noteCount}</span>}

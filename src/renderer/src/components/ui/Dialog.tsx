@@ -18,7 +18,7 @@ export default function Dialog({ title, onClose, children }: Props) {
             onClick={onClose}
             className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-[var(--bg-elevated)] transition-colors"
           >
-            <X size={18} />
+            <X size={20} />
           </button>
         </div>
         {children}

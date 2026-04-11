@@ -2,6 +2,7 @@ import { forwardRef, useImperativeHandle } from 'react'
 import { Plus, FolderOpen, List } from 'lucide-react'
 import type { TodoList } from '../../types/models'
 import FolderForm from './FolderForm'
+import ConfirmDeleteDialog from '../ui/ConfirmDeleteDialog'
 import { CollapsibleSection } from '../ui/CollapsibleSection'
 import { SidebarNavItem, FolderTree, DateTree } from '../ui/FolderNav'
 import { useListsNav } from './hooks/useListsNav'
@@ -13,7 +14,6 @@ export interface ListsNavHandle {
 const ListsNav = forwardRef<ListsNavHandle>(function ListsNav(_, ref) {
   const {
     folders,
-    lists,
     adHocLists,
     dateLists,
     standaloneLists,
@@ -30,6 +30,8 @@ const ListsNav = forwardRef<ListsNavHandle>(function ListsNav(_, ref) {
     openFolderForm,
     closeFolderForm,
     handleSaveFolder,
+    listDelete,
+    folderDelete,
   } = useListsNav()
 
   useImperativeHandle(ref, () => ({ openNewList: () => openNewList() }))
@@ -52,35 +54,31 @@ const ListsNav = forwardRef<ListsNavHandle>(function ListsNav(_, ref) {
 
   return (
     <>
+      {/* My Lists */}
       <CollapsibleSection
-        label="Lists"
-        count={lists.length}
-        accent="blue"
-        defaultOpen={true}
-      >
-        {/* My Lists */}
-        <CollapsibleSection
           label="My Lists"
           count={adHocLists.length}
           accent="slate"
           defaultOpen={true}
+          headerExtra={
+            <div className="flex items-center gap-0.5">
+              <button
+                onClick={() => openNewList()}
+                className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                title="New list"
+              >
+                <Plus size={20} />
+              </button>
+              <button
+                onClick={() => openFolderForm(null)}
+                className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                title="New folder"
+              >
+                <FolderOpen size={20} />
+              </button>
+            </div>
+          }
         >
-          <div className="flex items-center justify-end gap-0.5 px-3 py-1 border-b border-slate-100 dark:border-white/[0.04]">
-            <button
-              onClick={() => openNewList()}
-              className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-              title="New list"
-            >
-              <Plus size={11} />
-            </button>
-            <button
-              onClick={() => openFolderForm(null)}
-              className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-              title="New folder"
-            >
-              <FolderOpen size={11} />
-            </button>
-          </div>
 
           {adHocLists.length === 0 && folders.length === 0 && (
             <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2">No lists yet</p>
@@ -116,7 +114,7 @@ const ListsNav = forwardRef<ListsNavHandle>(function ListsNav(_, ref) {
                   className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
                   title="New date-based list"
                 >
-                  <Plus size={11} />
+                  <Plus size={20} />
                 </button>
               }
             >
@@ -142,13 +140,30 @@ const ListsNav = forwardRef<ListsNavHandle>(function ListsNav(_, ref) {
             </CollapsibleSection>
           </div>
         )}
-      </CollapsibleSection>
 
       {folderFormOpen && (
         <FolderForm
           folder={editingFolder}
           onSave={handleSaveFolder}
           onClose={closeFolderForm}
+        />
+      )}
+
+      {listDelete.pendingId && (
+        <ConfirmDeleteDialog
+          message={listDelete.pendingMessage}
+          anchorRect={listDelete.anchorRect}
+          onConfirm={listDelete.confirmDelete}
+          onCancel={listDelete.cancelDelete}
+        />
+      )}
+
+      {folderDelete.pendingId && (
+        <ConfirmDeleteDialog
+          message={folderDelete.pendingMessage}
+          anchorRect={folderDelete.anchorRect}
+          onConfirm={folderDelete.confirmDelete}
+          onCancel={folderDelete.cancelDelete}
         />
       )}
 

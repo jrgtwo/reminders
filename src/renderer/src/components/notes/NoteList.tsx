@@ -50,7 +50,7 @@ export default function NoteList({ notes, onNew, onEdit, onDelete, onReorder }: 
           className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
           title="New note"
         >
-          <Plus size={11} />
+          <Plus size={20} />
         </button>
       </div>
       {sorted.length === 0 && (

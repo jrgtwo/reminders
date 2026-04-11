@@ -1,9 +1,10 @@
-import { useMemo } from 'react'
+import { useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useRemindersStore } from '../../../store/reminders.store'
 import { useUIStore } from '../../../store/ui.store'
 import { getOccurrencesInRange } from '../../../utils/recurrence'
 import { today, parseDateStr } from '../../../utils/dates'
+import { useConfirmDelete } from '../../../hooks/useConfirmDelete'
 import type { Reminder } from '../../../types/models'
 
 export interface ScheduleItem {
@@ -37,6 +38,7 @@ export function useMobileRemindersPage() {
   const navigate = useNavigate()
   const reminders = useRemindersStore((s) => s.reminders)
   const toggleComplete = useRemindersStore((s) => s.toggleComplete)
+  const removeReminder = useRemindersStore((s) => s.remove)
   const saveReminder = useRemindersStore((s) => s.save)
   const setNewReminderDate = useUIStore((s) => s.setNewReminderDate)
 
@@ -121,6 +123,15 @@ export function useMobileRemindersPage() {
 
   const isEmpty = overdue.length === 0 && todayItems.length === 0 && upcoming.length === 0
 
+  const reminderDelete = useConfirmDelete(useCallback((id: string) => {
+    removeReminder(id)
+  }, [removeReminder]))
+
+  function handleDeleteReminder(id: string, e: React.MouseEvent) {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    reminderDelete.requestDelete(id, rect, 'Delete this reminder? This cannot be undone.')
+  }
+
   async function handleSnooze(item: ScheduleItem) {
     const reminder = reminders.find((r) => r.id === item.id)
     if (!reminder) return
@@ -139,6 +150,8 @@ export function useMobileRemindersPage() {
     navigate,
     reminders,
     toggleComplete,
+    handleDeleteReminder,
+    reminderDelete,
     setNewReminderDate,
     overdue,
     todayItems,

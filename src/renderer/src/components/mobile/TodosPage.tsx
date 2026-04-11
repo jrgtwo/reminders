@@ -7,6 +7,7 @@ import FolderForm from '../lists/FolderForm'
 import { CollapsibleSection } from '../ui/CollapsibleSection'
 import { FolderTree } from '../ui/FolderNav'
 import { useMobileTodosPage } from './hooks/useMobileTodosPage'
+import MobilePageHeader from '../ui/MobilePageHeader'
 
 // --- List nav item (mobile: navigate only, no delete) ---
 
@@ -30,7 +31,7 @@ function ListNavItem({
       }`}
     >
       <List
-        size={11}
+        size={20}
         className={
           active ? 'shrink-0 text-[#6498c8]' : 'shrink-0 text-slate-400 dark:text-white/25'
         }
@@ -40,7 +41,7 @@ function ListNavItem({
       >
         {l.name}
       </span>
-      <ArrowRight size={11} className="shrink-0 text-slate-300 dark:text-white/20" />
+      <ArrowRight size={20} className="shrink-0 text-slate-300 dark:text-white/20" />
     </button>
   )
 }
@@ -119,9 +120,9 @@ function DateSection({
               className="flex items-center gap-1.5 w-full px-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
             >
               {yearCollapsed ? (
-                <ChevronRight size={10} className="text-slate-300 dark:text-white/20 shrink-0" />
+                <ChevronRight size={20} className="text-slate-300 dark:text-white/20 shrink-0" />
               ) : (
-                <ChevronDown size={10} className="text-slate-300 dark:text-white/20 shrink-0" />
+                <ChevronDown size={20} className="text-slate-300 dark:text-white/20 shrink-0" />
               )}
               <span className="text-[11px] font-bold text-slate-500 dark:text-white/40 uppercase tracking-wide">
                 {year}
@@ -149,12 +150,12 @@ function DateSection({
                     >
                       {monthCollapsed ? (
                         <ChevronRight
-                          size={9}
+                          size={20}
                           className="text-slate-300 dark:text-white/20 shrink-0"
                         />
                       ) : (
                         <ChevronDown
-                          size={9}
+                          size={20}
                           className="text-slate-300 dark:text-white/20 shrink-0"
                         />
                       )}
@@ -178,7 +179,7 @@ function DateSection({
                                 className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
                                 title={`New list for ${dateStr}`}
                               >
-                                <Plus size={10} />
+                                <Plus size={20} />
                               </button>
                             </div>
                             {dayLists.map((l) => (
@@ -228,11 +229,7 @@ export default function TodosPage() {
     <>
       <div className="flex flex-col h-full bg-[var(--bg-app)]">
         {/* Header */}
-        <div className="flex items-center px-4 py-3 border-b border-black/10 dark:border-white/[0.07]">
-          <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-white/40 flex-1">
-            Lists
-          </span>
-        </div>
+        <MobilePageHeader title="Lists" />
 
         <div className="flex-1 overflow-y-auto">
           {/* Ad-hoc section */}
@@ -248,14 +245,14 @@ export default function TodosPage() {
                     className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
                     title="New list"
                   >
-                    <Plus size={11} />
+                    <Plus size={20} />
                   </button>
                   <button
                     onClick={openFolderForm}
                     className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
                     title="New folder"
                   >
-                    <FolderOpen size={11} />
+                    <FolderOpen size={20} />
                   </button>
                 </div>
               }
@@ -298,7 +295,7 @@ export default function TodosPage() {
                   className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
                   title="New date-based list"
                 >
-                  <Plus size={11} />
+                  <Plus size={20} />
                 </button>
               }
             >

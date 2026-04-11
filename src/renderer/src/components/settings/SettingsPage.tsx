@@ -55,7 +55,7 @@ export default function SettingsPage() {
     <div className="max-w-lg mx-auto px-6 py-8 space-y-8">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="-ml-2">
-          <ArrowLeft size={16} />
+          <ArrowLeft size={20} />
           Back
         </Button>
       </div>
@@ -75,13 +75,13 @@ export default function SettingsPage() {
               <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.email}</p>
             </div>
             <Button variant="ghost" size="sm" onClick={signOut}>
-              <LogOut size={14} />
+              <LogOut size={20} />
               Sign out
             </Button>
           </div>
         ) : magicLinkStatus === 'sent' ? (
           <div className="flex items-center gap-3 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400">
-            <Check size={16} />
+            <Check size={20} />
             <div>
               <p className="text-sm font-medium">Check your email</p>
               <p className="text-xs mt-0.5 opacity-80">We sent a sign-in link to {email}</p>
@@ -105,13 +105,13 @@ export default function SettingsPage() {
                 className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-[var(--border)] bg-white dark:bg-[var(--bg-card)] text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <Button type="submit" size="sm" disabled={magicLinkStatus === 'sending'}>
-                <Mail size={14} />
+                <Mail size={20} />
                 {magicLinkStatus === 'sending' ? 'Sending…' : 'Send link'}
               </Button>
             </div>
             {magicLinkStatus === 'error' && (
               <p className="flex items-center gap-1.5 text-xs text-red-600 dark:text-[#e8a045]">
-                <AlertCircle size={12} />
+                <AlertCircle size={20} />
                 Failed to send — check your email and try again.
               </p>
             )}
@@ -128,9 +128,9 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
             <div className="flex items-center gap-3">
               {syncStatus === 'error' ? (
-                <CloudOff size={16} className="text-red-400" />
+                <CloudOff size={20} className="text-red-400" />
               ) : (
-                <Cloud size={16} className="text-gray-400 dark:text-gray-500" />
+                <Cloud size={20} className="text-gray-400 dark:text-gray-500" />
               )}
               <div>
                 <p className="text-sm font-medium">
@@ -153,7 +153,7 @@ export default function SettingsPage() {
               onClick={triggerSync}
               disabled={syncStatus === 'syncing'}
             >
-              <RefreshCw size={14} className={syncStatus === 'syncing' ? 'animate-spin' : ''} />
+              <RefreshCw size={20} className={syncStatus === 'syncing' ? 'animate-spin' : ''} />
               {syncStatus === 'syncing' ? 'Syncing…' : 'Sync now'}
             </Button>
           </div>
@@ -195,7 +195,7 @@ export default function SettingsPage() {
           </h2>
           <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
             <div className="flex items-center gap-3">
-              <ShieldCheck size={16} className="text-gray-400 dark:text-gray-500 shrink-0" />
+              <ShieldCheck size={20} className="text-gray-400 dark:text-gray-500 shrink-0" />
               <div>
                 <p className="text-sm font-medium">Rotate encryption key</p>
                 <p className="text-xs text-gray-400 mt-0.5">
@@ -220,9 +220,9 @@ export default function SettingsPage() {
                 disabled={rotateStatus === 'rotating' || rotateStatus === 'done' || rotateStatus === 'error'}
                 onClick={() => setRotateStatus('confirm')}
               >
-                {rotateStatus === 'rotating' && <RefreshCw size={14} className="animate-spin" />}
-                {rotateStatus === 'done' && <Check size={14} />}
-                {rotateStatus === 'error' && <AlertCircle size={14} />}
+                {rotateStatus === 'rotating' && <RefreshCw size={20} className="animate-spin" />}
+                {rotateStatus === 'done' && <Check size={20} />}
+                {rotateStatus === 'error' && <AlertCircle size={20} />}
                 {rotateStatus === 'rotating'
                   ? 'Rotating…'
                   : rotateStatus === 'done'
@@ -315,7 +315,7 @@ export default function SettingsPage() {
               </p>
             </div>
             <Button variant="ghost" size="sm" onClick={handleExport} disabled={exporting}>
-              <Download size={14} />
+              <Download size={20} />
               {exporting ? 'Exporting…' : 'Export'}
             </Button>
           </div>
@@ -327,7 +327,7 @@ export default function SettingsPage() {
               </p>
             </div>
             <Button variant="ghost" size="sm" onClick={handleImport} disabled={importing}>
-              <Upload size={14} />
+              <Upload size={20} />
               {importing ? 'Importing…' : 'Import'}
             </Button>
           </div>
@@ -339,7 +339,7 @@ export default function SettingsPage() {
               </p>
             </div>
             <Button variant="ghost" size="sm" onClick={handleExportIcal} disabled={exportingIcal}>
-              <Download size={14} />
+              <Download size={20} />
               {exportingIcal ? 'Exporting…' : 'Export .ics'}
             </Button>
           </div>
@@ -351,7 +351,7 @@ export default function SettingsPage() {
               </p>
             </div>
             <Button variant="ghost" size="sm" onClick={handleImportIcal} disabled={importingIcal}>
-              <Upload size={14} />
+              <Upload size={20} />
               {importingIcal ? 'Importing…' : 'Import .ics'}
             </Button>
           </div>
@@ -363,14 +363,14 @@ export default function SettingsPage() {
                   : 'bg-red-50 dark:bg-[#e8a045]/[0.08] text-red-700 dark:text-[#e8a045]'
               }`}
             >
-              {importStatus.ok ? <Check size={14} /> : <AlertCircle size={14} />}
+              {importStatus.ok ? <Check size={20} /> : <AlertCircle size={20} />}
               {importStatus.msg}
             </div>
           )}
           {isLoggedIn && (
             <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
               <div className="flex items-center gap-3">
-                <RotateCcw size={16} className="text-gray-400 dark:text-gray-500 shrink-0" />
+                <RotateCcw size={20} className="text-gray-400 dark:text-gray-500 shrink-0" />
                 <div>
                   <p className="text-sm font-medium">Reset from cloud</p>
                   <p className="text-xs text-gray-400 mt-0.5">
@@ -391,9 +391,9 @@ export default function SettingsPage() {
                   disabled={resetStatus === 'running' || syncStatus === 'syncing'}
                   onClick={() => setResetStatus('confirm')}
                 >
-                  {resetStatus === 'running' && <RefreshCw size={14} className="animate-spin" />}
-                  {resetStatus === 'done' && <Check size={14} />}
-                  {resetStatus === 'error' && <AlertCircle size={14} />}
+                  {resetStatus === 'running' && <RefreshCw size={20} className="animate-spin" />}
+                  {resetStatus === 'done' && <Check size={20} />}
+                  {resetStatus === 'error' && <AlertCircle size={20} />}
                   {resetStatus === 'running' ? 'Resetting…' : resetStatus === 'done' ? 'Done' : resetStatus === 'error' ? 'Failed' : 'Reset'}
                 </Button>
               )}
@@ -401,7 +401,7 @@ export default function SettingsPage() {
           )}
           <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
             <div className="flex items-center gap-3">
-              <Trash2 size={16} className="text-gray-400 dark:text-gray-500 shrink-0" />
+              <Trash2 size={20} className="text-gray-400 dark:text-gray-500 shrink-0" />
               <div>
                 <p className="text-sm font-medium">Clear local data</p>
                 <p className="text-xs text-gray-400 mt-0.5">
@@ -422,8 +422,8 @@ export default function SettingsPage() {
                 disabled={clearStatus === 'running'}
                 onClick={() => setClearStatus('confirm')}
               >
-                {clearStatus === 'running' && <RefreshCw size={14} className="animate-spin" />}
-                {clearStatus === 'done' && <Check size={14} />}
+                {clearStatus === 'running' && <RefreshCw size={20} className="animate-spin" />}
+                {clearStatus === 'done' && <Check size={20} />}
                 {clearStatus === 'running' ? 'Clearing…' : clearStatus === 'done' ? 'Done' : 'Clear'}
               </Button>
             )}

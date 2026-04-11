@@ -42,7 +42,7 @@ export default function NoteItem({ note, onEdit, onDelete }: Props) {
           tabIndex={-1}
           aria-label="Drag to reorder"
         >
-          <GripVertical size={12} />
+          <GripVertical size={20} />
         </button>
 
         {/* Title */}
@@ -58,7 +58,7 @@ export default function NoteItem({ note, onEdit, onDelete }: Props) {
               className="shrink-0 text-slate-300 hover:text-slate-500 dark:hover:text-slate-300 transition-colors"
               aria-label={expanded ? 'Collapse' : 'Expand'}
             >
-              {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+              {expanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
             </button>
           )}
         </div>
@@ -70,14 +70,14 @@ export default function NoteItem({ note, onEdit, onDelete }: Props) {
             className="w-6 h-6 flex items-center justify-center rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
             aria-label="Edit"
           >
-            <Pencil size={12} />
+            <Pencil size={20} />
           </button>
           <button
             onClick={() => onDelete(note.id)}
             className="w-6 h-6 flex items-center justify-center rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors"
             aria-label="Delete"
           >
-            <Trash2 size={12} />
+            <Trash2 size={20} />
           </button>
         </div>
       </div>

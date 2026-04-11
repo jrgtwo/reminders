@@ -37,7 +37,7 @@ const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
     <div className="relative w-full max-w-sm">
       <div className="relative">
         <Search
-          size={14}
+          size={20}
           className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
         />
         <input
@@ -68,7 +68,7 @@ const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
                   onClick={() => handleReminderClick(r)}
                   className="flex items-center gap-3 w-full px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-white/[0.07] transition-all"
                 >
-                  <Bell size={14} className="text-blue-400 shrink-0" />
+                  <Bell size={20} className="text-blue-400 shrink-0" />
                   <div className="min-w-0">
                     <p className="text-sm text-gray-900 dark:text-white/80 truncate">{r.title}</p>
                     <p className="text-xs text-gray-400 dark:text-white/30">{r.date}</p>
@@ -90,7 +90,7 @@ const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
                   className="flex items-center gap-3 w-full px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-white/[0.07] transition-all"
                 >
                   <CheckSquare
-                    size={14}
+                    size={20}
                     className={`shrink-0 ${i.completed ? 'text-gray-300 dark:text-white/20' : 'text-[#6498c8]'}`}
                   />
                   <div className="min-w-0">
@@ -112,7 +112,7 @@ const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
                   onClick={() => handleNoteClick(n)}
                   className="flex items-center gap-3 w-full px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-white/[0.07] transition-all"
                 >
-                  <FileText size={14} className="text-slate-400 dark:text-white/30 shrink-0" />
+                  <FileText size={20} className="text-slate-400 dark:text-white/30 shrink-0" />
                   <div className="min-w-0">
                     <p className="text-sm text-gray-900 dark:text-white/80 truncate leading-snug">
                       {n.content.split('\n').find((l) => l.trim()) ?? n.date}

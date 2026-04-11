@@ -1,8 +1,9 @@
 import { forwardRef, useImperativeHandle } from 'react'
 import type { ReactNode } from 'react'
-import { Plus, FolderOpen, FileText, ArrowUpRight } from 'lucide-react'
+import { Plus, FolderOpen, FileText } from 'lucide-react'
 import type { Note } from '../../types/models'
 import NoteFolderForm from './NoteFolderForm'
+import ConfirmDeleteDialog from '../ui/ConfirmDeleteDialog'
 import { CollapsibleSection } from '../ui/CollapsibleSection'
 import { SidebarNavItem, FolderTree, DateTree } from '../ui/FolderNav'
 import { useNotesNav } from './hooks/useNotesNav'
@@ -38,7 +39,8 @@ const NotesNav = forwardRef<NotesNavHandle>(function NotesNav(_, ref) {
     openNoteFolderForm,
     closeNoteFolderForm,
     handleSaveNoteFolder,
-    navigate,
+    noteDelete,
+    folderDelete,
   } = useNotesNav()
 
   useImperativeHandle(ref, () => ({ openNewNote: () => handleNewNote(undefined) }))
@@ -66,48 +68,35 @@ const NotesNav = forwardRef<NotesNavHandle>(function NotesNav(_, ref) {
 
   return (
     <>
-      <CollapsibleSection
-        label="Notes"
-        count={noteCount}
-        accent="blue"
-        defaultOpen={true}
-        headerExtra={
-          <button
-            onClick={() => navigate('/notes')}
-            className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-            title="Go to Notes"
-          >
-            <ArrowUpRight size={11} />
-          </button>
-        }
-      >
-        {noteCount === 0 && noteFolders.length === 0 && (
-          <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2">No notes yet</p>
-        )}
+      {noteCount === 0 && noteFolders.length === 0 && (
+        <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2">No notes yet</p>
+      )}
 
-        {/* My Notes Collapsible Section */}
-        <CollapsibleSection
+      {/* My Notes Collapsible Section */}
+      <CollapsibleSection
           label="My Notes"
           count={standaloneNotes.length + rootNoteFolders.length}
           accent="slate"
           defaultOpen={false}
+          headerExtra={
+            <div className="flex items-center gap-0.5">
+              <button
+                onClick={() => handleNewNote(undefined)}
+                className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                title="New note"
+              >
+                <Plus size={20} />
+              </button>
+              <button
+                onClick={() => openNoteFolderForm(null, undefined)}
+                className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                title="New folder"
+              >
+                <FolderOpen size={20} />
+              </button>
+            </div>
+          }
         >
-          <div className="flex items-center justify-end gap-0.5 px-3 py-1 border-b border-slate-100 dark:border-white/[0.04]">
-            <button
-              onClick={() => handleNewNote(undefined)}
-              className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-              title="New note"
-            >
-              <Plus size={11} />
-            </button>
-            <button
-              onClick={() => openNoteFolderForm(null, undefined)}
-              className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-              title="New folder"
-            >
-              <FolderOpen size={11} />
-            </button>
-          </div>
           <FolderTree
             rootFolders={rootNoteFolders}
             folderChildrenMap={noteFolderChildrenMap}
@@ -165,7 +154,7 @@ const NotesNav = forwardRef<NotesNavHandle>(function NotesNav(_, ref) {
                   className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
                   title="New date-based note"
                 >
-                  <Plus size={11} />
+                  <Plus size={20} />
                 </button>
               }
             >
@@ -191,7 +180,6 @@ const NotesNav = forwardRef<NotesNavHandle>(function NotesNav(_, ref) {
             </CollapsibleSection>
           </div>
         )}
-      </CollapsibleSection>
 
       {noteFolderFormOpen && (
         <NoteFolderForm
@@ -199,6 +187,24 @@ const NotesNav = forwardRef<NotesNavHandle>(function NotesNav(_, ref) {
           parentId={pendingParentNoteFolderId}
           onSave={handleSaveNoteFolder}
           onClose={closeNoteFolderForm}
+        />
+      )}
+
+      {noteDelete.pendingId && (
+        <ConfirmDeleteDialog
+          message={noteDelete.pendingMessage}
+          anchorRect={noteDelete.anchorRect}
+          onConfirm={noteDelete.confirmDelete}
+          onCancel={noteDelete.cancelDelete}
+        />
+      )}
+
+      {folderDelete.pendingId && (
+        <ConfirmDeleteDialog
+          message={folderDelete.pendingMessage}
+          anchorRect={folderDelete.anchorRect}
+          onConfirm={folderDelete.confirmDelete}
+          onCancel={folderDelete.cancelDelete}
         />
       )}
 

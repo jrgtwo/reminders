@@ -102,7 +102,7 @@ export default function ReminderForm({ date, reminder, defaultTime, onSave, onCl
         {/* Recurrence toggle */}
         <div className="flex items-center justify-between py-0.5">
           <div className="flex items-center gap-2">
-            <RefreshCw size={14} className="text-gray-400 dark:text-gray-500" />
+            <RefreshCw size={20} className="text-gray-400 dark:text-gray-500" />
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Repeat</span>
           </div>
           <button

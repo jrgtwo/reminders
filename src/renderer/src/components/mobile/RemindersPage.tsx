@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, Plus, Check, Clock, RefreshCw, SkipForward } from 'lucide-react'
+import { useLocation } from 'react-router-dom'
+import { ChevronDown, ChevronUp, Plus, Check, Clock, RefreshCw, SkipForward, Trash2 } from 'lucide-react'
 import { today } from '../../utils/dates'
 import type { ReactNode } from 'react'
 import {
@@ -8,6 +9,9 @@ import {
   formatUpcomingDate,
   type ScheduleItem
 } from './hooks/useMobileRemindersPage'
+import SidebarAddButton from '../ui/SidebarAddButton'
+import MobilePageHeader from '../ui/MobilePageHeader'
+import ConfirmDeleteDialog from '../ui/ConfirmDeleteDialog'
 
 type Accent = 'red' | 'blue' | 'slate'
 
@@ -58,9 +62,9 @@ function CollapsibleSection({
         </span>
         <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${s.count}`}>{count}</span>
         {open ? (
-          <ChevronUp size={11} className={s.chevron} />
+          <ChevronUp size={20} className={s.chevron} />
         ) : (
-          <ChevronDown size={11} className={s.chevron} />
+          <ChevronDown size={20} className={s.chevron} />
         )}
       </button>
       {open && <div>{children}</div>}
@@ -69,10 +73,15 @@ function CollapsibleSection({
 }
 
 export default function RemindersPage() {
+  const location = useLocation()
+  const navSection = (location.state as { section?: string } | null)?.section
+
   const {
     navigate,
     reminders,
     toggleComplete,
+    handleDeleteReminder,
+    reminderDelete,
     setNewReminderDate,
     overdue,
     todayItems,
@@ -85,6 +94,22 @@ export default function RemindersPage() {
     isEmpty,
     handleSnooze
   } = useMobileRemindersPage()
+
+  // When navigating from header counts, auto-open the first available sub-section
+  const autoOpenOverdue = navSection === 'overdue'
+  const autoOpenUpcoming = navSection === 'upcoming'
+  const firstOverdueSub = overdueYesterday.length > 0
+    ? 'yesterday'
+    : overdueThisWeek.length > 0
+      ? 'thisWeek'
+      : overdueOlder.length > 0
+        ? 'older'
+        : null
+  const firstUpcomingSub = upcomingThisWeek.length > 0
+    ? 'thisWeek'
+    : upcomingLater.length > 0
+      ? 'later'
+      : null
 
   function ReminderRow({
     item,
@@ -119,7 +144,7 @@ export default function RemindersPage() {
                   : 'border-slate-300 dark:border-white/20 hover:border-emerald-400'
             }`}
           >
-            {isCompleted && <Check size={9} strokeWidth={3} />}
+            {isCompleted && <Check size={20} strokeWidth={3} />}
           </button>
 
           {/* Content — clicking navigates to that day */}
@@ -150,13 +175,13 @@ export default function RemindersPage() {
               <div className="flex items-center gap-1.5 mt-1">
                 {item.startTime && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-1.5 py-0.5 rounded">
-                    <Clock size={8} />
+                    <Clock size={20} />
                     {item.startTime}
                   </span>
                 )}
                 {item.isRecurring && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-400/10 px-1.5 py-0.5 rounded">
-                    <RefreshCw size={8} />
+                    <RefreshCw size={20} />
                     {item.recurrence?.frequency}
                   </span>
                 )}
@@ -174,9 +199,21 @@ export default function RemindersPage() {
               title={item.isRecurring ? 'Skip this occurrence' : 'Snooze to tomorrow'}
               className="opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 w-6 h-6 flex-shrink-0 flex items-center justify-center rounded text-slate-300 dark:text-white/20 hover:text-[#e8a045] hover:bg-[#e8a045]/10"
             >
-              <SkipForward size={11} />
+              <SkipForward size={20} />
             </button>
           )}
+
+          {/* Delete */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              handleDeleteReminder(item.id, e)
+            }}
+            title="Delete reminder"
+            className="mt-0.5 w-6 h-6 flex-shrink-0 flex items-center justify-center rounded text-slate-300 dark:text-white/20 hover:text-red-500 hover:bg-red-500/10"
+          >
+            <Trash2 size={20} />
+          </button>
         </div>
       </li>
     )
@@ -185,18 +222,18 @@ export default function RemindersPage() {
   return (
     <div className="flex flex-col h-full bg-[var(--bg-app)]">
       {/* Header */}
-      <div className="flex items-center px-4 py-3 border-b border-black/10 dark:border-white/[0.07]">
-        <span className="text-sm font-black uppercase tracking-[0.2em] text-slate-500 dark:text-white/40 flex-1">
-          Schedule
-        </span>
-        <button
-          onClick={() => setNewReminderDate(today().toString())}
-          className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 dark:text-white/30 hover:text-slate-700 dark:hover:text-white/60 transition-colors px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-white/[0.06]"
-        >
-          <Plus size={12} />
-          Add
-        </button>
-      </div>
+      <MobilePageHeader
+        title="Schedule"
+        actions={
+          <button
+            onClick={() => setNewReminderDate(today().toString())}
+            className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 dark:text-white/30 hover:text-slate-700 dark:hover:text-white/60 transition-colors px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-white/[0.06]"
+          >
+            <Plus size={20} />
+            Add
+          </button>
+        }
+      />
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
@@ -210,7 +247,7 @@ export default function RemindersPage() {
           <>
             {/* Overdue */}
             {overdue.length > 0 && (
-              <div className="border-b border-slate-200 dark:border-white/[0.07] pt-3 pb-2">
+              <div key={`overdue-${navSection}`} className="border-b border-slate-200 dark:border-white/[0.07] pt-3 pb-2">
                 <CollapsibleSection label="Overdue" count={overdue.length} accent="red">
                   <div className="flex flex-col gap-1 pl-2">
                     {overdueYesterday.length > 0 && (
@@ -219,7 +256,7 @@ export default function RemindersPage() {
                         count={overdueYesterday.length}
                         accent="red"
                         indent
-                        defaultOpen={false}
+                        defaultOpen={autoOpenOverdue && firstOverdueSub === 'yesterday'}
                       >
                         <ul className="flex flex-col gap-1 px-2 pb-1">
                           {overdueYesterday.map((item, i) => (
@@ -238,7 +275,7 @@ export default function RemindersPage() {
                         count={overdueThisWeek.length}
                         accent="slate"
                         indent
-                        defaultOpen={false}
+                        defaultOpen={autoOpenOverdue && firstOverdueSub === 'thisWeek'}
                       >
                         <ul className="flex flex-col gap-1 px-2 pb-1">
                           {overdueThisWeek.map((item, i) => (
@@ -257,7 +294,7 @@ export default function RemindersPage() {
                         count={overdueOlder.length}
                         accent="slate"
                         indent
-                        defaultOpen={false}
+                        defaultOpen={autoOpenOverdue && firstOverdueSub === 'older'}
                       >
                         <ul className="flex flex-col gap-1 px-2 pb-1">
                           {overdueOlder.map((item, i) => (
@@ -299,7 +336,7 @@ export default function RemindersPage() {
 
             {/* Upcoming */}
             {upcoming.length > 0 && (
-              <div className="pt-3 pb-2">
+              <div key={`upcoming-${navSection}`} className="pt-3 pb-2">
                 <CollapsibleSection label="Upcoming" count={upcoming.length} accent="blue">
                   <div className="flex flex-col gap-1 pl-2">
                     {upcomingThisWeek.length > 0 && (
@@ -308,7 +345,7 @@ export default function RemindersPage() {
                         count={upcomingThisWeek.length}
                         accent="slate"
                         indent
-                        defaultOpen={false}
+                        defaultOpen={autoOpenUpcoming && firstUpcomingSub === 'thisWeek'}
                       >
                         <ul className="flex flex-col gap-1 px-2 pb-1">
                           {upcomingThisWeek.map((item, i) => (
@@ -327,7 +364,7 @@ export default function RemindersPage() {
                         count={upcomingLater.length}
                         accent="slate"
                         indent
-                        defaultOpen={false}
+                        defaultOpen={autoOpenUpcoming && firstUpcomingSub === 'later'}
                       >
                         <ul className="flex flex-col gap-1 px-2 pb-1">
                           {upcomingLater.map((item, i) => (
@@ -349,15 +386,16 @@ export default function RemindersPage() {
       </div>
 
       {/* Footer */}
-      <div className="p-3 border-t border-slate-200 dark:border-white/[0.07] shrink-0">
-        <button
-          onClick={() => setNewReminderDate(today().toString())}
-          className="flex items-center justify-center gap-2 w-full text-[13px] font-medium text-slate-500 dark:text-white/50 hover:text-slate-800 dark:hover:text-white/80 bg-white dark:bg-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.1] px-3 py-2 rounded-lg transition-all"
-        >
-          <Plus size={13} />
-          Add Reminder
-        </button>
-      </div>
+      <SidebarAddButton label="Add Reminder" onClick={() => setNewReminderDate(today().toString())} />
+
+      {reminderDelete.pendingId && (
+        <ConfirmDeleteDialog
+          message={reminderDelete.pendingMessage}
+          anchorRect={reminderDelete.anchorRect}
+          onConfirm={reminderDelete.confirmDelete}
+          onCancel={reminderDelete.cancelDelete}
+        />
+      )}
     </div>
   )
 }

@@ -19,7 +19,7 @@ export default function SignInPage() {
 
         {status === 'sent' ? (
           <div className="flex items-start gap-3 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400">
-            <Check size={16} className="mt-0.5 shrink-0" />
+            <Check size={20} className="mt-0.5 shrink-0" />
             <div>
               <p className="text-sm font-medium">Check your email</p>
               <p className="text-xs mt-0.5 opacity-80">We sent a sign-in link to {email}</p>
@@ -53,12 +53,12 @@ export default function SignInPage() {
               className="w-full justify-center"
               disabled={status === 'sending' || !captchaToken}
             >
-              <Mail size={14} />
+              <Mail size={20} />
               {status === 'sending' ? 'Sending…' : 'Send sign-in link'}
             </Button>
             {status === 'error' && (
               <p className="flex items-center gap-1.5 text-xs text-red-600 dark:text-[#e8a045]">
-                <AlertCircle size={12} />
+                <AlertCircle size={20} />
                 Failed to send — check your email and try again.
               </p>
             )}

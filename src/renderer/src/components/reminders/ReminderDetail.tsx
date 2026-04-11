@@ -46,18 +46,18 @@ export default function ReminderDetail({ reminder, dateStr, onClose }: Props) {
         {/* Date + time */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-            <CalendarDays size={14} className="shrink-0 text-[#6498c8]" />
+            <CalendarDays size={20} className="shrink-0 text-[#6498c8]" />
             <span>{formatDate(dateStr)}</span>
           </div>
           {reminder.startTime && (
             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-              <Clock size={14} className="shrink-0 text-[#6498c8]" />
+              <Clock size={20} className="shrink-0 text-[#6498c8]" />
               <span>{formatTime(reminder.startTime, timeFormat)}{reminder.endTime ? ` – ${formatTime(reminder.endTime, timeFormat)}` : ''}</span>
             </div>
           )}
           {reminder.recurrence && (
             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-              <Repeat size={14} className="shrink-0 text-[#6498c8]" />
+              <Repeat size={20} className="shrink-0 text-[#6498c8]" />
               <span>{formatRecurrence(reminder.recurrence)}</span>
             </div>
           )}
@@ -66,7 +66,7 @@ export default function ReminderDetail({ reminder, dateStr, onClose }: Props) {
         {/* Description */}
         {reminder.description?.trim() && (
           <div className="flex gap-2">
-            <FileText size={14} className="shrink-0 mt-0.5 text-gray-400 dark:text-white/30" />
+            <FileText size={20} className="shrink-0 mt-0.5 text-gray-400 dark:text-white/30" />
             <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
               {reminder.description}
             </p>
@@ -82,7 +82,7 @@ export default function ReminderDetail({ reminder, dateStr, onClose }: Props) {
           className="flex items-center gap-2 text-sm font-medium text-[#6498c8] hover:opacity-80 transition-opacity"
         >
           <span>View full day</span>
-          <ArrowRight size={14} />
+          <ArrowRight size={20} />
         </button>
       </div>
     </Dialog>

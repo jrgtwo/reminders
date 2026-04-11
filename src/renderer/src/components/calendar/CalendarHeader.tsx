@@ -52,14 +52,14 @@ export default function CalendarHeader({
             aria-label="Previous"
             className="w-7 h-7 flex items-center justify-center rounded-md text-slate-300 dark:text-white/20 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-all"
           >
-            <ChevronLeft size={16} />
+            <ChevronLeft size={20} />
           </button>
           <button
             onClick={onNext}
             aria-label="Next"
             className="w-7 h-7 flex items-center justify-center rounded-md text-slate-300 dark:text-white/20 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-all"
           >
-            <ChevronRight size={16} />
+            <ChevronRight size={20} />
           </button>
         </div>
       </div>

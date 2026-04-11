@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useTodoFoldersStore } from '../../../store/todo_folders.store'
 import { useTodoListsStore } from '../../../store/todo_lists.store'
 import { buildFolderTree } from '../../../lib/folderTree'
+import { useConfirmDelete } from '../../../hooks/useConfirmDelete'
 import type { TodoFolder } from '../../../types/models'
 
 export function useListsNav() {
@@ -22,14 +23,25 @@ export function useListsNav() {
   const [editingFolder, setEditingFolder] = useState<TodoFolder | null>(null)
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
 
+  const activeListId = location.pathname.startsWith('/lists/')
+    ? location.pathname.slice('/lists/'.length)
+    : undefined
+
+  const listDelete = useConfirmDelete(useCallback((id: string) => {
+    removeList(id)
+    if (activeListId === id) navigate('/lists')
+  }, [removeList, activeListId, navigate]))
+
+  const folderDelete = useConfirmDelete(useCallback((id: string) => {
+    const affectedLists = lists.filter((l) => l.folderId === id)
+    affectedLists.forEach((l) => removeList(l.id))
+    removeFolder(id)
+  }, [lists, removeList, removeFolder]))
+
   useEffect(() => {
     loadLists()
     loadFolders()
   }, [loadLists, loadFolders])
-
-  const activeListId = location.pathname.startsWith('/lists/')
-    ? location.pathname.slice('/lists/'.length)
-    : undefined
 
   const adHocLists = useMemo(
     () => lists.filter((l) => !l.dueDate).sort((a, b) => a.order - b.order),
@@ -55,18 +67,19 @@ export function useListsNav() {
     navigate('/lists/new', { state: opts })
   }
 
-  function handleDeleteList(id: string) {
-    removeList(id)
-    if (activeListId === id) navigate('/lists')
+  function handleDeleteList(id: string, e: React.MouseEvent) {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    listDelete.requestDelete(id, rect, 'Delete this list? This cannot be undone.')
   }
 
-  function handleDeleteFolder(id: string) {
+  function handleDeleteFolder(id: string, e: React.MouseEvent) {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
     const affectedLists = lists.filter((l) => l.folderId === id)
+    let msg = 'Delete this folder? This cannot be undone.'
     if (affectedLists.length > 0) {
-      if (!window.confirm(`This folder contains ${affectedLists.length} list(s). Delete everything?`)) return
-      affectedLists.forEach((l) => removeList(l.id))
+      msg = `This folder contains ${affectedLists.length} list(s). Delete everything?`
     }
-    removeFolder(id)
+    folderDelete.requestDelete(id, rect, msg)
   }
 
   function openFolderForm(folder: TodoFolder | null = null) {
@@ -103,5 +116,7 @@ export function useListsNav() {
     openFolderForm,
     closeFolderForm,
     handleSaveFolder,
+    listDelete,
+    folderDelete,
   }
 }

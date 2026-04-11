@@ -50,9 +50,9 @@ export function DateTree<I>({
               className="flex items-center gap-1.5 w-full px-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
             >
               {yearCollapsed ? (
-                <ChevronRight size={16} className="text-slate-300 dark:text-white/20 shrink-0" />
+                <ChevronRight size={20} className="text-slate-300 dark:text-white/20 shrink-0" />
               ) : (
-                <ChevronDown size={16} className="text-slate-300 dark:text-white/20 shrink-0" />
+                <ChevronDown size={20} className="text-slate-300 dark:text-white/20 shrink-0" />
               )}
               <span className="text-[15px] font-bold text-slate-500 dark:text-white/40 uppercase tracking-wide">
                 {year}
@@ -72,9 +72,9 @@ export function DateTree<I>({
                       className="flex items-center gap-1.5 w-full pl-6 pr-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
                     >
                       {monthCollapsed ? (
-                        <ChevronRight size={16} className="text-slate-300 dark:text-white/20 shrink-0" />
+                        <ChevronRight size={20} className="text-slate-300 dark:text-white/20 shrink-0" />
                       ) : (
-                        <ChevronDown size={16} className="text-slate-300 dark:text-white/20 shrink-0" />
+                        <ChevronDown size={20} className="text-slate-300 dark:text-white/20 shrink-0" />
                       )}
                       <span className="text-[15px] font-semibold text-slate-400 dark:text-white/30">
                         {monthName}
@@ -94,9 +94,9 @@ export function DateTree<I>({
                                 className="flex items-center gap-1.5 flex-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
                               >
                                 {dayCollapsed ? (
-                                  <ChevronRight size={16} className="text-slate-300 dark:text-white/20 shrink-0" />
+                                  <ChevronRight size={20} className="text-slate-300 dark:text-white/20 shrink-0" />
                                 ) : (
-                                  <ChevronDown size={16} className="text-slate-300 dark:text-white/20 shrink-0" />
+                                  <ChevronDown size={20} className="text-slate-300 dark:text-white/20 shrink-0" />
                                 )}
                                 <span className="text-[15px] font-semibold text-slate-400 dark:text-white/25">
                                   {ordinal(parseInt(day, 10))}
@@ -107,7 +107,7 @@ export function DateTree<I>({
                                 className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
                                 title={`${newItemTitle} for ${dateStr}`}
                               >
-                                <Plus size={15} />
+                                <Plus size={20} />
                               </button>
                             </div>
                             {!dayCollapsed && dayItems.map((item, i) => (
@@ -144,7 +144,7 @@ export function SidebarNavItem({
   route: string
   icon: ComponentType<{ size: number; className?: string }>
   indent?: boolean
-  onDelete: (id: string) => void
+  onDelete: (id: string, e: React.MouseEvent) => void
   deleteTitle?: string
   onDragStart?: (id: string) => void
   onDragEnd?: () => void
@@ -169,7 +169,7 @@ export function SidebarNavItem({
         className="flex items-center gap-2 flex-1 min-w-0 text-left"
       >
         <Icon
-          size={18}
+          size={20}
           className={
             active ? 'shrink-0 text-[#6498c8]' : 'shrink-0 text-slate-400 dark:text-white/25'
           }
@@ -181,11 +181,11 @@ export function SidebarNavItem({
         </span>
       </button>
       <button
-        onClick={() => onDelete(id)}
+        onClick={(e) => onDelete(id, e)}
         className="absolute right-1 p-1 rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors md:opacity-0 md:group-hover:opacity-100"
         title={deleteTitle}
       >
-        <Trash2 size={15} />
+        <Trash2 size={20} />
       </button>
     </div>
   )
@@ -207,7 +207,7 @@ interface FolderTreeProps<F extends { id: string; name: string }, I> {
   onDrop?: (folderId: string) => void
   // Optional folder actions (omit to hide those buttons)
   onEditFolder?: (folder: F) => void
-  onDeleteFolder?: (id: string) => void
+  onDeleteFolder?: (id: string, e: React.MouseEvent) => void
   onNewSubfolder?: (parentId: string) => void
 }
 
@@ -255,9 +255,9 @@ export function FolderTree<F extends { id: string; name: string }, I>({
           style={{ paddingLeft: `${pl}px`, paddingRight: '8px' }}
         >
           {collapsed ? (
-            <ChevronRight size={16} className="text-slate-300 dark:text-white/20 shrink-0" />
+            <ChevronRight size={20} className="text-slate-300 dark:text-white/20 shrink-0" />
           ) : (
-            <ChevronDown size={16} className="text-slate-300 dark:text-white/20 shrink-0" />
+            <ChevronDown size={20} className="text-slate-300 dark:text-white/20 shrink-0" />
           )}
           <span className="text-[15px] font-semibold text-slate-400 dark:text-white/30 truncate flex-1 text-left pr-20 md:pr-0 md:group-hover:pr-20">
             {folder.name}
@@ -269,16 +269,16 @@ export function FolderTree<F extends { id: string; name: string }, I>({
                 className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
                 title="Rename folder"
               >
-                <Pencil size={15} />
+                <Pencil size={20} />
               </button>
             )}
             {onDeleteFolder && (
               <button
-                onClick={(e) => { e.stopPropagation(); onDeleteFolder(folder.id) }}
+                onClick={(e) => { e.stopPropagation(); onDeleteFolder(folder.id, e) }}
                 className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors"
                 title="Delete folder"
               >
-                <Trash2 size={15} />
+                <Trash2 size={20} />
               </button>
             )}
             {onNewSubfolder && (
@@ -287,7 +287,7 @@ export function FolderTree<F extends { id: string; name: string }, I>({
                 className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
                 title="New subfolder"
               >
-                <FolderPlus size={15} />
+                <FolderPlus size={20} />
               </button>
             )}
             <button
@@ -295,7 +295,7 @@ export function FolderTree<F extends { id: string; name: string }, I>({
               className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
               title="New item in folder"
             >
-              <Plus size={16} />
+              <Plus size={20} />
             </button>
           </div>
         </div>

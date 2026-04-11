@@ -7,7 +7,7 @@ interface Props {
   reminder: Reminder
   onSave: (r: Reminder) => Promise<void>
   onCancel: () => void
-  onDelete: () => void
+  onDelete: (e: React.MouseEvent) => void
 }
 
 const fieldClass =
@@ -126,7 +126,7 @@ export default function ReminderInlineEditor({ reminder, onSave, onCancel, onDel
       {/* Repeat toggle */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <RefreshCw size={13} className="text-slate-400 dark:text-white/30" />
+          <RefreshCw size={20} className="text-slate-400 dark:text-white/30" />
           <span className="text-[13px] text-slate-600 dark:text-white/60">Repeat</span>
         </div>
         <button
@@ -154,10 +154,10 @@ export default function ReminderInlineEditor({ reminder, onSave, onCancel, onDel
       <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-white/[0.05]">
         <button
           type="button"
-          onClick={onDelete}
+          onClick={(e) => onDelete(e)}
           className="flex items-center gap-1.5 text-[12px] text-slate-400 dark:text-white/30 hover:text-red-500 dark:hover:text-red-400 transition-colors"
         >
-          <Trash2 size={13} />
+          <Trash2 size={20} />
           Delete
         </button>
         <div className="flex items-center gap-2">

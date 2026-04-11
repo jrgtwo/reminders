@@ -57,7 +57,7 @@ export default function AppShell() {
             </button>
             <div className="flex items-center gap-3">
               <button
-                onClick={() => navigate('/reminders')}
+                onClick={() => navigate('/reminders', { state: { section: 'overdue' } })}
                 className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
               >
                 <span
@@ -72,7 +72,7 @@ export default function AppShell() {
                 </span>
               </button>
               <button
-                onClick={() => navigate('/reminders')}
+                onClick={() => navigate('/reminders', { state: { section: 'upcoming' } })}
                 className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
               >
                 <span
@@ -98,14 +98,14 @@ export default function AppShell() {
               <div className="flex items-center gap-1.5 text-[10px] text-white/30">
                 {syncStatus === 'syncing' ? (
                   <>
-                    <Loader2 size={11} className="animate-spin" />
+                    <Loader2 size={20} className="animate-spin" />
                     <span>Syncing</span>
                   </>
                 ) : syncStatus === 'error' ? (
-                  <CloudOff size={12} className="text-[#e8a045]" />
+                  <CloudOff size={20} className="text-[#e8a045]" />
                 ) : lastSyncedAt ? (
                   <>
-                    <Cloud size={11} />
+                    <Cloud size={20} />
                     <span>{formatLastSynced(lastSyncedAt)}</span>
                   </>
                 ) : null}
@@ -116,7 +116,7 @@ export default function AppShell() {
               className="w-7 h-7 flex items-center justify-center rounded text-white/30 hover:text-white/80 hover:bg-white/[0.08] transition-all"
               title="Settings (Ctrl+,)"
             >
-              <Settings size={14} />
+              <Settings size={20} />
             </button>
           </div>
         </div>
@@ -148,14 +148,14 @@ export default function AppShell() {
                 <div className="flex items-center gap-1.5 text-[10px] text-white/30">
                   {syncStatus === 'syncing' ? (
                     <>
-                      <Loader2 size={11} className="animate-spin" />
+                      <Loader2 size={20} className="animate-spin" />
                       <span>Syncing</span>
                     </>
                   ) : syncStatus === 'error' ? (
-                    <CloudOff size={12} className="text-[#e8a045]" />
+                    <CloudOff size={20} className="text-[#e8a045]" />
                   ) : lastSyncedAt ? (
                     <>
-                      <Cloud size={11} />
+                      <Cloud size={20} />
                       <span>{formatLastSynced(lastSyncedAt)}</span>
                     </>
                   ) : null}
@@ -166,7 +166,7 @@ export default function AppShell() {
                 className="w-7 h-7 flex items-center justify-center rounded text-white/30 hover:text-white/80 hover:bg-white/[0.08] transition-all"
                 title="Settings (Ctrl+,)"
               >
-                <Settings size={14} />
+                <Settings size={20} />
               </button>
             </div>
           </div>
@@ -182,7 +182,7 @@ export default function AppShell() {
       {/* Sync error banner */}
       {showErrorBanner && (
         <div className="relative flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-[#e8a045]/[0.08] border-b border-red-200 dark:border-[#e8a045]/20 text-red-700 dark:text-[#e8a045] text-xs shrink-0">
-          <CloudOff size={13} />
+          <CloudOff size={20} />
           <span className="flex-1">
             Sync failed — changes are saved locally and will sync when resolved.
           </span>
@@ -190,7 +190,7 @@ export default function AppShell() {
             onClick={() => setErrorDismissed(true)}
             className="p-0.5 hover:bg-red-100 dark:hover:bg-red-500/20 rounded"
           >
-            <X size={13} />
+            <X size={20} />
           </button>
         </div>
       )}

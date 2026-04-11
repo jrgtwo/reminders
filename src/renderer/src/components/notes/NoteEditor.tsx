@@ -61,14 +61,14 @@ type ToolbarDef =
     }
 
 const DEFS: ToolbarDef[] = [
-  { type: 'button', key: 'undo', label: 'Undo', icon: <Undo2 size={14} />, command: undoCommand },
-  { type: 'button', key: 'redo', label: 'Redo', icon: <Redo2 size={14} />, command: redoCommand },
+  { type: 'button', key: 'undo', label: 'Undo', icon: <Undo2 size={20} />, command: undoCommand },
+  { type: 'button', key: 'redo', label: 'Redo', icon: <Redo2 size={20} />, command: redoCommand },
   { type: 'divider', key: 'd1' },
   {
     type: 'button',
     key: 'h1',
     label: 'Heading 1',
-    icon: <Heading1 size={14} />,
+    icon: <Heading1 size={20} />,
     command: wrapInHeadingCommand,
     commandPayload: 1
   },
@@ -76,7 +76,7 @@ const DEFS: ToolbarDef[] = [
     type: 'button',
     key: 'h2',
     label: 'Heading 2',
-    icon: <Heading2 size={14} />,
+    icon: <Heading2 size={20} />,
     command: wrapInHeadingCommand,
     commandPayload: 2
   },
@@ -84,7 +84,7 @@ const DEFS: ToolbarDef[] = [
     type: 'button',
     key: 'h3',
     label: 'Heading 3',
-    icon: <Heading3 size={14} />,
+    icon: <Heading3 size={20} />,
     command: wrapInHeadingCommand,
     commandPayload: 3
   },
@@ -93,21 +93,21 @@ const DEFS: ToolbarDef[] = [
     type: 'button',
     key: 'bold',
     label: 'Bold',
-    icon: <Bold size={14} />,
+    icon: <Bold size={20} />,
     command: toggleStrongCommand
   },
   {
     type: 'button',
     key: 'italic',
     label: 'Italic',
-    icon: <Italic size={14} />,
+    icon: <Italic size={20} />,
     command: toggleEmphasisCommand
   },
   {
     type: 'button',
     key: 'strike',
     label: 'Strikethrough',
-    icon: <Strikethrough size={14} />,
+    icon: <Strikethrough size={20} />,
     command: toggleStrikethroughCommand
   },
   { type: 'divider', key: 'd3' },
@@ -115,21 +115,21 @@ const DEFS: ToolbarDef[] = [
     type: 'button',
     key: 'bullet',
     label: 'Bullet list',
-    icon: <List size={14} />,
+    icon: <List size={20} />,
     command: wrapInBulletListCommand
   },
   {
     type: 'button',
     key: 'ordered',
     label: 'Ordered list',
-    icon: <ListOrdered size={14} />,
+    icon: <ListOrdered size={20} />,
     command: wrapInOrderedListCommand
   },
   {
     type: 'button',
     key: 'blockquote',
     label: 'Blockquote',
-    icon: <Quote size={14} />,
+    icon: <Quote size={20} />,
     command: wrapInBlockquoteCommand
   },
   { type: 'divider', key: 'd4' },
@@ -137,24 +137,24 @@ const DEFS: ToolbarDef[] = [
     type: 'button',
     key: 'code',
     label: 'Inline code',
-    icon: <Code size={14} />,
+    icon: <Code size={20} />,
     command: toggleInlineCodeCommand
   },
   {
     type: 'button',
     key: 'codeblock',
     label: 'Code block',
-    icon: <FileCode size={14} />,
+    icon: <FileCode size={20} />,
     command: createCodeBlockCommand
   },
   {
     type: 'button',
     key: 'hr',
     label: 'Horizontal rule',
-    icon: <Minus size={14} />,
+    icon: <Minus size={20} />,
     command: insertHrCommand
   },
-  { type: 'button', key: 'link', label: 'Link', icon: <Link2 size={14} />, special: 'link' }
+  { type: 'button', key: 'link', label: 'Link', icon: <Link2 size={20} />, special: 'link' }
 ]
 
 
@@ -250,7 +250,7 @@ export function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
         {hasOverflow && (
           <div ref={dropdownRef} className="absolute right-2 top-1 z-10 bg-[var(--bg-app)]">
             <TBtn
-              icon={<MoreHorizontal size={14} />}
+              icon={<MoreHorizontal size={20} />}
               label="More"
               onClick={() => setDropdownOpen((o) => !o)}
             />
@@ -350,7 +350,7 @@ export function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
 interface Props {
   note: Note
   onChange: (note: Note) => void
-  onDelete?: () => void
+  onDelete?: (e: React.MouseEvent) => void
   onBack?: () => void
 }
 
@@ -367,7 +367,7 @@ export default function NoteEditor({ note, onChange, onDelete, onBack }: Props) 
             onClick={onBack}
             className="w-8 h-8 flex items-center justify-center rounded text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[var(--bg-elevated)] transition-colors"
           >
-            <ArrowLeft size={16} />
+            <ArrowLeft size={20} />
           </button>
           {note.title ? (
             <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
@@ -388,11 +388,11 @@ export default function NoteEditor({ note, onChange, onDelete, onBack }: Props) 
           )}
           {onDelete && (
             <button
-              onClick={onDelete}
+              onClick={(e) => onDelete(e)}
               className="w-8 h-8 flex items-center justify-center rounded text-gray-600 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
               title="Delete note"
             >
-              <Trash2 size={16} />
+              <Trash2 size={20} />
             </button>
           )}
         </div>

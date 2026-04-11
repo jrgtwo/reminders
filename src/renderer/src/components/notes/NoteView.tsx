@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { Milkdown, MilkdownProvider, useEditor } from '@milkdown/react'
 import { Editor, rootCtx, defaultValueCtx } from '@milkdown/core'
 import { commonmark } from '@milkdown/preset-commonmark'
@@ -36,8 +36,7 @@ import {
   ArrowLeft,
   Trash2
 } from 'lucide-react'
-import Button from '../ui/Button'
-import Dialog from '../ui/Dialog'
+import ConfirmDeleteDialog from '../ui/ConfirmDeleteDialog'
 import { useEditorToolbar } from './hooks/useEditorToolbar'
 import { useNoteView } from './hooks/useNoteView'
 import { useTitleBar } from './hooks/useTitleBar'
@@ -58,14 +57,14 @@ type ToolbarDef =
     }
 
 const DEFS: ToolbarDef[] = [
-  { type: 'button', key: 'undo', label: 'Undo', icon: <Undo2 size={14} />, command: undoCommand },
-  { type: 'button', key: 'redo', label: 'Redo', icon: <Redo2 size={14} />, command: redoCommand },
+  { type: 'button', key: 'undo', label: 'Undo', icon: <Undo2 size={20} />, command: undoCommand },
+  { type: 'button', key: 'redo', label: 'Redo', icon: <Redo2 size={20} />, command: redoCommand },
   { type: 'divider', key: 'd1' },
   {
     type: 'button',
     key: 'h1',
     label: 'Heading 1',
-    icon: <Heading1 size={14} />,
+    icon: <Heading1 size={20} />,
     command: wrapInHeadingCommand,
     commandPayload: 1
   },
@@ -73,7 +72,7 @@ const DEFS: ToolbarDef[] = [
     type: 'button',
     key: 'h2',
     label: 'Heading 2',
-    icon: <Heading2 size={14} />,
+    icon: <Heading2 size={20} />,
     command: wrapInHeadingCommand,
     commandPayload: 2
   },
@@ -81,7 +80,7 @@ const DEFS: ToolbarDef[] = [
     type: 'button',
     key: 'h3',
     label: 'Heading 3',
-    icon: <Heading3 size={14} />,
+    icon: <Heading3 size={20} />,
     command: wrapInHeadingCommand,
     commandPayload: 3
   },
@@ -90,21 +89,21 @@ const DEFS: ToolbarDef[] = [
     type: 'button',
     key: 'bold',
     label: 'Bold',
-    icon: <Bold size={14} />,
+    icon: <Bold size={20} />,
     command: toggleStrongCommand
   },
   {
     type: 'button',
     key: 'italic',
     label: 'Italic',
-    icon: <Italic size={14} />,
+    icon: <Italic size={20} />,
     command: toggleEmphasisCommand
   },
   {
     type: 'button',
     key: 'strike',
     label: 'Strikethrough',
-    icon: <Strikethrough size={14} />,
+    icon: <Strikethrough size={20} />,
     command: toggleStrikethroughCommand
   },
   { type: 'divider', key: 'd3' },
@@ -112,21 +111,21 @@ const DEFS: ToolbarDef[] = [
     type: 'button',
     key: 'bullet',
     label: 'Bullet list',
-    icon: <List size={14} />,
+    icon: <List size={20} />,
     command: wrapInBulletListCommand
   },
   {
     type: 'button',
     key: 'ordered',
     label: 'Ordered list',
-    icon: <ListOrdered size={14} />,
+    icon: <ListOrdered size={20} />,
     command: wrapInOrderedListCommand
   },
   {
     type: 'button',
     key: 'blockquote',
     label: 'Blockquote',
-    icon: <Quote size={14} />,
+    icon: <Quote size={20} />,
     command: wrapInBlockquoteCommand
   },
   { type: 'divider', key: 'd4' },
@@ -134,24 +133,24 @@ const DEFS: ToolbarDef[] = [
     type: 'button',
     key: 'code',
     label: 'Inline code',
-    icon: <Code size={14} />,
+    icon: <Code size={20} />,
     command: toggleInlineCodeCommand
   },
   {
     type: 'button',
     key: 'codeblock',
     label: 'Code block',
-    icon: <FileCode size={14} />,
+    icon: <FileCode size={20} />,
     command: createCodeBlockCommand
   },
   {
     type: 'button',
     key: 'hr',
     label: 'Horizontal rule',
-    icon: <Minus size={14} />,
+    icon: <Minus size={20} />,
     command: insertHrCommand
   },
-  { type: 'button', key: 'link', label: 'Link', icon: <Link2 size={14} />, special: 'link' }
+  { type: 'button', key: 'link', label: 'Link', icon: <Link2 size={20} />, special: 'link' }
 ]
 
 
@@ -250,7 +249,7 @@ function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
         {hasOverflow && (
           <div ref={dropdownRef} className="absolute right-2 top-1 z-10 bg-[var(--bg-app)]">
             <TBtn
-              icon={<MoreHorizontal size={14} />}
+              icon={<MoreHorizontal size={20} />}
               label="More"
               onClick={() => setDropdownOpen((o) => !o)}
             />
@@ -317,7 +316,7 @@ function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
 interface TitleBarProps {
   title: string | undefined
   onSaveTitle: (title: string) => void
-  onDelete: () => void
+  onDelete: (e: React.MouseEvent) => void
   onBack: () => void
 }
 
@@ -331,7 +330,7 @@ function TitleBar({ title, onSaveTitle, onDelete, onBack }: TitleBarProps) {
         onClick={onBack}
         className="w-8 h-8 flex items-center justify-center rounded text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[var(--bg-elevated)] transition-colors"
       >
-        <ArrowLeft size={16} />
+        <ArrowLeft size={20} />
       </button>
       {isEditing ? (
         <form onSubmit={handleSubmit} className="flex-1">
@@ -354,11 +353,11 @@ function TitleBar({ title, onSaveTitle, onDelete, onBack }: TitleBarProps) {
         </button>
       )}
       <button
-        onClick={onDelete}
+        onClick={(e) => onDelete(e)}
         className="w-8 h-8 flex items-center justify-center rounded text-gray-600 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
         title="Delete note"
       >
-        <Trash2 size={16} />
+        <Trash2 size={20} />
       </button>
     </div>
   )
@@ -368,7 +367,6 @@ export default function NoteView() {
   const {
     id,
     note,
-    saving,
     deleteDialogOpen,
     setDeleteDialogOpen,
     navigate,
@@ -376,6 +374,8 @@ export default function NoteView() {
     handleTitleChange,
     handleDelete,
   } = useNoteView()
+
+  const [deleteAnchorRect, setDeleteAnchorRect] = useState<DOMRect | null>(null)
 
   if (!note) {
     return (
@@ -398,7 +398,10 @@ export default function NoteView() {
       <TitleBar
         title={note.title}
         onSaveTitle={handleTitleChange}
-        onDelete={() => setDeleteDialogOpen(true)}
+        onDelete={(e) => {
+          setDeleteAnchorRect((e.currentTarget as HTMLElement).getBoundingClientRect())
+          setDeleteDialogOpen(true)
+        }}
         onBack={() => navigate('/notes')}
       />
       <div className="flex-1 overflow-y-auto">
@@ -407,19 +410,12 @@ export default function NoteView() {
         </MilkdownProvider>
       </div>
       {deleteDialogOpen && (
-        <Dialog title="Delete Note" onClose={() => setDeleteDialogOpen(false)}>
-          <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
-            Are you sure you want to delete this note? This action cannot be undone.
-          </p>
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={() => setDeleteDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="button" variant="danger" onClick={handleDelete} disabled={saving}>
-              {saving ? 'Deleting…' : 'Delete'}
-            </Button>
-          </div>
-        </Dialog>
+        <ConfirmDeleteDialog
+          message="Delete this note? This cannot be undone."
+          anchorRect={deleteAnchorRect}
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteDialogOpen(false)}
+        />
       )}
     </div>
   )

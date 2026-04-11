@@ -7,7 +7,7 @@ interface Props {
   todo: TodoListItem
   onToggle: (t: TodoListItem) => void
   onEdit: (t: TodoListItem) => void
-  onDelete: (id: string) => void
+  onDelete: (id: string, e: React.MouseEvent) => void
   isEditing?: boolean
   onSaveEdit: (item: TodoListItem, title: string) => void
   onCancelEdit: (item: TodoListItem) => void
@@ -51,7 +51,7 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete, isEditing, 
           tabIndex={-1}
           aria-label="Drag to reorder"
         >
-          <GripVertical size={12} />
+          <GripVertical size={20} />
         </button>
 
         {/* Checkbox */}
@@ -64,7 +64,7 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete, isEditing, 
           }`}
           aria-label="Toggle complete"
         >
-          {todo.completed && <Check size={8} className="text-[#f0f0f0]" strokeWidth={3} />}
+          {todo.completed && <Check size={20} className="text-[#f0f0f0]" strokeWidth={3} />}
         </button>
 
         {/* Title */}
@@ -106,21 +106,21 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete, isEditing, 
               }`}
               aria-label={expanded ? 'Collapse description' : 'Edit description'}
             >
-              <AlignLeft size={12} />
+              <AlignLeft size={20} />
             </button>
             <button
               onClick={() => onEdit(todo)}
               className="w-6 h-6 flex items-center justify-center rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
               aria-label="Edit title"
             >
-              <Pencil size={12} />
+              <Pencil size={20} />
             </button>
             <button
-              onClick={() => onDelete(todo.id)}
+              onClick={(e) => onDelete(todo.id, e)}
               className="w-6 h-6 flex items-center justify-center rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors"
               aria-label="Delete"
             >
-              <Trash2 size={12} />
+              <Trash2 size={20} />
             </button>
           </div>
         )}

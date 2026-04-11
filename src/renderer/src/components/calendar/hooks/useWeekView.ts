@@ -26,6 +26,7 @@ export function useWeekView({ displayDate }: Params) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [newForm, setNewForm] = useState<{ date: string; time: string } | null>(null)
   const [detail, setDetail] = useState<{ reminder: Reminder; dateStr: string } | null>(null)
+  const [allDayExpanded, setAllDayExpanded] = useState(false)
 
   const days = useMemo(() => getWeekDays(displayDate), [displayDate])
 
@@ -76,6 +77,18 @@ export function useWeekView({ displayDate }: Params) {
     (d) => (allDayByDate[d.toString()] ?? []).length > 0 || (listCountByDate[d.toString()] ?? 0) > 0
   )
   const hasAllDay = multiDayReminders.length > 0 || hasSingleDayAllDay
+
+  const maxAllDayCount = useMemo(() => {
+    let max = 0
+    for (const day of days) {
+      const dateStr = day.toString()
+      const count = (allDayByDate[dateStr] ?? []).length + (listCountByDate[dateStr] ? 1 : 0)
+      if (count > max) max = count
+    }
+    return max
+  }, [days, allDayByDate, listCountByDate])
+
+  const COLLAPSED_LIMIT = 2
 
   function getColSpan(r: Reminder) {
     const weekStart = days[0].toString()
@@ -128,6 +141,10 @@ export function useWeekView({ displayDate }: Params) {
     nowTop,
     hasAllDay,
     hasSingleDayAllDay,
+    allDayExpanded,
+    setAllDayExpanded,
+    maxAllDayCount,
+    COLLAPSED_LIMIT,
     timeFormat,
     navigate,
     getColSpan,
