@@ -1,6 +1,7 @@
 import { forwardRef, useImperativeHandle } from 'react'
 import type { ReactNode } from 'react'
-import { Plus, FolderOpen, FileText } from 'lucide-react'
+import { Plus, FolderOpen, FileText, Maximize2 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import type { Note } from '../../types/models'
 import NoteFolderForm from './NoteFolderForm'
 import ConfirmDeleteDialog from '../ui/ConfirmDeleteDialog'
@@ -14,6 +15,7 @@ export interface NotesNavHandle {
 }
 
 const NotesNav = forwardRef<NotesNavHandle>(function NotesNav(_, ref) {
+  const navigateTo = useNavigate()
   const {
     allNotes,
     noteFolders,
@@ -98,16 +100,25 @@ const NotesNav = forwardRef<NotesNavHandle>(function NotesNav(_, ref) {
           }}
           isHeaderDropTarget={noteDropTarget === 'standalone' && !!(draggingNoteId || draggingNoteFolderId)}
           headerExtra={
-            <MoreMenu
-              items={[
-                { label: 'New note', icon: Plus, onClick: () => handleNewNote(undefined) },
-                {
-                  label: 'New folder',
-                  icon: FolderOpen,
-                  onClick: () => openNoteFolderForm(null, undefined),
-                },
-              ]}
-            />
+            <>
+              <button
+                onClick={() => navigateTo('/browse')}
+                className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                title="Browse all"
+              >
+                <Maximize2 size={16} />
+              </button>
+              <MoreMenu
+                items={[
+                  { label: 'New note', icon: Plus, onClick: () => handleNewNote(undefined) },
+                  {
+                    label: 'New folder',
+                    icon: FolderOpen,
+                    onClick: () => openNoteFolderForm(null, undefined),
+                  },
+                ]}
+              />
+            </>
           }
         >
           <FolderTree

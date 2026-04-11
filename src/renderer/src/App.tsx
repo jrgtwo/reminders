@@ -14,6 +14,7 @@ import ListsView from './components/lists/ListsPage'
 import ListsPage from './components/pages/ListsPage'
 import NoteView from './components/notes/NoteView'
 import NotesPage from './components/pages/NotesPage'
+import BrowsePage from './components/pages/BrowsePage'
 import { useCalendarPage } from './components/hooks/useCalendarPage'
 import { useApp } from './components/hooks/useApp'
 
@@ -58,6 +59,7 @@ const routes = [
         element: <ListsPage />,
         children: [{ path: ':listId', element: <ListsView /> }]
       },
+      { path: 'browse', element: <BrowsePage /> },
       { path: 'settings', element: <SettingsPage /> },
       {
         path: 'notes',

@@ -1,5 +1,6 @@
 import { forwardRef, useImperativeHandle } from 'react'
-import { Plus, FolderOpen, List } from 'lucide-react'
+import { Plus, FolderOpen, List, Maximize2 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import type { TodoList } from '../../types/models'
 import FolderForm from './FolderForm'
 import ConfirmDeleteDialog from '../ui/ConfirmDeleteDialog'
@@ -13,6 +14,7 @@ export interface ListsNavHandle {
 }
 
 const ListsNav = forwardRef<ListsNavHandle>(function ListsNav(_, ref) {
+  const navigateTo = useNavigate()
   const {
     folders,
     adHocLists,
@@ -87,12 +89,21 @@ const ListsNav = forwardRef<ListsNavHandle>(function ListsNav(_, ref) {
           }}
           isHeaderDropTarget={listDropTarget === 'standalone' && !!(draggingListId || draggingFolderId)}
           headerExtra={
-            <MoreMenu
-              items={[
-                { label: 'New list', icon: Plus, onClick: () => openNewList() },
-                { label: 'New folder', icon: FolderOpen, onClick: () => openFolderForm(null) },
-              ]}
-            />
+            <>
+              <button
+                onClick={() => navigateTo('/browse')}
+                className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                title="Browse all"
+              >
+                <Maximize2 size={16} />
+              </button>
+              <MoreMenu
+                items={[
+                  { label: 'New list', icon: Plus, onClick: () => openNewList() },
+                  { label: 'New folder', icon: FolderOpen, onClick: () => openFolderForm(null) },
+                ]}
+              />
+            </>
           }
         >
 
