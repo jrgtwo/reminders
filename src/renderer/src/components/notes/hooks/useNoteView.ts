@@ -57,21 +57,34 @@ export function useNoteView() {
     }).finally(() => setSaving(false))
   }
 
+  function handleFolderChange(folderId: string | undefined) {
+    if (!note) return
+    saveNote({
+      ...note,
+      folderId,
+      updatedAt: new Date().toISOString(),
+    })
+  }
+
   function handleDelete() {
     if (!note || !id) return
     deleteNote(id)
     navigate('/notes')
   }
 
+  const folders = useNoteFoldersStore((s) => s.folders)
+
   return {
     id,
     note,
     saving,
+    folders,
     deleteDialogOpen,
     setDeleteDialogOpen,
     navigate,
     handleContentChange,
     handleTitleChange,
+    handleFolderChange,
     handleDelete,
   }
 }

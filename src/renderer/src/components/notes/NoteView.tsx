@@ -34,8 +34,11 @@ import {
   Link2,
   MoreHorizontal,
   ArrowLeft,
-  Trash2
+  Trash2,
+  FolderOpen,
 } from 'lucide-react'
+import type { NoteFolder } from '../../types/models'
+import { buildFolderTree } from '../../lib/folderTree'
 import ConfirmDeleteDialog from '../ui/ConfirmDeleteDialog'
 import { useEditorToolbar } from './hooks/useEditorToolbar'
 import { useNoteView } from './hooks/useNoteView'
@@ -315,50 +318,94 @@ function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
 
 interface TitleBarProps {
   title: string | undefined
+  folderId: string | undefined
+  folders: NoteFolder[]
   onSaveTitle: (title: string) => void
+  onFolderChange: (folderId: string | undefined) => void
   onDelete: (e: React.MouseEvent) => void
   onBack: () => void
 }
 
-function TitleBar({ title, onSaveTitle, onDelete, onBack }: TitleBarProps) {
+function buildFolderOptions(
+  folders: NoteFolder[]
+): { id: string; name: string; depth: number }[] {
+  const childrenMap = buildFolderTree(folders)
+  const result: { id: string; name: string; depth: number }[] = []
+
+  function walk(parentId: string | undefined, depth: number) {
+    const children = (childrenMap.get(parentId) ?? []).sort(
+      (a, b) => a.displayOrder - b.displayOrder
+    )
+    for (const folder of children) {
+      result.push({ id: folder.id, name: folder.name, depth })
+      walk(folder.id, depth + 1)
+    }
+  }
+
+  walk(undefined, 0)
+  return result
+}
+
+function TitleBar({ title, folderId, folders, onSaveTitle, onFolderChange, onDelete, onBack }: TitleBarProps) {
   const { isEditing, setIsEditing, titleValue, setTitleValue, handleSubmit, handleKeyDown, handleBlur } =
     useTitleBar({ title, onSaveTitle })
 
+  const folderOptions = buildFolderOptions(folders)
+
   return (
-    <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100 dark:border-white/[0.05]">
-      <button
-        onClick={onBack}
-        className="w-8 h-8 flex items-center justify-center rounded text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[var(--bg-elevated)] transition-colors"
-      >
-        <ArrowLeft size={20} />
-      </button>
-      {isEditing ? (
-        <form onSubmit={handleSubmit} className="flex-1">
-          <input
-            autoFocus
-            type="text"
-            value={titleValue}
-            onChange={(e) => setTitleValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onBlur={handleBlur}
-            className="w-full text-lg font-semibold text-gray-900 dark:text-gray-100 bg-transparent border-b border-blue-500 focus:outline-none pb-1"
-            placeholder="Untitled"
-          />
-        </form>
-      ) : (
-        <button onClick={() => setIsEditing(true)} className="flex-1 text-left">
-          <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
-            {title || 'Untitled'}
-          </h1>
+    <div className="flex flex-col border-b border-slate-100 dark:border-white/[0.05]">
+      <div className="flex items-center gap-2 px-4 py-3">
+        <button
+          onClick={onBack}
+          className="w-8 h-8 flex items-center justify-center rounded text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[var(--bg-elevated)] transition-colors"
+        >
+          <ArrowLeft size={20} />
         </button>
+        {isEditing ? (
+          <form onSubmit={handleSubmit} className="flex-1">
+            <input
+              autoFocus
+              type="text"
+              value={titleValue}
+              onChange={(e) => setTitleValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onBlur={handleBlur}
+              className="w-full text-lg font-semibold text-gray-900 dark:text-gray-100 bg-transparent border-b border-blue-500 focus:outline-none pb-1"
+              placeholder="Untitled"
+            />
+          </form>
+        ) : (
+          <button onClick={() => setIsEditing(true)} className="flex-1 text-left">
+            <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
+              {title || 'Untitled'}
+            </h1>
+          </button>
+        )}
+        <button
+          onClick={(e) => onDelete(e)}
+          className="w-8 h-8 flex items-center justify-center rounded text-gray-600 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+          title="Delete note"
+        >
+          <Trash2 size={20} />
+        </button>
+      </div>
+      {folders.length > 0 && (
+        <div className="flex items-center gap-2 px-4 pb-2">
+          <FolderOpen size={14} className="text-slate-400 dark:text-white/25 shrink-0" />
+          <select
+            value={folderId ?? ''}
+            onChange={(e) => onFolderChange(e.target.value || undefined)}
+            className="text-[12px] text-slate-600 dark:text-white/60 bg-white dark:bg-[var(--bg-surface)] border border-slate-200 dark:border-white/[0.08] rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+          >
+            <option value="">No folder</option>
+            {folderOptions.map((f) => (
+              <option key={f.id} value={f.id}>
+                {'\u00A0\u00A0'.repeat(f.depth) + (f.depth > 0 ? '└ ' : '') + f.name}
+              </option>
+            ))}
+          </select>
+        </div>
       )}
-      <button
-        onClick={(e) => onDelete(e)}
-        className="w-8 h-8 flex items-center justify-center rounded text-gray-600 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-        title="Delete note"
-      >
-        <Trash2 size={20} />
-      </button>
     </div>
   )
 }
@@ -367,11 +414,13 @@ export default function NoteView() {
   const {
     id,
     note,
+    folders,
     deleteDialogOpen,
     setDeleteDialogOpen,
     navigate,
     handleContentChange,
     handleTitleChange,
+    handleFolderChange,
     handleDelete,
   } = useNoteView()
 
@@ -397,7 +446,10 @@ export default function NoteView() {
     <div className="h-full flex flex-col">
       <TitleBar
         title={note.title}
+        folderId={note.folderId}
+        folders={folders}
         onSaveTitle={handleTitleChange}
+        onFolderChange={handleFolderChange}
         onDelete={(e) => {
           setDeleteAnchorRect((e.currentTarget as HTMLElement).getBoundingClientRect())
           setDeleteDialogOpen(true)
