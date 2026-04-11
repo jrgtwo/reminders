@@ -103,13 +103,11 @@ export function useNotesNav() {
     navigate(`/notes/${note.id}`)
   }
 
-  function handleDeleteNote(id: string, e: React.MouseEvent) {
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+  function handleDeleteNote(id: string, rect: DOMRect) {
     noteDelete.requestDelete(id, rect, 'Are you sure you want to delete this note? This cannot be undone.')
   }
 
-  function handleDeleteNoteFolder(id: string, e: React.MouseEvent) {
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+  function handleDeleteNoteFolder(id: string, rect: DOMRect) {
     const descendantIds = getDescendantIds(id, noteFolderChildrenMap)
     const allFolderIds = new Set([id, ...descendantIds])
     const affectedNotes = Array.from(allNotes.values()).filter(

@@ -5,6 +5,7 @@ import FolderForm from './FolderForm'
 import ConfirmDeleteDialog from '../ui/ConfirmDeleteDialog'
 import { CollapsibleSection } from '../ui/CollapsibleSection'
 import { SidebarNavItem, FolderTree, DateTree } from '../ui/FolderNav'
+import { MoreMenu } from '../ui/MoreMenu'
 import { useListsNav } from './hooks/useListsNav'
 
 export interface ListsNavHandle {
@@ -86,22 +87,12 @@ const ListsNav = forwardRef<ListsNavHandle>(function ListsNav(_, ref) {
           }}
           isHeaderDropTarget={listDropTarget === 'standalone' && !!(draggingListId || draggingFolderId)}
           headerExtra={
-            <div className="flex items-center gap-0.5">
-              <button
-                onClick={() => openNewList()}
-                className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-                title="New list"
-              >
-                <Plus size={20} />
-              </button>
-              <button
-                onClick={() => openFolderForm(null)}
-                className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-                title="New folder"
-              >
-                <FolderOpen size={20} />
-              </button>
-            </div>
+            <MoreMenu
+              items={[
+                { label: 'New list', icon: Plus, onClick: () => openNewList() },
+                { label: 'New folder', icon: FolderOpen, onClick: () => openFolderForm(null) },
+              ]}
+            />
           }
         >
 
@@ -161,13 +152,11 @@ const ListsNav = forwardRef<ListsNavHandle>(function ListsNav(_, ref) {
               accent="slate"
               defaultOpen={false}
               headerExtra={
-                <button
-                  onClick={() => openNewList()}
-                  className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-                  title="New date-based list"
-                >
-                  <Plus size={20} />
-                </button>
+                <MoreMenu
+                  items={[
+                    { label: 'New list', icon: Plus, onClick: () => openNewList() },
+                  ]}
+                />
               }
             >
               <DateTree

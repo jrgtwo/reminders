@@ -2,6 +2,7 @@ import type { ComponentType, ReactNode } from 'react'
 import { ChevronRight, ChevronDown, FolderPlus, Pencil, Trash2, Plus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useDateTree } from './hooks/useDateTree'
+import { MoreMenu, type MoreMenuItem } from './MoreMenu'
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -102,13 +103,15 @@ export function DateTree<I>({
                                   {ordinal(parseInt(day, 10))}
                                 </span>
                               </button>
-                              <button
-                                onClick={() => onNewForDate(dateStr)}
-                                className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-                                title={`${newItemTitle} for ${dateStr}`}
-                              >
-                                <Plus size={20} />
-                              </button>
+                              <MoreMenu
+                                items={[
+                                  {
+                                    label: newItemTitle,
+                                    icon: Plus,
+                                    onClick: () => onNewForDate(dateStr),
+                                  },
+                                ]}
+                              />
                             </div>
                             {!dayCollapsed && dayItems.map((item, i) => (
                               <div key={i}>{renderItem(item)}</div>
@@ -144,7 +147,7 @@ export function SidebarNavItem({
   route: string
   icon: ComponentType<{ size: number; className?: string }>
   indent?: boolean
-  onDelete: (id: string, e: React.MouseEvent) => void
+  onDelete: (id: string, anchorRect: DOMRect) => void
   deleteTitle?: string
   onDragStart?: (id: string) => void
   onDragEnd?: () => void
@@ -180,13 +183,13 @@ export function SidebarNavItem({
           {label}
         </span>
       </button>
-      <button
-        onClick={(e) => onDelete(id, e)}
-        className="absolute right-1 p-1 rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors md:opacity-0 md:group-hover:opacity-100"
-        title={deleteTitle}
-      >
-        <Trash2 size={20} />
-      </button>
+      <div className="absolute right-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+        <MoreMenu
+          items={[
+            { label: deleteTitle, icon: Trash2, onClick: (rect) => onDelete(id, rect), danger: true },
+          ]}
+        />
+      </div>
     </div>
   )
 }
@@ -212,7 +215,7 @@ interface FolderTreeProps<F extends { id: string; name: string }, I> {
   onFolderDrop?: (targetFolderId: string | undefined) => void
   // Optional folder actions (omit to hide those buttons)
   onEditFolder?: (folder: F) => void
-  onDeleteFolder?: (id: string, e: React.MouseEvent) => void
+  onDeleteFolder?: (id: string, anchorRect: DOMRect) => void
   onNewSubfolder?: (parentId: string) => void
 }
 
@@ -303,41 +306,26 @@ export function FolderTree<F extends { id: string; name: string }, I>({
           <span className="text-[15px] font-semibold text-slate-400 dark:text-white/30 truncate flex-1 text-left pr-20 md:pr-0 md:group-hover:pr-20">
             {folder.name}
           </span>
-          <div className="absolute right-1 flex items-center md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-            {onEditFolder && (
-              <button
-                onClick={(e) => { e.stopPropagation(); onEditFolder(folder) }}
-                className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-                title="Rename folder"
-              >
-                <Pencil size={20} />
-              </button>
-            )}
-            {onDeleteFolder && (
-              <button
-                onClick={(e) => { e.stopPropagation(); onDeleteFolder(folder.id, e) }}
-                className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors"
-                title="Delete folder"
-              >
-                <Trash2 size={20} />
-              </button>
-            )}
-            {onNewSubfolder && (
-              <button
-                onClick={(e) => { e.stopPropagation(); onNewSubfolder(folder.id) }}
-                className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-                title="New subfolder"
-              >
-                <FolderPlus size={20} />
-              </button>
-            )}
-            <button
-              onClick={(e) => { e.stopPropagation(); onNewItemInFolder(folder.id) }}
-              className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-              title="New item in folder"
-            >
-              <Plus size={20} />
-            </button>
+          <div className="absolute right-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+            <MoreMenu
+              items={[
+                { label: 'New item', icon: Plus, onClick: () => onNewItemInFolder(folder.id) },
+                ...(onNewSubfolder
+                  ? [{ label: 'New subfolder', icon: FolderPlus, onClick: () => onNewSubfolder(folder.id) }]
+                  : []),
+                ...(onEditFolder
+                  ? [{ label: 'Rename folder', icon: Pencil, onClick: () => onEditFolder(folder) }]
+                  : []),
+                ...(onDeleteFolder
+                  ? [{
+                      label: 'Delete folder',
+                      icon: Trash2,
+                      onClick: (rect: DOMRect) => onDeleteFolder(folder.id, rect),
+                      danger: true,
+                    }]
+                  : []),
+              ] as MoreMenuItem[]}
+            />
           </div>
         </div>
         {!collapsed && (

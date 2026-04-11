@@ -6,6 +6,7 @@ import NoteFolderForm from './NoteFolderForm'
 import ConfirmDeleteDialog from '../ui/ConfirmDeleteDialog'
 import { CollapsibleSection } from '../ui/CollapsibleSection'
 import { SidebarNavItem, FolderTree, DateTree } from '../ui/FolderNav'
+import { MoreMenu } from '../ui/MoreMenu'
 import { useNotesNav } from './hooks/useNotesNav'
 
 export interface NotesNavHandle {
@@ -97,22 +98,16 @@ const NotesNav = forwardRef<NotesNavHandle>(function NotesNav(_, ref) {
           }}
           isHeaderDropTarget={noteDropTarget === 'standalone' && !!(draggingNoteId || draggingNoteFolderId)}
           headerExtra={
-            <div className="flex items-center gap-0.5">
-              <button
-                onClick={() => handleNewNote(undefined)}
-                className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-                title="New note"
-              >
-                <Plus size={20} />
-              </button>
-              <button
-                onClick={() => openNoteFolderForm(null, undefined)}
-                className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-                title="New folder"
-              >
-                <FolderOpen size={20} />
-              </button>
-            </div>
+            <MoreMenu
+              items={[
+                { label: 'New note', icon: Plus, onClick: () => handleNewNote(undefined) },
+                {
+                  label: 'New folder',
+                  icon: FolderOpen,
+                  onClick: () => openNoteFolderForm(null, undefined),
+                },
+              ]}
+            />
           }
         >
           <FolderTree
@@ -177,13 +172,11 @@ const NotesNav = forwardRef<NotesNavHandle>(function NotesNav(_, ref) {
               accent="slate"
               defaultOpen={false}
               headerExtra={
-                <button
-                  onClick={() => handleNewNote()}
-                  className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-                  title="New date-based note"
-                >
-                  <Plus size={20} />
-                </button>
+                <MoreMenu
+                  items={[
+                    { label: 'New note', icon: Plus, onClick: () => handleNewNote() },
+                  ]}
+                />
               }
             >
               <DateTree

@@ -185,8 +185,7 @@ export function useRightSidebar() {
 
   const listCount = lists.length
 
-  function handleDeleteFolder(id: string, e: React.MouseEvent) {
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+  function handleDeleteFolder(id: string, rect: DOMRect) {
     const folder = folders.find((f) => f.id === id)
     if (!folder) return
     const descendantIds = getDescendantIds(id, folderChildrenMap)
@@ -226,8 +225,7 @@ export function useRightSidebar() {
     setListDropTarget(null)
   }
 
-  function handleDeleteList(id: string, e: React.MouseEvent) {
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+  function handleDeleteList(id: string, rect: DOMRect) {
     listDelete.requestDelete(id, rect, 'Delete this list? This cannot be undone.')
   }
 

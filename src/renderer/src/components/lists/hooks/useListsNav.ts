@@ -70,13 +70,11 @@ export function useListsNav() {
     navigate('/lists/new', { state: opts })
   }
 
-  function handleDeleteList(id: string, e: React.MouseEvent) {
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+  function handleDeleteList(id: string, rect: DOMRect) {
     listDelete.requestDelete(id, rect, 'Delete this list? This cannot be undone.')
   }
 
-  function handleDeleteFolder(id: string, e: React.MouseEvent) {
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+  function handleDeleteFolder(id: string, rect: DOMRect) {
     const affectedLists = lists.filter((l) => l.folderId === id)
     let msg = 'Delete this folder? This cannot be undone.'
     if (affectedLists.length > 0) {
