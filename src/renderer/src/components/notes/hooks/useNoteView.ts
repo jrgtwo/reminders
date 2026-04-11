@@ -19,10 +19,23 @@ export function useNoteView() {
 
   const note = id ? notes.get(id) : undefined
 
+  const noteRef = useRef(note)
+  noteRef.current = note
+
   useEffect(() => {
     loadNotes()
     loadFolders()
   }, [loadNotes, loadFolders])
+
+  // Clean up empty notes when navigating away without entering content
+  useEffect(() => {
+    return () => {
+      const current = noteRef.current
+      if (current && !current.title && !current.content.trim()) {
+        deleteNote(current.id)
+      }
+    }
+  }, [id, deleteNote])
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 

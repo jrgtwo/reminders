@@ -124,7 +124,7 @@ export default function RemindersPage() {
 
           {/* Content — clicking navigates to that day */}
           <button
-            onClick={() => navigate(`/day/${item.dateStr}`)}
+            onClick={() => navigate(`/day/${item.dateStr}`, { state: { tab: 'reminders' } })}
             className="flex-1 text-left min-w-0"
           >
             {variant !== 'today' && (
