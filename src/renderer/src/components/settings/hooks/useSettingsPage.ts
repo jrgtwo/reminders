@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import type { TurnstileInstance } from '@marsidev/react-turnstile'
 import { useNavigate } from 'react-router-dom'
 import { rotateEncryptionKey } from '../../../lib/keyRotation'
 import { useUIStore, type Theme, type TimeFormat } from '../../../store/ui.store'
@@ -41,6 +42,8 @@ export function useSettingsPage() {
   const [clearStatus, setClearStatus] = useState<'idle' | 'confirm' | 'running' | 'done'>('idle')
   const [email, setEmail] = useState('')
   const [magicLinkStatus, setMagicLinkStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const turnstileRef = useRef<TurnstileInstance>(null)
 
   async function handleRotateKey() {
     if (!user) return
@@ -60,10 +63,12 @@ export function useSettingsPage() {
     if (!email.trim()) return
     setMagicLinkStatus('sending')
     try {
-      await sendMagicLink(email.trim())
+      await sendMagicLink(email.trim(), captchaToken ?? undefined)
       setMagicLinkStatus('sent')
     } catch {
       setMagicLinkStatus('error')
+      turnstileRef.current?.reset()
+      setCaptchaToken(null)
     }
   }
 
@@ -155,6 +160,9 @@ export function useSettingsPage() {
     setEmail,
     magicLinkStatus,
     setMagicLinkStatus,
+    captchaToken,
+    setCaptchaToken,
+    turnstileRef,
     handleRotateKey,
     handleSendMagicLink,
     handleExport,

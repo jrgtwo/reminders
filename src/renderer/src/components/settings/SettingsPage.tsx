@@ -1,3 +1,4 @@
+import { Turnstile } from '@marsidev/react-turnstile'
 import { ArrowLeft, Download, Upload, Check, AlertCircle, LogOut, Mail, RefreshCw, Cloud, CloudOff, ShieldCheck, Trash2, RotateCcw } from 'lucide-react'
 import Button from '../ui/Button'
 import { useSettingsPage } from './hooks/useSettingsPage'
@@ -41,6 +42,9 @@ export default function SettingsPage() {
     setEmail,
     magicLinkStatus,
     setMagicLinkStatus,
+    captchaToken,
+    setCaptchaToken,
+    turnstileRef,
     handleRotateKey,
     handleSendMagicLink,
     handleExport,
@@ -104,11 +108,18 @@ export default function SettingsPage() {
                 required
                 className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-[var(--border)] bg-white dark:bg-[var(--bg-card)] text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              <Button type="submit" size="sm" disabled={magicLinkStatus === 'sending'}>
+              <Button type="submit" size="sm" disabled={magicLinkStatus === 'sending' || !captchaToken}>
                 <Mail size={20} />
                 {magicLinkStatus === 'sending' ? 'Sending…' : 'Send link'}
               </Button>
             </div>
+            <Turnstile
+              ref={turnstileRef}
+              siteKey={import.meta.env.VITE_CAPTCHA_SITE_KEY}
+              onSuccess={setCaptchaToken}
+              onExpire={() => setCaptchaToken(null)}
+              onError={() => setCaptchaToken(null)}
+            />
             {magicLinkStatus === 'error' && (
               <p className="flex items-center gap-1.5 text-xs text-red-600 dark:text-[#e8a045]">
                 <AlertCircle size={20} />
