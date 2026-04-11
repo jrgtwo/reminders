@@ -36,9 +36,12 @@ Full schema (all 8 tables with soft deletes and `last_synced_at`) is applied on 
 
 **Done.**
 
-- `android/app/src/main/AndroidManifest.xml`: `reminders://callback` intent filter added inside `<activity>`
+- `android/app/src/main/AndroidManifest.xml`: `reminders://auth/callback` intent filter added inside `<activity>`:
+  ```xml
+  <data android:scheme="reminders" android:host="auth" android:pathPrefix="/callback" />
+  ```
 - `src/renderer/src/lib/mobileAuth.ts`: created — listens for `appUrlOpen`, exchanges PKCE code or sets session tokens
-- `src/renderer/src/store/auth.store.ts`: calls `setupMobileAuth()` on native at init; `sendMagicLink` uses `reminders://callback` redirect on native (same as Electron)
+- `src/renderer/src/store/auth.store.ts`: calls `setupMobileAuth()` on native at init; `sendMagicLink` uses `reminders://auth/callback` as the redirect URL on native (same as Electron)
 
 ## ✅ Step 5 — Local notifications
 
@@ -91,7 +94,7 @@ npx cap open android
 - [x] App launches in Android Emulator without JS errors in Logcat
 - [x] Creating data (reminders, notes, lists) persists across app navigations and restarts
 - [x] Notification permission granted at startup
-- [ ] Supabase magic link auth completes and `reminders://callback` deep link returns user to app logged in
+- [ ] Supabase magic link auth completes and `reminders://auth/callback` deep link returns user to app logged in
 - [ ] Reminder notification fires at the scheduled time
 - [ ] Signed `.aab` installs cleanly via internal testing track
 
@@ -101,12 +104,23 @@ npx cap open android
 
 ### App signing
 
-Android requires all APKs/AABs to be signed. Google Play uses **App Signing by Google Play** (recommended):
+Signing is already configured in `android/app/build.gradle` via a `signingConfigs.release` block that reads from `android/keystore.properties`. That file is gitignored — each developer/CI machine must create it locally:
+
+```properties
+KEYSTORE_PATH=reminders.keystore
+KEYSTORE_PASSWORD=<password>
+KEY_ALIAS=reminders
+KEY_PASSWORD=<password>
+```
+
+Keep the `.keystore` file safe — losing it means you can't publish updates to the app.
+
+To build a signed AAB for Play Store submission:
 
 1. In Android Studio: **Build → Generate Signed Bundle / APK**
 2. Choose **Android App Bundle (.aab)** — Play Store requires AAB format
-3. Create a new keystore (keep it safe — losing it means you can't update the app)
-4. Upload the `.aab` to Play Console; Google re-signs it for distribution
+3. Select the existing keystore referenced in `keystore.properties`
+4. Upload the `.aab` to Play Console; Google re-signs it for distribution via **App Signing by Google Play**
 
 ### Build configuration
 
@@ -119,7 +133,7 @@ android {
         minSdk 26          // Android 8.0 — covers ~95% of active devices
         targetSdk 35       // Must be API 35+ for new Play Store submissions (2025+)
         versionCode 1      // Increment with every Play Store release
-        versionName "1.0.0"
+        versionName "1.0"
     }
 }
 ```
@@ -177,7 +191,7 @@ Add the URL to the Play Console listing and optionally to `AndroidManifest.xml`:
 | `src/renderer/src/platform/index.ts` | Platform detection — routes to CapacitorAdapter on native |
 | `src/renderer/src/lib/mobileAuth.ts` | Deep link auth handler (shared with iOS) |
 | `src/renderer/src/lib/mobileNotifications.ts` | Local notification scheduling (shared with iOS) |
-| `src/renderer/src/store/auth.store.ts` | Wires `setupMobileAuth()` and `reminders://callback` redirect |
+| `src/renderer/src/store/auth.store.ts` | Wires `setupMobileAuth()` and `reminders://auth/callback` redirect |
 | `src/renderer/src/store/reminders.store.ts` | Schedules/cancels notifications on save/delete |
 | `capacitor.config.ts` | App ID (`com.reminders.app`) and web dir |
 | `android/app/src/main/AndroidManifest.xml` | Permissions + intent filter for deep links |

@@ -1,5 +1,11 @@
+import { Temporal } from '@js-temporal/polyfill'
 import { getDb } from './db'
 import type { Reminder } from '../../renderer/src/types/models'
+
+function trimCompletedDates(dates: string[], cutoffDays = 90): string[] {
+  const cutoff = Temporal.Now.plainDateISO().subtract({ days: cutoffDays })
+  return dates.filter((d) => Temporal.PlainDate.compare(Temporal.PlainDate.from(d), cutoff) >= 0)
+}
 
 export function getAllReminders(): Reminder[] {
   const rows = getDb().prepare('SELECT * FROM reminders WHERE deleted_at IS NULL').all() as any[]
@@ -46,7 +52,7 @@ function serialize(r: Reminder) {
     start_time: r.startTime ?? null,
     end_time: r.endTime ?? null,
     recurrence: r.recurrence ? JSON.stringify(r.recurrence) : null,
-    completed_dates: JSON.stringify(r.completedDates),
+    completed_dates: JSON.stringify(trimCompletedDates(r.completedDates)),
     created_at: r.createdAt,
     updated_at: r.updatedAt
   }
