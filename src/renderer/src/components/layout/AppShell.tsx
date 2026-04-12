@@ -4,6 +4,7 @@ import BottomNav, { SideNav } from './BottomNav'
 import SearchBar from './SearchBar'
 import ReminderForm from '../reminders/ReminderForm'
 import { useAppShell } from './hooks/useAppShell'
+import logo from '../../assets/logo.svg'
 
 function formatLastSynced(isoStr: string): string {
   const minutes = Math.floor((Date.now() - new Date(isoStr).getTime()) / 60_000)
@@ -42,18 +43,7 @@ export default function AppShell() {
               className="flex flex-col leading-none shrink-0 hover:opacity-80 transition-opacity"
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
-              <span
-                className="text-[11px] text-white/60 tracking-[0.2em] uppercase font-medium"
-                style={{ fontFamily: "'Bree Serif', serif", fontWeight: 400 }}
-              >
-                Reminder
-              </span>
-              <span
-                className="text-[28px] text-white/80 tracking-tight -mt-0.5"
-                style={{ fontFamily: "'Bree Serif', serif", fontWeight: 400 }}
-              >
-                Today
-              </span>
+              <img src={logo} alt="Reminder Today Logo" className="w-28 mb-1" />
             </button>
             <div className="flex items-center gap-3">
               <button

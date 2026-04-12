@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Lock
 } from 'lucide-react'
+import logo from '../../assets/logo.svg'
 
 const FEATURES = [
   {
@@ -101,18 +102,7 @@ export default function LandingPage() {
       <section className="relative flex flex-col items-center justify-center px-6 pt-20 pb-16 md:pt-28 md:pb-24">
         <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
           <h1 className="flex flex-col items-center mb-6">
-            <span
-              className="text-[20px] md:text-[24px] text-white/60 tracking-[0.25em] uppercase font-medium"
-              style={{ fontFamily: "'Bree Serif', serif" }}
-            >
-              Reminder
-            </span>
-            <span
-              className="text-[56px] md:text-[72px] text-white/90 tracking-tight leading-none"
-              style={{ fontFamily: "'Bree Serif', serif" }}
-            >
-              Today
-            </span>
+            <img src={logo} alt="Reminder Today Logo" className="w-100 mb-1" />
           </h1>
           <p className="text-lg md:text-xl text-white/50 max-w-lg mb-8 leading-relaxed">
             A calm, local-first productivity app. Your calendar, reminders, notes, and todos — all

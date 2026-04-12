@@ -5,6 +5,7 @@ import { useDayView } from '../hooks/useDayView'
 import DayViewNotesTab from './DayViewNotesTab'
 import DayViewRemindersTab from './DayViewRemindersTab'
 import DayViewTodosTab from './DayViewTodosTab'
+import { useUIStore } from '../../store/ui.store'
 
 function formatDayHeading(date: Temporal.PlainDate) {
   return {
@@ -79,16 +80,51 @@ export default function DayView() {
   const { weekday, rest } = formatDayHeading(plainDate)
   const status = getDayStatus(plainDate)
 
+  const setView = useUIStore((s) => s.setView)
+  const setSelectedDate = useUIStore((s) => s.setSelectedDate)
+
+  const handleViewSwitch = (v: 'month' | 'week') => {
+    setView(v)
+    navigate('/')
+  }
+
+  const handleToday = () => {
+    const today = Temporal.Now.plainDateISO().toString()
+    setSelectedDate(today)
+    navigate(`/day/${today}`)
+  }
+
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-8 py-7">
-      {/* Back */}
-      <button
-        onClick={() => navigate('/')}
-        className="flex items-center gap-1.5 text-[13px] text-slate-400 dark:text-white/55 hover:text-slate-700 dark:hover:text-white/60 mb-8 transition-colors -ml-0.5"
-      >
-        <ArrowLeft size={20} />
-        Calendar
-      </button>
+      {/* Top bar */}
+      <div className="flex items-center justify-between mb-8">
+        <button
+          onClick={() => navigate('/')}
+          className="flex items-center gap-1.5 text-[13px] text-slate-400 dark:text-white/55 hover:text-slate-700 dark:hover:text-white/60 transition-colors -ml-0.5"
+        >
+          <ArrowLeft size={20} />
+          Calendar
+        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleToday}
+            className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 dark:border-white/[0.12] border-b-[2.5px] border-b-slate-300 dark:border-b-white/[0.18] bg-white dark:bg-white/[0.08] text-slate-600 dark:text-white/65 hover:text-slate-800 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/[0.1] active:border-b-[1px] active:mt-[1.5px] active:mb-[-1.5px] transition-all"
+          >
+            Today
+          </button>
+          <div className="flex gap-1">
+            {(['month', 'week'] as const).map((v) => (
+              <button
+                key={v}
+                onClick={() => handleViewSwitch(v)}
+                className="px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all capitalize active:border-b-[1px] active:mt-[1.5px] active:mb-[-1.5px] bg-slate-50 dark:bg-white/[0.04] text-slate-400 dark:text-white/55 border-slate-200 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-250 dark:border-b-white/[0.12] hover:text-slate-600 dark:hover:text-white/60"
+              >
+                {v}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
 
       {/* Heading */}
       <div className="mb-8">

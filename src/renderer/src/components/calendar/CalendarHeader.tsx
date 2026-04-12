@@ -67,20 +67,20 @@ export default function CalendarHeader({
       <div className="flex items-center gap-2 pt-1 sm:pt-0">
         <button
           onClick={onToday}
-          className="px-3 py-1.5 text-xs font-semibold rounded-md border border-slate-200 dark:border-white/[0.1] text-slate-500 dark:text-white/60 hover:text-slate-800 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-all"
+          className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 dark:border-white/[0.12] border-b-[2.5px] border-b-slate-300 dark:border-b-white/[0.18] bg-white dark:bg-white/[0.08] text-slate-600 dark:text-white/65 hover:text-slate-800 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/[0.1] active:border-b-[1px] active:mt-[1.5px] active:mb-[-1.5px] transition-all"
         >
           Today
         </button>
-        <div className="flex bg-slate-100 dark:bg-white/[0.06] rounded-lg p-0.5">
+        <div className="flex gap-1">
           {(['month', 'week'] as const).map((v) => (
             <button
               key={v}
               onClick={() => onViewChange(v)}
               className={[
-                'px-3 py-1.5 text-xs font-semibold rounded-md transition-all capitalize',
+                'px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all capitalize active:border-b-[1px] active:mt-[1.5px] active:mb-[-1.5px]',
                 view === v
-                  ? 'bg-white dark:bg-white/[0.12] text-slate-900 dark:text-white shadow-sm'
-                  : 'text-slate-400 dark:text-white/55 hover:text-slate-600 dark:hover:text-white/60',
+                  ? 'bg-white dark:bg-white/[0.12] text-slate-900 dark:text-white border-slate-200 dark:border-white/[0.12] border-b-[2.5px] border-b-slate-300 dark:border-b-white/[0.2] shadow-sm'
+                  : 'bg-slate-50 dark:bg-white/[0.04] text-slate-400 dark:text-white/55 border-slate-200 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-250 dark:border-b-white/[0.12] hover:text-slate-600 dark:hover:text-white/60',
               ].join(' ')}
             >
               {v}
