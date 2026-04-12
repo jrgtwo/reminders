@@ -1,8 +1,75 @@
+import { useState } from 'react'
 import { Turnstile } from '@marsidev/react-turnstile'
-import { ArrowLeft, Download, Upload, Check, AlertCircle, LogOut, Mail, RefreshCw, Cloud, CloudOff, ShieldCheck, Trash2, RotateCcw } from 'lucide-react'
+import {
+  ArrowLeft,
+  Download,
+  Upload,
+  Check,
+  AlertCircle,
+  LogOut,
+  Mail,
+  RefreshCw,
+  Cloud,
+  CloudOff,
+  ShieldCheck,
+  Trash2,
+  RotateCcw
+} from 'lucide-react'
 import Button from '../ui/Button'
 import { useSettingsPage } from './hooks/useSettingsPage'
 import type { Theme } from './hooks/useSettingsPage'
+import { getConsent, setConsent } from '../../lib/consent'
+
+const isNativePlatform =
+  typeof window !== 'undefined' &&
+  (!!(window as any).electronAPI || !!(window as any).Capacitor?.isNativePlatform?.())
+
+function PrivacySection() {
+  const consent = getConsent()
+  const [analytics, setAnalytics] = useState(consent.analytics)
+
+  const handleToggle = (checked: boolean) => {
+    setAnalytics(checked)
+    setConsent({ analytics: checked })
+  }
+
+  return (
+    <section className="space-y-3">
+      <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+        Privacy
+      </h2>
+      <div className="p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)] space-y-4">
+        <label className="flex items-center justify-between cursor-pointer">
+          <div>
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              Analytics cookies
+            </p>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Anonymous usage data to help us improve the app
+            </p>
+          </div>
+          <input
+            type="checkbox"
+            checked={analytics}
+            onChange={(e) => handleToggle(e.target.checked)}
+            className="accent-[#6498c8] w-4 h-4 cursor-pointer"
+          />
+        </label>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              Essential cookies
+            </p>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Required for the app to function (always on)
+            </p>
+          </div>
+          <input type="checkbox" checked disabled className="accent-[#6498c8] w-4 h-4" />
+        </div>
+      </div>
+    </section>
+  )
+}
 
 function formatLastSynced(isoStr: string): string {
   const minutes = Math.floor((Date.now() - new Date(isoStr).getTime()) / 60_000)
@@ -52,7 +119,7 @@ export default function SettingsPage() {
     handleExportIcal,
     handleImportIcal,
     handleResetFromCloud,
-    handleClearLocalData,
+    handleClearLocalData
   } = useSettingsPage()
 
   return (
@@ -108,7 +175,11 @@ export default function SettingsPage() {
                 required
                 className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-[var(--border)] bg-white dark:bg-[var(--bg-card)] text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              <Button type="submit" size="sm" disabled={magicLinkStatus === 'sending' || !captchaToken}>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={magicLinkStatus === 'sending' || !captchaToken}
+              >
                 <Mail size={20} />
                 {magicLinkStatus === 'sending' ? 'Sending…' : 'Send link'}
               </Button>
@@ -148,8 +219,8 @@ export default function SettingsPage() {
                   {syncStatus === 'syncing'
                     ? 'Syncing…'
                     : syncStatus === 'error'
-                    ? 'Sync failed'
-                    : 'Cloud sync'}
+                      ? 'Sync failed'
+                      : 'Cloud sync'}
                 </p>
                 {lastSyncedAt && syncStatus !== 'syncing' && (
                   <p className="text-xs text-gray-400 mt-0.5">
@@ -177,7 +248,8 @@ export default function SettingsPage() {
             </div>
             <div className="flex items-center gap-1 p-1 rounded-lg bg-gray-200 dark:bg-[var(--bg-elevated)]">
               {(['sync', null, 'skip'] as const).map((val) => {
-                const label = val === 'sync' ? 'Always merge' : val === 'skip' ? 'Always skip' : 'Ask'
+                const label =
+                  val === 'sync' ? 'Always merge' : val === 'skip' ? 'Always skip' : 'Ask'
                 const active = migrationPref === val
                 return (
                   <button
@@ -228,7 +300,9 @@ export default function SettingsPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                disabled={rotateStatus === 'rotating' || rotateStatus === 'done' || rotateStatus === 'error'}
+                disabled={
+                  rotateStatus === 'rotating' || rotateStatus === 'done' || rotateStatus === 'error'
+                }
                 onClick={() => setRotateStatus('confirm')}
               >
                 {rotateStatus === 'rotating' && <RefreshCw size={20} className="animate-spin" />}
@@ -237,10 +311,10 @@ export default function SettingsPage() {
                 {rotateStatus === 'rotating'
                   ? 'Rotating…'
                   : rotateStatus === 'done'
-                  ? 'Done'
-                  : rotateStatus === 'error'
-                  ? 'Failed'
-                  : 'Rotate'}
+                    ? 'Done'
+                    : rotateStatus === 'error'
+                      ? 'Failed'
+                      : 'Rotate'}
               </Button>
             )}
           </div>
@@ -257,15 +331,15 @@ export default function SettingsPage() {
           <div className="grid grid-cols-4 gap-3">
             {(
               [
-                { id: 'light',    label: 'Light',    header: '#1c1f26', body: '#F3F4F6' },
-                { id: 'dark',     label: 'Dark',     header: '#010409', body: '#0d1117' },
-                { id: 'dim',      label: 'Dim',      header: '#1c2128', body: '#22272e' },
-                { id: 'warm',     label: 'Warm',     header: '#100e0a', body: '#18150f' },
+                { id: 'light', label: 'Light', header: '#1c1f26', body: '#F3F4F6' },
+                { id: 'dark', label: 'Dark', header: '#010409', body: '#0d1117' },
+                { id: 'dim', label: 'Dim', header: '#1c2128', body: '#22272e' },
+                { id: 'warm', label: 'Warm', header: '#100e0a', body: '#18150f' },
                 { id: 'midnight', label: 'Midnight', header: '#060606', body: '#000000' },
-                { id: 'nord',     label: 'Nord',     header: '#242933', body: '#2e3440' },
-                { id: 'forest',   label: 'Forest',   header: '#0d150d', body: '#141f14' },
-                { id: 'dusk',     label: 'Dusk',     header: '#0f0a16', body: '#16101e' },
-                { id: 'grey',     label: 'Grey',     header: '#111111', body: '#1a1a1a' },
+                { id: 'nord', label: 'Nord', header: '#242933', body: '#2e3440' },
+                { id: 'forest', label: 'Forest', header: '#0d150d', body: '#141f14' },
+                { id: 'dusk', label: 'Dusk', header: '#0f0a16', body: '#16101e' },
+                { id: 'grey', label: 'Grey', header: '#111111', body: '#1a1a1a' }
               ] as { id: Theme; label: string; header: string; body: string }[]
             ).map(({ id, label, header, body }) => (
               <button
@@ -283,7 +357,9 @@ export default function SettingsPage() {
                   <div className="h-[30%]" style={{ background: header }} />
                   <div className="h-[70%]" style={{ background: body }} />
                 </div>
-                <span className={`text-xs font-medium ${theme === id ? 'text-blue-500' : 'text-gray-400 dark:text-gray-500'}`}>
+                <span
+                  className={`text-xs font-medium ${theme === id ? 'text-blue-500' : 'text-gray-400 dark:text-gray-500'}`}
+                >
                   {label}
                 </span>
               </button>
@@ -311,6 +387,9 @@ export default function SettingsPage() {
           </div>
         </div>
       </section>
+
+      {/* Privacy — web only (Electron/Capacitor don't use cookies) */}
+      {!isNativePlatform && <PrivacySection />}
 
       {/* Data */}
       <section className="space-y-3">
@@ -346,7 +425,8 @@ export default function SettingsPage() {
             <div>
               <p className="text-sm font-medium">Export as iCal</p>
               <p className="text-xs text-gray-400 mt-0.5">
-                Download reminders as an .ics file for Google Calendar, Apple Calendar, Outlook, and more
+                Download reminders as an .ics file for Google Calendar, Apple Calendar, Outlook, and
+                more
               </p>
             </div>
             <Button variant="ghost" size="sm" onClick={handleExportIcal} disabled={exportingIcal}>
@@ -358,7 +438,8 @@ export default function SettingsPage() {
             <div>
               <p className="text-sm font-medium">Import from iCal</p>
               <p className="text-xs text-gray-400 mt-0.5">
-                Import events from an .ics file exported by Google Calendar, Apple Calendar, Outlook, and more
+                Import events from an .ics file exported by Google Calendar, Apple Calendar,
+                Outlook, and more
               </p>
             </div>
             <Button variant="ghost" size="sm" onClick={handleImportIcal} disabled={importingIcal}>
@@ -392,8 +473,12 @@ export default function SettingsPage() {
               {resetStatus === 'confirm' ? (
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="text-xs text-gray-500 dark:text-gray-400">Are you sure?</span>
-                  <Button variant="ghost" size="sm" onClick={() => setResetStatus('idle')}>Cancel</Button>
-                  <Button size="sm" onClick={handleResetFromCloud}>Reset</Button>
+                  <Button variant="ghost" size="sm" onClick={() => setResetStatus('idle')}>
+                    Cancel
+                  </Button>
+                  <Button size="sm" onClick={handleResetFromCloud}>
+                    Reset
+                  </Button>
                 </div>
               ) : (
                 <Button
@@ -405,7 +490,13 @@ export default function SettingsPage() {
                   {resetStatus === 'running' && <RefreshCw size={20} className="animate-spin" />}
                   {resetStatus === 'done' && <Check size={20} />}
                   {resetStatus === 'error' && <AlertCircle size={20} />}
-                  {resetStatus === 'running' ? 'Resetting…' : resetStatus === 'done' ? 'Done' : resetStatus === 'error' ? 'Failed' : 'Reset'}
+                  {resetStatus === 'running'
+                    ? 'Resetting…'
+                    : resetStatus === 'done'
+                      ? 'Done'
+                      : resetStatus === 'error'
+                        ? 'Failed'
+                        : 'Reset'}
                 </Button>
               )}
             </div>
@@ -423,8 +514,12 @@ export default function SettingsPage() {
             {clearStatus === 'confirm' ? (
               <div className="flex items-center gap-2 shrink-0">
                 <span className="text-xs text-gray-500 dark:text-gray-400">Are you sure?</span>
-                <Button variant="ghost" size="sm" onClick={() => setClearStatus('idle')}>Cancel</Button>
-                <Button size="sm" onClick={handleClearLocalData}>Clear</Button>
+                <Button variant="ghost" size="sm" onClick={() => setClearStatus('idle')}>
+                  Cancel
+                </Button>
+                <Button size="sm" onClick={handleClearLocalData}>
+                  Clear
+                </Button>
               </div>
             ) : (
               <Button
@@ -435,7 +530,11 @@ export default function SettingsPage() {
               >
                 {clearStatus === 'running' && <RefreshCw size={20} className="animate-spin" />}
                 {clearStatus === 'done' && <Check size={20} />}
-                {clearStatus === 'running' ? 'Clearing…' : clearStatus === 'done' ? 'Done' : 'Clear'}
+                {clearStatus === 'running'
+                  ? 'Clearing…'
+                  : clearStatus === 'done'
+                    ? 'Done'
+                    : 'Clear'}
               </Button>
             )}
           </div>
@@ -454,7 +553,7 @@ export default function SettingsPage() {
               ['n', 'New reminder (day view)'],
               ['t', 'New todo'],
               ['Esc', 'Go back / close'],
-              ['Ctrl / ⌘  ,', 'Open settings'],
+              ['Ctrl / ⌘  ,', 'Open settings']
             ] as [string, string][]
           ).map(([key, desc]) => (
             <div key={key} className="flex items-center justify-between">

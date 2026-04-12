@@ -82,6 +82,14 @@ SQLite at `{userData}/reminders.db`. Schema versioned via `schema_version` table
 
 AES-256-GCM using the Web Crypto API. One key per user stored in Supabase `user_keys` (RLS-protected), cached locally. Encrypted fields use the sentinel format `enc:iv.ciphertext` (base64). Only text fields are encrypted — dates, IDs, timestamps stay plaintext for querying. Key management is in `src/renderer/src/lib/keyManager.ts` and `keyRotation.ts`.
 
+### Cookie Consent
+
+All cookies, analytics, and tracking must go through the consent system in `src/renderer/src/lib/consent.ts`. Two categories exist: `functional` (always on) and `analytics` (opt-in). On Electron/Capacitor, consent is auto-granted and the banner never shows. On web, the `CookieBanner` component (`src/renderer/src/components/CookieBanner.tsx`) collects user consent before any non-essential cookies or tracking loads.
+
+- **Adding a new cookie or tracking pixel**: gate it behind `isAllowed('analytics')` (or `'functional'` if essential) and react to changes via `onConsentChange()`.
+- **Adding a new consent category**: add it to the `ConsentCategory` type in `consent.ts` and add a toggle row in `CookieBanner.tsx`.
+- **Never** initialize analytics, tracking scripts, or non-essential cookies at module load time — wait for consent.
+
 ### Dates
 
 All date logic uses the **Temporal API** (`@js-temporal/polyfill`). Utilities are in `src/renderer/src/utils/dates.ts`. Recurrence uses RRule (`src/renderer/src/utils/recurrence.ts`).

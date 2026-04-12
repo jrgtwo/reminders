@@ -1,6 +1,7 @@
+import { useState } from 'react'
 import { Analytics } from '@vercel/analytics/react'
 import FirstLoginDialog from './components/sync/FirstLoginDialog'
-import { RouterProvider, createMemoryRouter, createBrowserRouter } from 'react-router-dom'
+import { RouterProvider, createMemoryRouter, createBrowserRouter, Navigate } from 'react-router-dom'
 import AppShell from './components/layout/AppShell'
 import CalendarHeader from './components/calendar/CalendarHeader'
 import MonthView from './components/calendar/MonthView'
@@ -14,6 +15,9 @@ import ListsPage from './components/pages/ListsPage'
 import NoteView from './components/notes/NoteView'
 import NotesPage from './components/pages/NotesPage'
 import BrowsePage from './components/pages/BrowsePage'
+import LandingPage, { LANDING_SEEN_KEY } from './components/LandingPage'
+import CookieBanner from './components/CookieBanner'
+import { getConsent } from './lib/consent'
 import { useCalendarPage } from './components/hooks/useCalendarPage'
 import { useApp } from './components/hooks/useApp'
 
@@ -44,12 +48,20 @@ function DayPage() {
   return <DayView />
 }
 
+function FirstVisitRedirect() {
+  if (!localStorage.getItem(LANDING_SEEN_KEY)) {
+    return <Navigate to="/welcome" replace />
+  }
+  return <CalendarPage />
+}
+
 const routes = [
+  { path: '/welcome', element: <LandingPage /> },
   {
     path: '/',
     element: <AppShell />,
     children: [
-      { index: true, element: <CalendarPage /> },
+      { index: true, element: <FirstVisitRedirect /> },
       { path: 'day/:date', element: <DayPage /> },
       { path: 'reminders', element: <RemindersPage /> },
       { path: 'todos', element: <TodosPage /> },
@@ -80,14 +92,26 @@ const router = isElectronOrCapacitor ? createMemoryRouter(routes) : createBrowse
 
 export default function App() {
   const { ready, authReady, isLoggedIn } = useApp(router)
+  const [consentDecided, setConsentDecided] = useState(() => getConsent().decided)
+  const [analyticsAllowed, setAnalyticsAllowed] = useState(() => getConsent().analytics)
 
   if (!ready || !authReady) return null
+
+  const showBanner = !isElectronOrCapacitor && !consentDecided
 
   return (
     <>
       <RouterProvider router={router} />
       {isLoggedIn && <FirstLoginDialog />}
-      {!isElectronOrCapacitor && <Analytics />}
+      {!isElectronOrCapacitor && analyticsAllowed && <Analytics />}
+      {showBanner && (
+        <CookieBanner
+          onDismiss={() => {
+            setConsentDecided(true)
+            setAnalyticsAllowed(getConsent().analytics)
+          }}
+        />
+      )}
     </>
   )
 }
