@@ -6,7 +6,6 @@ out
 *.log*
 .env
 .env.local
-supabase
 .idea/
 
 # Android signing — never commit keystores or signing credentials
