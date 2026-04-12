@@ -7,8 +7,8 @@ import AppShell from './components/layout/AppShell'
 import CalendarHeader from './components/calendar/CalendarHeader'
 import MonthView from './components/calendar/MonthView'
 import WeekView from './components/calendar/WeekView'
-import DayView from './components/DayView'
-import ErrorPage from './components/ErrorPage'
+import DayView from './components/calendar/DayView'
+import ErrorPage from './components/pages/ErrorPage'
 import CookieBanner from './components/CookieBanner'
 
 const LANDING_SEEN_KEY = 'reminder_landing_seen'
@@ -21,7 +21,7 @@ const ListsPage = lazy(() => import('./components/pages/ListsPage'))
 const NoteView = lazy(() => import('./components/notes/NoteView'))
 const NotesPage = lazy(() => import('./components/pages/NotesPage'))
 const BrowsePage = lazy(() => import('./components/pages/BrowsePage'))
-const LandingPage = lazy(() => import('./components/LandingPage'))
+const LandingPage = lazy(() => import('./components/pages/LandingPage'))
 const PrivacyPolicyPage = lazy(() => import('./components/pages/PrivacyPolicyPage'))
 import { getConsent } from './lib/consent'
 import { useCalendarPage } from './components/hooks/useCalendarPage'

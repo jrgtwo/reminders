@@ -34,7 +34,7 @@ import { create } from 'zustand'
          else s.reminders.push(saved)
        })
        capture(isNew ? 'reminder_created' : 'reminder_updated', {
-         has_time: !!saved.time,
+         has_time: !!saved.startTime,
          has_recurrence: !!saved.recurrence,
          recurrence_frequency: saved.recurrence?.frequency ?? null,
        })

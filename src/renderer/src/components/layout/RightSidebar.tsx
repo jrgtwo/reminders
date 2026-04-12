@@ -14,9 +14,10 @@ import ConfirmDeleteDialog from '../ui/ConfirmDeleteDialog'
 import { CollapsibleSection } from '../ui/CollapsibleSection'
 import { SidebarNavItem, FolderTree, DateTree } from '../ui/FolderNav'
 import { MoreMenu } from '../ui/MoreMenu'
-import { useRightSidebar, formatOverdueDate, formatUpcomingDate } from './hooks/useRightSidebar'
+import { useRightSidebar } from './hooks/useRightSidebar'
 import SidebarAddButton from '../ui/SidebarAddButton'
 import SidebarHeader from '../ui/SidebarHeader'
+import RemindersSidebarSection from './RemindersSidebarSection'
 
 export default function RightSidebar() {
   const {
@@ -72,45 +73,6 @@ export default function RightSidebar() {
     folderDelete,
   } = useRightSidebar()
 
-  function ReminderItem({
-    id,
-    dateStr,
-    title,
-    time,
-    variant
-  }: {
-    id: string
-    dateStr: string
-    title: string
-    time?: string
-    variant: 'overdue' | 'upcoming'
-  }) {
-    return (
-      <li key={`${id}-${dateStr}`}>
-        <button
-          onClick={() => navigate(`/day/${dateStr}`, { state: { tab: 'reminders' } })}
-          className={`w-full text-left px-3 py-2 rounded-xl transition-all group ${
-            variant === 'overdue'
-              ? 'bg-white dark:bg-white/[0.04] hover:bg-red-50 dark:hover:bg-[#e8a045]/[0.08] hover:shadow-sm'
-              : 'bg-white dark:bg-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.07] hover:shadow-sm'
-          }`}
-        >
-          <div
-            className={`text-[11px] font-semibold mb-0.5 ${variant === 'overdue' ? 'text-red-400 dark:text-[#e8a045]/80' : 'text-blue-500 dark:text-[#6498c8]/80'}`}
-          >
-            {variant === 'overdue' ? formatOverdueDate(dateStr) : formatUpcomingDate(dateStr)}
-          </div>
-          <div className="text-[12px] font-medium text-slate-700 dark:text-white/75 truncate group-hover:text-slate-900 dark:group-hover:text-[#f0f0f0]">
-            {title}
-          </div>
-          {time && (
-            <div className="text-[11px] text-slate-400 dark:text-white/55 mt-0.5">{time}</div>
-          )}
-        </button>
-      </li>
-    )
-  }
-
   function renderList(l: TodoList, indent: boolean): ReactNode {
     return (
       <SidebarNavItem
@@ -149,159 +111,16 @@ export default function RightSidebar() {
           {rightOpen && (
             <>
               {/* Reminders section */}
-              <div className="py-1">
-                <CollapsibleSection
-                  label="Reminders"
-                  count={overdueReminders.length + upcomingReminders.length}
-                  accent="blue"
-                  defaultOpen
-                  headerExtra={
-                    <button
-                      onClick={() => navigate('/reminders')}
-                      className="p-1 rounded text-slate-300 dark:text-white/50 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
-                      title="Go to Reminders"
-                    >
-                      <ArrowUpRight size={20} />
-                    </button>
-                  }
-                >
-                  {overdueReminders.length === 0 && upcomingReminders.length === 0 && (
-                    <p className="text-[11px] text-slate-400 dark:text-white/50 px-4 py-2 text-center">
-                      No upcoming reminders
-                    </p>
-                  )}
-                  {overdueReminders.length > 0 && (
-                    <CollapsibleSection
-                      label="Overdue"
-                      count={overdueReminders.length}
-                      accent="red"
-                      defaultOpen={false}
-                    >
-                      <div className="flex flex-col gap-0.5">
-                        {overdueYesterday.length > 0 && (
-                          <CollapsibleSection
-                            label="Yesterday"
-                            count={overdueYesterday.length}
-                            accent="red"
-                            defaultOpen
-                          >
-                            <ul className="flex flex-col gap-1 px-2 pb-1">
-                              {overdueYesterday.map((item, i) => (
-                                <ReminderItem
-                                  key={`${item.id}-${item.dateStr}-${i}`}
-                                  {...item}
-                                  variant="overdue"
-                                />
-                              ))}
-                            </ul>
-                          </CollapsibleSection>
-                        )}
-                        {overdueThisWeek.length > 0 && (
-                          <CollapsibleSection
-                            label="This Week"
-                            count={overdueThisWeek.length}
-                            accent="slate"
-                            defaultOpen
-                          >
-                            <ul className="flex flex-col gap-1 px-2 pb-1">
-                              {overdueThisWeek.map((item, i) => (
-                                <ReminderItem
-                                  key={`${item.id}-${item.dateStr}-${i}`}
-                                  {...item}
-                                  variant="overdue"
-                                />
-                              ))}
-                            </ul>
-                          </CollapsibleSection>
-                        )}
-                        {overdueOlder.length > 0 && (
-                          <CollapsibleSection
-                            label="Older"
-                            count={overdueOlder.length}
-                            accent="slate"
-                            defaultOpen
-                          >
-                            <ul className="flex flex-col gap-1 px-2 pb-1">
-                              {overdueOlder.map((item, i) => (
-                                <ReminderItem
-                                  key={`${item.id}-${item.dateStr}-${i}`}
-                                  {...item}
-                                  variant="overdue"
-                                />
-                              ))}
-                            </ul>
-                          </CollapsibleSection>
-                        )}
-                      </div>
-                    </CollapsibleSection>
-                  )}
-                  {upcomingReminders.length > 0 && (
-                    <CollapsibleSection
-                      label="Upcoming"
-                      count={upcomingReminders.length}
-                      accent="blue"
-                      defaultOpen={false}
-                    >
-                      <div className="flex flex-col gap-0.5">
-                        {upcomingToday.length > 0 && (
-                          <CollapsibleSection
-                            label="Today"
-                            count={upcomingToday.length}
-                            accent="blue"
-                            defaultOpen
-                          >
-                            <ul className="flex flex-col gap-1 px-2 pb-1">
-                              {upcomingToday.map((item, i) => (
-                                <ReminderItem
-                                  key={`${item.id}-${item.dateStr}-${i}`}
-                                  {...item}
-                                  variant="upcoming"
-                                />
-                              ))}
-                            </ul>
-                          </CollapsibleSection>
-                        )}
-                        {upcomingThisWeek.length > 0 && (
-                          <CollapsibleSection
-                            label="This Week"
-                            count={upcomingThisWeek.length}
-                            accent="slate"
-                            defaultOpen
-                          >
-                            <ul className="flex flex-col gap-1 px-2 pb-1">
-                              {upcomingThisWeek.map((item, i) => (
-                                <ReminderItem
-                                  key={`${item.id}-${item.dateStr}-${i}`}
-                                  {...item}
-                                  variant="upcoming"
-                                />
-                              ))}
-                            </ul>
-                          </CollapsibleSection>
-                        )}
-                        {upcomingLater.length > 0 && (
-                          <CollapsibleSection
-                            label="Later"
-                            count={upcomingLater.length}
-                            accent="slate"
-                            defaultOpen
-                          >
-                            <ul className="flex flex-col gap-1 px-2 pb-1">
-                              {upcomingLater.map((item, i) => (
-                                <ReminderItem
-                                  key={`${item.id}-${item.dateStr}-${i}`}
-                                  {...item}
-                                  variant="upcoming"
-                                />
-                              ))}
-                            </ul>
-                          </CollapsibleSection>
-                        )}
-                      </div>
-                    </CollapsibleSection>
-                  )}
-                </CollapsibleSection>
-              </div>
+              <RemindersSidebarSection
+                overdueReminders={overdueReminders}
+                upcomingReminders={upcomingReminders}
+                overdueYesterday={overdueYesterday}
+                overdueThisWeek={overdueThisWeek}
+                overdueOlder={overdueOlder}
+                upcomingToday={upcomingToday}
+                upcomingThisWeek={upcomingThisWeek}
+                upcomingLater={upcomingLater}
+              />
 
               {/* Notes section */}
               <div className="py-1 border-t-2 border-slate-200 dark:border-white/[0.1] mt-1">

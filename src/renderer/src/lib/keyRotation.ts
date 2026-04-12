@@ -118,18 +118,18 @@ export async function rotateEncryptionKey(userId: string): Promise<void> {
   )
 
   // 4. Push re-encrypted data to Supabase BEFORE updating the key.
-  const pushes: Promise<any>[] = []
+  const pushes: PromiseLike<unknown>[] = []
   if (encReminders.length)
-    pushes.push(supabase.from('reminders').upsert(encReminders.map((r) => reminderRow(r, userId))))
+    pushes.push(supabase.from('reminders').upsert(encReminders.map((r) => reminderRow(r, userId))).select())
   if (encNotes.length)
-    pushes.push(supabase.from('notes').upsert(encNotes.map((n) => noteRow(n, userId))))
+    pushes.push(supabase.from('notes').upsert(encNotes.map((n) => noteRow(n, userId))).select())
   if (encFolders.length)
-    pushes.push(supabase.from('todo_folders').upsert(encFolders.map((f) => folderRow(f, userId))))
+    pushes.push(supabase.from('todo_folders').upsert(encFolders.map((f) => folderRow(f, userId))).select())
   if (encLists.length)
-    pushes.push(supabase.from('todo_lists').upsert(encLists.map((l) => listRow(l, userId))))
+    pushes.push(supabase.from('todo_lists').upsert(encLists.map((l) => listRow(l, userId))).select())
   if (encItems.length)
     pushes.push(
-      supabase.from('todo_list_items').upsert(encItems.map((i) => listItemRow(i, userId)))
+      supabase.from('todo_list_items').upsert(encItems.map((i) => listItemRow(i, userId))).select()
     )
   await Promise.all(pushes)
 

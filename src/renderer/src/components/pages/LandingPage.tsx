@@ -75,7 +75,7 @@ const TIERS = [
 ]
 
 import { useNavigate } from 'react-router-dom'
-import { isAllowed } from '../lib/consent'
+import { isAllowed } from '../../lib/consent'
 
 const LANDING_SEEN_KEY = 'reminder_landing_seen'
 
