@@ -4,10 +4,13 @@ import { supabase } from '../lib/supabase'
 import { capture } from '../lib/analytics'
 import { initEncryptionKey, clearEncryptionKey } from '../lib/keyManager'
 
+type Plan = 'free' | 'pro' | 'comp'
+
 interface AuthState {
   user: User | null
   session: Session | null
   isLoggedIn: boolean
+  plan: Plan
   init: () => Promise<void>
   sendMagicLink: (email: string, captchaToken?: string) => Promise<void>
   signOut: () => Promise<void>
@@ -17,14 +20,27 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   session: null,
   isLoggedIn: false,
+  plan: 'free',
 
   init: () => {
     // Restore existing session on app launch
     const sessionReady = supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
         await initEncryptionKey(session.user.id).catch(console.error)
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('plan')
+          .eq('user_id', session.user.id)
+          .single()
+        set({
+          session,
+          user: session.user,
+          isLoggedIn: true,
+          plan: (profile?.plan as Plan) ?? 'free',
+        })
+      } else {
+        set({ session, user: null, isLoggedIn: false, plan: 'free' })
       }
-      set({ session, user: session?.user ?? null, isLoggedIn: !!session })
     })
 
     // Keep store in sync with future auth state changes (sign-in, sign-out, token refresh).
@@ -46,8 +62,20 @@ export const useAuthStore = create<AuthState>((set) => ({
       setTimeout(async () => {
         if (session?.user) {
           await initEncryptionKey(session.user.id).catch(console.error)
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('plan')
+            .eq('user_id', session.user.id)
+            .single()
+          set({
+            session,
+            user: session.user,
+            isLoggedIn: true,
+            plan: (profile?.plan as Plan) ?? 'free',
+          })
+        } else {
+          set({ session, user: null, isLoggedIn: false, plan: 'free' })
         }
-        set({ session, user: session?.user ?? null, isLoggedIn: !!session })
       }, 0)
     })
 
@@ -109,7 +137,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     capture('auth_signed_out')
     const userId = useAuthStore.getState().user?.id
     await supabase.auth.signOut()
-    set({ user: null, session: null, isLoggedIn: false })
+    set({ user: null, session: null, isLoggedIn: false, plan: 'free' })
     if (userId) await clearEncryptionKey(userId)
   },
 }))

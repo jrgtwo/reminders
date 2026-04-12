@@ -51,8 +51,9 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     if (get().checkingFirstLogin) return
     if (get().status === 'syncing') return
 
-    const session = useAuthStore.getState().session
+    const { session, plan } = useAuthStore.getState()
     if (!session) return
+    if (plan !== 'pro' && plan !== 'comp') return
 
     set({ status: 'syncing' })
     try {

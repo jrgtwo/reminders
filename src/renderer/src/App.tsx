@@ -2,7 +2,6 @@ import { Analytics } from '@vercel/analytics/react'
 import FirstLoginDialog from './components/sync/FirstLoginDialog'
 import { RouterProvider, createMemoryRouter, createBrowserRouter } from 'react-router-dom'
 import AppShell from './components/layout/AppShell'
-import SignInPage from './components/SignInPage'
 import CalendarHeader from './components/calendar/CalendarHeader'
 import MonthView from './components/calendar/MonthView'
 import WeekView from './components/calendar/WeekView'
@@ -84,12 +83,10 @@ export default function App() {
 
   if (!ready || !authReady) return null
 
-  if (!isLoggedIn) return <SignInPage />
-
   return (
     <>
       <RouterProvider router={router} />
-      <FirstLoginDialog />
+      {isLoggedIn && <FirstLoginDialog />}
       {!isElectronOrCapacitor && <Analytics />}
     </>
   )
