@@ -30,7 +30,7 @@ export default function NoteItem({ note, onEdit, onDelete }: Props) {
     <div
       ref={setNodeRef}
       style={style}
-      className="group mx-2 rounded-xl bg-white dark:bg-white/[0.04] border border-slate-200/60 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-300/80 dark:border-b-white/[0.15] hover:-translate-y-[1.5px] active:translate-y-[1.5px] hover:shadow-sm dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.3)] transition-all"
+      className="group mx-2 rounded-xl bg-white dark:bg-white/[0.04] border border-slate-200/60 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-300/80 dark:border-b-white/[0.15] hover:-translate-y-[3px] hover:shadow-lg dark:hover:shadow-none dark:hover:brightness-125 dark:hover:border-white/25 active:translate-y-[1px] active:shadow-sm dark:active:shadow-none dark:active:brightness-100 transition-[translate,box-shadow,background-color,border-color,filter] duration-200 ease-out"
     >
       {/* Main row */}
       <div className="flex items-center gap-1.5 px-3 py-1.5">
@@ -38,7 +38,7 @@ export default function NoteItem({ note, onEdit, onDelete }: Props) {
         <button
           {...attributes}
           {...listeners}
-          className="cursor-grab active:cursor-grabbing text-slate-300 dark:text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+          className="cursor-grab active:cursor-grabbing text-slate-300 dark:text-slate-600 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0"
           tabIndex={-1}
           aria-label="Drag to reorder"
         >

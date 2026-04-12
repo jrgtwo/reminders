@@ -19,7 +19,7 @@ export default function ReminderItem({ reminder, date, onToggle, onEdit, onDelet
     <div
       className={`flex items-start gap-3 px-4 py-3.5 group rounded-xl border border-slate-200/80 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-300/80 dark:border-b-white/[0.15] bg-white dark:bg-white/[0.03] transition-all ${
         isCompleted ? 'opacity-40' : ''
-      } hover:bg-slate-50 dark:hover:bg-white/[0.06] hover:shadow-sm dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.2)]`}
+      } hover:bg-slate-50 dark:hover:bg-white/[0.06] hover:shadow-sm dark:hover:shadow-none dark:hover:brightness-125 dark:hover:border-white/25`}
     >
       {/* Checkbox */}
       <button

@@ -1,6 +1,7 @@
 import {
   DndContext,
   PointerSensor,
+  TouchSensor,
   closestCenter,
   useSensor,
   useSensors,
@@ -20,7 +21,10 @@ interface Props {
 }
 
 export default function NoteList({ notes, onNew, onEdit, onDelete, onReorder }: Props) {
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+  )
 
   function handleDragStart() {
     document.body.style.cursor = 'grabbing'
