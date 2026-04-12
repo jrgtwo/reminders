@@ -66,6 +66,16 @@ function PrivacySection() {
           </div>
           <input type="checkbox" checked disabled className="accent-[#6498c8] w-4 h-4" />
         </div>
+        <div className="border-t border-gray-200 dark:border-white/10 pt-3">
+          <a
+            href="/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-[#6498c8] hover:underline"
+          >
+            Privacy Policy
+          </a>
+        </div>
       </div>
     </section>
   )
@@ -105,6 +115,9 @@ export default function SettingsPage() {
     setResetStatus,
     clearStatus,
     setClearStatus,
+    deleteAccountStatus,
+    setDeleteAccountStatus,
+    handleDeleteAccountRequest,
     email,
     setEmail,
     magicLinkStatus,
@@ -541,30 +554,65 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      {/* Keyboard shortcuts */}
-      <section className="space-y-3">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-          Keyboard shortcuts
-        </h2>
-        <div className="p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)] space-y-2.5">
-          {(
-            [
-              ['/', 'Focus search'],
-              ['n', 'New reminder (day view)'],
-              ['t', 'New todo'],
-              ['Esc', 'Go back / close'],
-              ['Ctrl / ⌘  ,', 'Open settings']
-            ] as [string, string][]
-          ).map(([key, desc]) => (
-            <div key={key} className="flex items-center justify-between">
-              <span className="text-sm text-gray-600 dark:text-gray-300">{desc}</span>
-              <kbd className="px-2 py-0.5 text-xs bg-white dark:bg-[var(--bg-elevated)] border border-gray-200 dark:border-[var(--border)] rounded font-mono text-gray-700 dark:text-gray-300">
-                {key}
-              </kbd>
+      {/* Delete account — only when logged in */}
+      {isLoggedIn && (
+        <section className="space-y-3">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-red-500 dark:text-red-400">
+            Danger zone
+          </h2>
+          <div className="flex items-center justify-between p-4 rounded-xl border border-red-200 dark:border-red-500/20 bg-red-50 dark:bg-red-900/10">
+            <div className="flex items-center gap-3">
+              <Trash2 size={20} className="text-red-400 dark:text-red-500 shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  Delete account
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Permanently delete your account and all associated data
+                </p>
+              </div>
             </div>
-          ))}
-        </div>
-      </section>
+            {deleteAccountStatus === 'sent' ? (
+              <div className="flex items-center gap-2 text-green-600 dark:text-green-400 shrink-0">
+                <Check size={16} />
+                <span className="text-xs font-medium">Request sent</span>
+              </div>
+            ) : deleteAccountStatus === 'confirm' ? (
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs text-gray-500 dark:text-gray-400">Are you sure?</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDeleteAccountStatus('idle')}
+                >
+                  Cancel
+                </Button>
+                <Button size="sm" onClick={handleDeleteAccountRequest}>
+                  Delete
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={deleteAccountStatus === 'sending'}
+                onClick={() => setDeleteAccountStatus('confirm')}
+              >
+                {deleteAccountStatus === 'sending' && (
+                  <RefreshCw size={20} className="animate-spin" />
+                )}
+                {deleteAccountStatus === 'error' && <AlertCircle size={20} />}
+                {deleteAccountStatus === 'sending'
+                  ? 'Requesting…'
+                  : deleteAccountStatus === 'error'
+                    ? 'Failed'
+                    : 'Request deletion'}
+              </Button>
+            )}
+          </div>
+        </section>
+      )}
+
     </div>
   )
 }

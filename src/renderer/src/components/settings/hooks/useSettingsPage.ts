@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import type { TurnstileInstance } from '@marsidev/react-turnstile'
 import { useNavigate } from 'react-router-dom'
 import { rotateEncryptionKey } from '../../../lib/keyRotation'
+import { supabase } from '../../../lib/supabase'
 import { useUIStore, type Theme, type TimeFormat } from '../../../store/ui.store'
 import { useAuthStore } from '../../../store/auth.store'
 import { useSyncStore } from '../../../store/sync.store'
@@ -40,6 +41,9 @@ export function useSettingsPage() {
   const [rotateStatus, setRotateStatus] = useState<'idle' | 'confirm' | 'rotating' | 'done' | 'error'>('idle')
   const [resetStatus, setResetStatus] = useState<'idle' | 'confirm' | 'running' | 'done' | 'error'>('idle')
   const [clearStatus, setClearStatus] = useState<'idle' | 'confirm' | 'running' | 'done'>('idle')
+  const [deleteAccountStatus, setDeleteAccountStatus] = useState<
+    'idle' | 'confirm' | 'sending' | 'sent' | 'error'
+  >('idle')
   const [email, setEmail] = useState('')
   const [magicLinkStatus, setMagicLinkStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
@@ -124,6 +128,21 @@ export function useSettingsPage() {
     }
   }
 
+  async function handleDeleteAccountRequest() {
+    if (!user) return
+    setDeleteAccountStatus('sending')
+    try {
+      const { error } = await supabase.functions.invoke('request-account-deletion', {
+        body: { user_id: user.id },
+      })
+      if (error) throw error
+      setDeleteAccountStatus('sent')
+    } catch {
+      setDeleteAccountStatus('error')
+      setTimeout(() => setDeleteAccountStatus('idle'), 4000)
+    }
+  }
+
   async function handleClearLocalData() {
     setClearStatus('running')
     await clearLocalData()
@@ -156,6 +175,9 @@ export function useSettingsPage() {
     setResetStatus,
     clearStatus,
     setClearStatus,
+    deleteAccountStatus,
+    setDeleteAccountStatus,
+    handleDeleteAccountRequest,
     email,
     setEmail,
     magicLinkStatus,

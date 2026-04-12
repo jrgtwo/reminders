@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState, useEffect, useMemo } from 'react'
+import { useRef, useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useUIStore } from '../../../store/ui.store'
 import { useRemindersStore } from '../../../store/reminders.store'
@@ -7,13 +7,11 @@ import { useAuthStore } from '../../../store/auth.store'
 import { useSyncStore } from '../../../store/sync.store'
 import { getOccurrencesInRange } from '../../../utils/recurrence'
 import { today } from '../../../utils/dates'
-import { useKeyboardShortcuts } from '../../../hooks/useKeyboardShortcuts'
 import { usePageTracking } from '../../../hooks/usePageTracking'
 
 export function useAppShell() {
   const searchRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
-  const focusSearch = useCallback(() => searchRef.current?.focus(), [])
   const [errorDismissed, setErrorDismissed] = useState(false)
 
   const newReminderDate = useUIStore((s) => s.newReminderDate)
@@ -56,7 +54,6 @@ export function useAppShell() {
 
   const showErrorBanner = isLoggedIn && syncStatus === 'error' && !errorDismissed
 
-  useKeyboardShortcuts(focusSearch)
   usePageTracking()
 
   return {

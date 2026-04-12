@@ -275,8 +275,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="border-t border-white/[0.06] py-6 text-center text-[11px] text-white/20">
-        Reminder Today
+      <footer className="border-t border-white/[0.06] py-6 text-center text-[11px] text-white/20 flex items-center justify-center gap-3">
+        <span>Reminder Today</span>
+        <span>&middot;</span>
+        <a href="/privacy" className="hover:text-white/40 transition-colors">
+          Privacy Policy
+        </a>
       </footer>
     </div>
   )
