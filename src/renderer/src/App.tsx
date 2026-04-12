@@ -18,6 +18,7 @@ import NotesPage from './components/pages/NotesPage'
 import BrowsePage from './components/pages/BrowsePage'
 import LandingPage, { LANDING_SEEN_KEY } from './components/LandingPage'
 import PrivacyPolicyPage from './components/pages/PrivacyPolicyPage'
+import ErrorPage from './components/ErrorPage'
 import CookieBanner from './components/CookieBanner'
 import { getConsent } from './lib/consent'
 import { useCalendarPage } from './components/hooks/useCalendarPage'
@@ -58,11 +59,12 @@ function FirstVisitRedirect() {
 }
 
 const routes = [
-  { path: '/welcome', element: <LandingPage /> },
-  { path: '/privacy', element: <PrivacyPolicyPage /> },
+  { path: '/welcome', element: <LandingPage />, errorElement: <ErrorPage /> },
+  { path: '/privacy', element: <PrivacyPolicyPage />, errorElement: <ErrorPage /> },
   {
     path: '/',
     element: <AppShell />,
+    errorElement: <ErrorPage />,
     children: [
       { index: true, element: <FirstVisitRedirect /> },
       { path: 'day/:date', element: <DayPage /> },

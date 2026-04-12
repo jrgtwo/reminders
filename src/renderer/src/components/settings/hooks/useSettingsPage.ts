@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { TurnstileInstance } from '@marsidev/react-turnstile'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { rotateEncryptionKey } from '../../../lib/keyRotation'
 import { supabase } from '../../../lib/supabase'
 import { useUIStore, type Theme, type TimeFormat } from '../../../store/ui.store'
@@ -10,11 +10,12 @@ import { exportToFile, importFromFile, exportToIcalFile, importFromIcalFile } fr
 
 export function useSettingsPage() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const theme = useUIStore((s) => s.theme)
   const setTheme = useUIStore((s) => s.setTheme)
   const timeFormat = useUIStore((s) => s.timeFormat)
   const setTimeFormat = useUIStore((s) => s.setTimeFormat)
-  const { user, isLoggedIn, sendMagicLink, signOut } = useAuthStore()
+  const { user, isLoggedIn, plan, sendMagicLink, signOut } = useAuthStore()
   const syncStatus = useSyncStore((s) => s.status)
   const lastSyncedAt = useSyncStore((s) => s.lastSyncedAt)
   const triggerSync = useSyncStore((s) => s.trigger)
@@ -41,6 +42,9 @@ export function useSettingsPage() {
   const [rotateStatus, setRotateStatus] = useState<'idle' | 'confirm' | 'rotating' | 'done' | 'error'>('idle')
   const [resetStatus, setResetStatus] = useState<'idle' | 'confirm' | 'running' | 'done' | 'error'>('idle')
   const [clearStatus, setClearStatus] = useState<'idle' | 'confirm' | 'running' | 'done'>('idle')
+  const [upgradeStatus, setUpgradeStatus] = useState<'idle' | 'loading' | 'error'>('idle')
+  const [billingInterval, setBillingInterval] = useState<'monthly' | 'yearly'>('yearly')
+  const [portalStatus, setPortalStatus] = useState<'idle' | 'loading' | 'error'>('idle')
   const [deleteAccountStatus, setDeleteAccountStatus] = useState<
     'idle' | 'confirm' | 'sending' | 'sent' | 'error'
   >('idle')
@@ -48,6 +52,30 @@ export function useSettingsPage() {
   const [magicLinkStatus, setMagicLinkStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const turnstileRef = useRef<TurnstileInstance>(null)
+
+  // After returning from Stripe checkout, re-fetch the plan
+  useEffect(() => {
+    if (searchParams.get('upgraded') !== 'true' || !user) return
+    const poll = async () => {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('plan')
+        .eq('user_id', user.id)
+        .single()
+      if (profile?.plan === 'pro') {
+        useAuthStore.setState({ plan: 'pro' })
+        setSearchParams({}, { replace: true })
+      }
+    }
+    // Webhook may take a moment — poll a few times
+    poll()
+    const interval = setInterval(poll, 3000)
+    const timeout = setTimeout(() => clearInterval(interval), 15000)
+    return () => {
+      clearInterval(interval)
+      clearTimeout(timeout)
+    }
+  }, [searchParams, user])
 
   async function handleRotateKey() {
     if (!user) return
@@ -128,6 +156,36 @@ export function useSettingsPage() {
     }
   }
 
+  async function handleUpgrade() {
+    setUpgradeStatus('loading')
+    try {
+      const priceId =
+        billingInterval === 'yearly'
+          ? import.meta.env.VITE_STRIPE_PRO_YEARLY_PRICE_ID
+          : import.meta.env.VITE_STRIPE_PRO_MONTHLY_PRICE_ID
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: { priceId },
+      })
+      if (error) throw error
+      window.open(data.url, '_self')
+    } catch {
+      setUpgradeStatus('error')
+      setTimeout(() => setUpgradeStatus('idle'), 4000)
+    }
+  }
+
+  async function handleManageSubscription() {
+    setPortalStatus('loading')
+    try {
+      const { data, error } = await supabase.functions.invoke('create-portal-session')
+      if (error) throw error
+      window.open(data.url, '_self')
+    } catch {
+      setPortalStatus('error')
+      setTimeout(() => setPortalStatus('idle'), 4000)
+    }
+  }
+
   async function handleDeleteAccountRequest() {
     if (!user) return
     setDeleteAccountStatus('sending')
@@ -158,7 +216,14 @@ export function useSettingsPage() {
     setTimeFormat,
     user,
     isLoggedIn,
+    plan,
     signOut,
+    upgradeStatus,
+    billingInterval,
+    setBillingInterval,
+    portalStatus,
+    handleUpgrade,
+    handleManageSubscription,
     syncStatus,
     lastSyncedAt,
     triggerSync,
