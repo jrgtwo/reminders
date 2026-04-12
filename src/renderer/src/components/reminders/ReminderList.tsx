@@ -45,7 +45,7 @@ export default function ReminderList({ date, reminders, onAdd, onEdit, onDelete,
           No reminders for this day
         </p>
       ) : (
-        <div className="flex flex-col -mx-4">
+        <div className="flex flex-col gap-1.5">
           {allDay.length > 0 && (
             <>
               <SectionHeader label="All Day" />

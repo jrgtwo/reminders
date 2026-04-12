@@ -202,10 +202,10 @@ export default function RemindersPage() {
     return (
       <li>
         <div
-          className={`flex items-start gap-2 px-3 py-2.5 rounded-xl transition-all group ${
+          className={`flex items-start gap-2 px-3 py-2.5 rounded-xl transition-all group active:border-b-[1px] active:mt-[1.5px] active:mb-[-1.5px] ${
             variant === 'overdue'
-              ? 'bg-white dark:bg-white/[0.04] hover:bg-red-50 dark:hover:bg-[#e8a045]/[0.08] hover:shadow-sm dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
-              : 'bg-white dark:bg-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.07] hover:shadow-sm dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
+              ? 'bg-white dark:bg-white/[0.04] border border-red-200/60 dark:border-[#e8a045]/[0.12] border-b-[2.5px] border-b-red-300/60 dark:border-b-[#e8a045]/[0.25] hover:bg-red-50 dark:hover:bg-[#e8a045]/[0.08] hover:shadow-sm dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
+              : 'bg-white dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-300/80 dark:border-b-white/[0.15] hover:bg-slate-50 dark:hover:bg-white/[0.07] hover:shadow-sm dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
           } ${isCompleted ? 'opacity-50' : ''}`}
         >
           {/* Checkbox */}
@@ -252,13 +252,13 @@ export default function RemindersPage() {
             {(item.startTime || item.isRecurring) && (
               <div className="flex items-center gap-1.5 mt-1">
                 {item.startTime && (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-1.5 py-0.5 rounded">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 border border-blue-200/60 dark:border-blue-400/15 border-b-[2px] border-b-blue-200 dark:border-b-blue-400/25 px-1.5 py-0.5 rounded-md">
                     <Clock size={20} />
                     {item.startTime}
                   </span>
                 )}
                 {item.isRecurring && (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-400/10 px-1.5 py-0.5 rounded">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-400/10 border border-amber-200/60 dark:border-amber-400/15 border-b-[2px] border-b-amber-200 dark:border-b-amber-400/25 px-1.5 py-0.5 rounded-md">
                     <RefreshCw size={20} />
                     {item.recurrence?.frequency}
                   </span>

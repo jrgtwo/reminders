@@ -17,9 +17,9 @@ export default function ReminderItem({ reminder, date, onToggle, onEdit, onDelet
 
   return (
     <div
-      className={`flex items-start gap-3 px-4 py-3.5 group rounded-xl transition-all ${
+      className={`flex items-start gap-3 px-4 py-3.5 group rounded-xl border border-slate-200/80 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-300/80 dark:border-b-white/[0.15] bg-white dark:bg-white/[0.03] transition-all ${
         isCompleted ? 'opacity-40' : ''
-      } hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:shadow-sm dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.2)]`}
+      } hover:bg-slate-50 dark:hover:bg-white/[0.06] hover:shadow-sm dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.2)]`}
     >
       {/* Checkbox */}
       <button
@@ -52,13 +52,13 @@ export default function ReminderItem({ reminder, date, onToggle, onEdit, onDelet
         {(reminder.startTime || reminder.recurrence) && (
           <div className="flex items-center gap-1.5 mt-1.5">
             {reminder.startTime && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-1.5 py-0.5 rounded">
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 border border-blue-200/60 dark:border-blue-400/15 border-b-[2px] border-b-blue-200 dark:border-b-blue-400/25 px-1.5 py-0.5 rounded-md">
                 <Clock size={20} />
                 {formatTime(reminder.startTime, timeFormat)}{reminder.endTime ? ` – ${formatTime(reminder.endTime, timeFormat)}` : ''}
               </span>
             )}
             {reminder.recurrence && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-400/10 px-1.5 py-0.5 rounded">
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-400/10 border border-amber-200/60 dark:border-amber-400/15 border-b-[2px] border-b-amber-200 dark:border-b-amber-400/25 px-1.5 py-0.5 rounded-md">
                 <RefreshCw size={20} />
                 {reminder.recurrence.frequency}
               </span>
