@@ -161,11 +161,11 @@ export function SidebarNavItem({
         onDragStart?.(id)
       }}
       onDragEnd={() => onDragEnd?.()}
-      className={`group relative flex items-center gap-2 mx-1.5 mb-0.5 py-2 rounded-lg transition-all ${onDragStart ? 'cursor-grab active:cursor-grabbing' : ''} ${indent ? 'pl-7 pr-2' : 'pl-3 pr-2'} ${
+      className={`group relative flex items-center gap-2 mx-1.5 mb-0.5 py-2 rounded-lg border border-transparent transition-all ${onDragStart ? 'cursor-grab active:cursor-grabbing' : ''} ${indent ? 'pl-7 pr-2' : 'pl-3 pr-2'} ${
         active
-          ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.12]'
-          : 'hover:bg-slate-50 dark:hover:bg-white/[0.03]'
-      }`}
+          ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.12] border-[#6498c8]/20 dark:border-[#6498c8]/[0.15] border-b-[2.5px] border-b-[#6498c8]/30 dark:border-b-[#6498c8]/[0.25]'
+          : 'hover:bg-slate-50 dark:hover:bg-white/[0.03] hover:border-slate-200/60 dark:hover:border-white/[0.06] hover:border-b-[2.5px] hover:border-b-slate-300/60 dark:hover:border-b-white/[0.12]'
+      } active:translate-y-[1px]`}
     >
       <button
         onClick={() => navigate(route)}

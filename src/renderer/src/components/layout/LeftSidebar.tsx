@@ -47,10 +47,10 @@ export default function LeftSidebar() {
       <li key={`${id}-${dateStr}`}>
         <button
           onClick={() => navigate(`/day/${dateStr}`, { state: { tab: 'reminders' } })}
-          className={`w-full text-left px-3 py-2.5 rounded-xl transition-all group ${
+          className={`w-full text-left px-3 py-2.5 rounded-xl transition-all group hover:-translate-y-[1.5px] active:translate-y-[1.5px] ${
             variant === 'overdue'
-              ? 'bg-white dark:bg-white/[0.04] hover:bg-red-50 dark:hover:bg-[#e8a045]/[0.08] hover:shadow-sm dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
-              : 'bg-white dark:bg-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.07] hover:shadow-sm dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
+              ? 'bg-white dark:bg-white/[0.04] border border-red-200/60 dark:border-[#e8a045]/[0.12] border-b-[2.5px] border-b-red-300/60 dark:border-b-[#e8a045]/[0.25] hover:bg-red-50 dark:hover:bg-[#e8a045]/[0.08] hover:shadow-sm dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
+              : 'bg-white dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-300/80 dark:border-b-white/[0.15] hover:bg-slate-50 dark:hover:bg-white/[0.07] hover:shadow-sm dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
           }`}
         >
           <div

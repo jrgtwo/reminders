@@ -39,7 +39,7 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete, isEditing, 
     <div
       ref={setNodeRef}
       style={style}
-      className="group mx-2 rounded-xl bg-white dark:bg-white/[0.04] hover:shadow-sm dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.3)] transition-all"
+      className="group mx-2 rounded-xl bg-white dark:bg-white/[0.04] border border-slate-200/60 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-300/80 dark:border-b-white/[0.15] hover:-translate-y-[1.5px] active:translate-y-[1.5px] hover:shadow-sm dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.3)] transition-all"
     >
       {/* Main row */}
       <div className="flex items-center gap-1.5 px-3 py-1.5">

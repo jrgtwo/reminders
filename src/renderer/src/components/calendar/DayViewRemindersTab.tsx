@@ -66,7 +66,7 @@ export default function DayViewRemindersTab({
       <div key={reminder.id}>
         <button
           onClick={() => setExpandedReminderId(isExpanded ? null : reminder.id)}
-          className={`flex items-start gap-3 w-full px-4 py-3 text-left bg-white dark:bg-white/[0.06] border border-slate-200/60 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-300/80 dark:border-b-white/[0.15] hover:bg-slate-50 dark:hover:bg-white/[0.09] active:border-b-[1px] active:mt-[1.5px] active:mb-[-1.5px] transition-all shadow-sm group ${
+          className={`flex items-start gap-3 w-full px-4 py-3 text-left bg-white dark:bg-white/[0.06] border border-slate-200/60 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-300/80 dark:border-b-white/[0.15] hover:-translate-y-[1.5px] hover:bg-slate-50 dark:hover:bg-white/[0.09] active:translate-y-[1.5px] transition-all shadow-sm group ${
             isExpanded ? 'rounded-t-xl' : 'rounded-xl'
           } ${isCompleted ? 'opacity-60' : ''}`}
         >

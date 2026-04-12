@@ -24,9 +24,9 @@ function ListNavItem({
   return (
     <button
       onClick={() => navigate(`/lists/${l.id}`)}
-      className={`flex items-center gap-2 w-full py-1.5 transition-colors text-left ${indent ? 'pl-8 pr-4' : 'px-4'} ${
+      className={`flex items-center gap-2 w-full py-1.5 rounded-lg border border-transparent transition-all text-left active:translate-y-[1px] ${indent ? 'pl-8 pr-4' : 'px-4'} ${
         active
-          ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.12]'
+          ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.12] border-[#6498c8]/20 dark:border-[#6498c8]/[0.15] border-b-[2.5px] border-b-[#6498c8]/30 dark:border-b-[#6498c8]/[0.25]'
           : 'hover:bg-slate-50 dark:hover:bg-white/[0.03]'
       }`}
     >

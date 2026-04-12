@@ -66,7 +66,7 @@ const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
                 <button
                   key={r.id}
                   onClick={() => handleReminderClick(r)}
-                  className="flex items-center gap-3 w-full px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-white/[0.07] transition-all"
+                  className="flex items-center gap-3 w-full px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-white/[0.07] active:translate-y-[1px] transition-all"
                 >
                   <Bell size={20} className="text-blue-400 shrink-0" />
                   <div className="min-w-0">
@@ -87,7 +87,7 @@ const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
                 <button
                   key={i.id}
                   onClick={() => handleItemClick(i)}
-                  className="flex items-center gap-3 w-full px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-white/[0.07] transition-all"
+                  className="flex items-center gap-3 w-full px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-white/[0.07] active:translate-y-[1px] transition-all"
                 >
                   <CheckSquare
                     size={20}
@@ -110,7 +110,7 @@ const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
                 <button
                   key={n.date}
                   onClick={() => handleNoteClick(n)}
-                  className="flex items-center gap-3 w-full px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-white/[0.07] transition-all"
+                  className="flex items-center gap-3 w-full px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-white/[0.07] active:translate-y-[1px] transition-all"
                 >
                   <FileText size={20} className="text-slate-400 dark:text-white/55 shrink-0" />
                   <div className="min-w-0">

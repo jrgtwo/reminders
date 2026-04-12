@@ -79,7 +79,7 @@ export function CollapsibleSection({
           >
             {label}
           </span>
-          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${s.count}`}>
+          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-transparent border-b-[1.5px] ${s.count}`}>
             {count}
           </span>
           {open ? (

@@ -39,16 +39,17 @@ export default function CalendarDay({
       onClick={onClick}
       className={[
         'relative flex flex-col items-start w-full text-left cursor-pointer rounded-lg overflow-hidden',
-        'transition-[opacity,box-shadow,filter] duration-200',
-        'border border-white/50 dark:border-white/[0.10]',
+        'transition-[opacity,box-shadow,filter,margin,border,transform] duration-200',
+        'border border-white/50 dark:border-white/[0.10] border-b-[3px] border-b-slate-300/60 dark:border-b-white/[0.18]',
+        'hover:-translate-y-[2px] active:translate-y-[2px]',
         isSelected
           ? 'z-[10] opacity-100 brightness-110'
           : 'z-[2] opacity-80 hover:z-[10] hover:opacity-100 hover:brightness-110',
         tall ? 'p-3.5 gap-2' : 'p-1.5 gap-1 md:p-2 md:gap-1.5 lg:p-2.5 lg:gap-2',
         bg,
         isSelected
-          ? 'shadow-[0_4px_0_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_0_rgba(0,0,0,0.5),0_2px_4px_rgba(0,0,0,0.2)] outline outline-1 outline-slate-300/60 dark:outline-white/[0.1]'
-          : 'shadow-[0_3px_0_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-[0_3px_0_rgba(0,0,0,0.35),0_1px_2px_rgba(0,0,0,0.15)] hover:shadow-[0_4px_0_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_4px_0_rgba(0,0,0,0.5),0_2px_4px_rgba(0,0,0,0.2)]'
+          ? 'shadow-[0_4px_0_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_0_rgba(0,0,0,0.5),0_2px_4px_rgba(0,0,0,0.2)] outline outline-1 outline-slate-300/60 dark:outline-white/[0.1] active:shadow-[0_1px_0_rgba(0,0,0,0.08)] dark:active:shadow-[0_1px_0_rgba(0,0,0,0.3)]'
+          : 'shadow-[0_3px_0_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-[0_3px_0_rgba(0,0,0,0.35),0_1px_2px_rgba(0,0,0,0.15)] hover:shadow-[0_4px_0_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_4px_0_rgba(0,0,0,0.5),0_2px_4px_rgba(0,0,0,0.2)] active:shadow-[0_1px_0_rgba(0,0,0,0.08)] dark:active:shadow-[0_1px_0_rgba(0,0,0,0.3)]'
       ]
         .filter(Boolean)
         .join(' ')}

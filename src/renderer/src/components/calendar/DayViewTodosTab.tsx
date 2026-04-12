@@ -77,7 +77,7 @@ export default function DayViewTodosTab({
         return (
           <div
             key={l.id}
-            className="bg-white dark:bg-white/[0.06] border border-slate-200/60 dark:border-white/[0.08] rounded-xl shadow-sm"
+            className="bg-white dark:bg-white/[0.06] border border-slate-200/60 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-300/80 dark:border-b-white/[0.15] rounded-xl shadow-sm hover:-translate-y-[1.5px] active:translate-y-[1.5px] transition-all"
           >
             <div className="flex items-center justify-between px-4 py-3">
               <button
