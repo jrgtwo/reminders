@@ -391,7 +391,7 @@ function TitleBar({ title, folderId, folders, onSaveTitle, onFolderChange, onDel
       </div>
       {folders.length > 0 && (
         <div className="flex items-center gap-2 px-4 pb-2">
-          <FolderOpen size={14} className="text-slate-400 dark:text-white/25 shrink-0" />
+          <FolderOpen size={14} className="text-slate-400 dark:text-white/50 shrink-0" />
           <select
             value={folderId ?? ''}
             onChange={(e) => onFolderChange(e.target.value || undefined)}

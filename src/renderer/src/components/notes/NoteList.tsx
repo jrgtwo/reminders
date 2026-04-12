@@ -42,19 +42,19 @@ export default function NoteList({ notes, onNew, onEdit, onDelete, onReorder }: 
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-[11px] font-bold uppercase tracking-wide text-slate-400 dark:text-white/30">
+        <h3 className="text-[11px] font-bold uppercase tracking-wide text-slate-400 dark:text-white/55">
           Notes
         </h3>
         <button
           onClick={onNew}
-          className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+          className="p-1 rounded text-slate-300 dark:text-white/50 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
           title="New note"
         >
           <Plus size={20} />
         </button>
       </div>
       {sorted.length === 0 && (
-        <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2">No notes yet</p>
+        <p className="text-[11px] text-slate-400 dark:text-white/50 px-4 py-2">No notes yet</p>
       )}
       <DndContext
         sensors={sensors}

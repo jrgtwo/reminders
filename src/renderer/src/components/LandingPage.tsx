@@ -96,13 +96,13 @@ export default function LandingPage() {
     navigate('/')
   }
   return (
-    <div className="min-h-screen bg-[#0d1117] text-slate-100 overflow-auto">
+    <main className="min-h-screen bg-[#0d1117] text-slate-100 overflow-auto">
       {/* Hero */}
       <section className="relative flex flex-col items-center justify-center px-6 pt-20 pb-16 md:pt-28 md:pb-24">
         <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
-          <div className="flex flex-col items-center mb-6">
+          <h1 className="flex flex-col items-center mb-6">
             <span
-              className="text-[20px] md:text-[24px] text-white/40 tracking-[0.25em] uppercase font-medium"
+              className="text-[20px] md:text-[24px] text-white/60 tracking-[0.25em] uppercase font-medium"
               style={{ fontFamily: "'Bree Serif', serif" }}
             >
               Reminder
@@ -113,7 +113,7 @@ export default function LandingPage() {
             >
               Today
             </span>
-          </div>
+          </h1>
           <p className="text-lg md:text-xl text-white/50 max-w-lg mb-8 leading-relaxed">
             A calm, local-first productivity app. Your calendar, reminders, notes, and todos — all
             in one place, private by default.
@@ -136,7 +136,7 @@ export default function LandingPage() {
               className="opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all"
             />
           </button>
-          <p className="text-xs text-white/25 mt-3">No account required. Works in your browser.</p>
+          <p className="text-xs text-white/50 mt-3">No account required. Works in your browser.</p>
         </div>
       </section>
 
@@ -148,9 +148,9 @@ export default function LandingPage() {
               key={f.title}
               className="flex flex-col gap-3 p-5 rounded-xl bg-white/[0.03] border border-white/[0.06]"
             >
-              <f.icon size={22} className="text-white/40" />
-              <h3 className="text-sm font-semibold text-white/80">{f.title}</h3>
-              <p className="text-xs text-white/40 leading-relaxed">{f.desc}</p>
+              <f.icon size={22} className="text-white/60" />
+              <h2 className="text-sm font-semibold text-white/80">{f.title}</h2>
+              <p className="text-xs text-white/60 leading-relaxed">{f.desc}</p>
             </div>
           ))}
         </div>
@@ -160,11 +160,11 @@ export default function LandingPage() {
       <section className="px-6 pb-20">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-2xl font-semibold text-white/80 mb-3">Works everywhere</h2>
-          <p className="text-sm text-white/40 mb-8">
+          <p className="text-sm text-white/60 mb-8">
             Use it as a web app, download the desktop app for Mac or Windows, or install it on your
             phone.
           </p>
-          <div className="flex items-center justify-center gap-8 text-white/30">
+          <div className="flex items-center justify-center gap-8 text-white/55">
             <div className="flex flex-col items-center gap-2">
               <Monitor size={28} />
               <span className="text-xs">Desktop</span>
@@ -196,7 +196,7 @@ export default function LandingPage() {
           <h2 className="text-2xl font-semibold text-white/80 text-center mb-3">
             Choose your path
           </h2>
-          <p className="text-sm text-white/40 text-center mb-10 max-w-lg mx-auto">
+          <p className="text-sm text-white/60 text-center mb-10 max-w-lg mx-auto">
             Use everything for free on a single device. Sign up to encrypt your data. Go Pro to sync
             across all devices.
           </p>
@@ -211,7 +211,7 @@ export default function LandingPage() {
                 }`}
               >
                 {tier.highlight && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-[#6498c8] text-white rounded-full">
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-[#2b6ca0] text-white rounded-full">
                     Recommended
                   </span>
                 )}
@@ -219,13 +219,13 @@ export default function LandingPage() {
                   <h3 className="text-base font-semibold text-white/80">{tier.name}</h3>
                   <div className="flex items-baseline gap-2 mt-1">
                     <span className="text-2xl font-bold text-white/90">{tier.price}</span>
-                    {tier.annual && <span className="text-xs text-white/30">or {tier.annual}</span>}
+                    {tier.annual && <span className="text-xs text-white/55">or {tier.annual}</span>}
                   </div>
                 </div>
                 <ul className="flex flex-col gap-2.5 flex-1">
                   {tier.features.map((f) => (
                     <li key={f} className="flex items-start gap-2 text-xs text-white/50">
-                      <Shield size={13} className="shrink-0 mt-0.5 text-white/20" />
+                      <Shield size={13} className="shrink-0 mt-0.5 text-white/50" />
                       {f}
                     </li>
                   ))}
@@ -249,7 +249,7 @@ export default function LandingPage() {
                 {tier.name === 'Pro' && (
                   <button
                     onClick={onEnter}
-                    className="mt-6 w-full py-2.5 rounded-lg bg-[#6498c8]/20 hover:bg-[#6498c8]/30 border border-[#6498c8]/30 text-sm font-medium text-[#6498c8] transition-all"
+                    className="mt-6 w-full py-2.5 rounded-lg bg-[#6498c8]/20 hover:bg-[#6498c8]/30 border border-[#6498c8]/30 text-sm font-medium text-[#85b3dc] transition-all"
                   >
                     Try Free, Upgrade Later
                   </button>
@@ -264,10 +264,10 @@ export default function LandingPage() {
       <section className="px-6 pb-16">
         <div className="max-w-2xl mx-auto text-center">
           <div className="flex items-center justify-center gap-2 mb-3">
-            <Shield size={18} className="text-white/30" />
+            <Shield size={18} className="text-white/55" />
             <h3 className="text-base font-semibold text-white/70">Privacy first</h3>
           </div>
-          <p className="text-xs text-white/35 leading-relaxed max-w-md mx-auto">
+          <p className="text-xs text-white/55 leading-relaxed max-w-md mx-auto">
             Your data lives on your device. If you create an account, everything is encrypted with
             AES-256-GCM before it ever leaves your browser. We can&apos;t read your data — only you
             can.
@@ -275,13 +275,17 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="border-t border-white/[0.06] py-6 text-center text-[11px] text-white/20 flex items-center justify-center gap-3">
+      <footer className="border-t border-white/[0.06] py-6 text-center text-[11px] text-white/50 flex items-center justify-center gap-3">
         <span>Reminder Today</span>
         <span>&middot;</span>
-        <a href="/privacy" className="hover:text-white/40 transition-colors">
+        <a href="/privacy" className="hover:text-white/60 transition-colors">
           Privacy Policy
         </a>
+        <span>&middot;</span>
+        <a href="mailto:support@remindertoday.com" className="hover:text-white/60 transition-colors">
+          Contact
+        </a>
       </footer>
-    </div>
+    </main>
   )
 }

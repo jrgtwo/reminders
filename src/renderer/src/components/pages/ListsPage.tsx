@@ -14,7 +14,7 @@ function ListsEmptyState() {
   return (
     <div className="flex flex-col items-center justify-center h-full gap-3">
       <List size={40} className="text-slate-200 dark:text-white/10" />
-      <p className="text-sm text-slate-400 dark:text-white/25">Select a list or create a new one</p>
+      <p className="text-sm text-slate-400 dark:text-white/50">Select a list or create a new one</p>
     </div>
   )
 }

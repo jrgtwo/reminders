@@ -1,17 +1,64 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Reminders</title>
+    <title>Reminder Today — Calendar, Reminders, Notes & Todos</title>
+    <meta name="description" content="A calm, local-first productivity app. Your calendar, reminders, notes, and todos — all in one place, private by default. Works offline, end-to-end encrypted." />
+    <link rel="canonical" href="https://remindertoday.com/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://remindertoday.com/" />
+    <meta property="og:title" content="Reminder Today — Calendar, Reminders, Notes & Todos" />
+    <meta property="og:description" content="A calm, local-first productivity app. Your calendar, reminders, notes, and todos — all in one place, private by default." />
+    <meta property="og:image" content="https://remindertoday.com/icon-512.png" />
+    <meta property="og:site_name" content="Reminder Today" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Reminder Today — Calendar, Reminders, Notes & Todos" />
+    <meta name="twitter:description" content="A calm, local-first productivity app. Your calendar, reminders, notes, and todos — all in one place, private by default." />
+    <meta name="twitter:image" content="https://remindertoday.com/icon-512.png" />
+
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" href="/icon-512.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/icon-512.png" />
+
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' https://challenges.cloudflare.com https://vercel.live https://us-assets.i.posthog.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://us.i.posthog.com https://us-assets.i.posthog.com; frame-src https://challenges.cloudflare.com https://vercel.live"
+      content="default-src 'self'; script-src 'self' https://challenges.cloudflare.com https://vercel.live https://us-assets.i.posthog.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://us.i.posthog.com https://us-assets.i.posthog.com; frame-src https://challenges.cloudflare.com https://vercel.live"
     />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Bree+Serif&family=Archivo:wght@400;500;600&display=swap" rel="stylesheet" />
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Reminder Today",
+        "url": "https://remindertoday.com",
+        "applicationCategory": "ProductivityApplication",
+        "operatingSystem": "Web, Windows, macOS, iOS, Android",
+        "description": "A calm, local-first productivity app. Your calendar, reminders, notes, and todos — all in one place, private by default.",
+        "offers": [
+          {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD",
+            "name": "Free"
+          },
+          {
+            "@type": "Offer",
+            "price": "5.00",
+            "priceCurrency": "USD",
+            "name": "Pro",
+            "billingIncrement": "P1M"
+          }
+        ]
+      }
+    </script>
   </head>
 
   <body>

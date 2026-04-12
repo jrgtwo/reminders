@@ -37,9 +37,9 @@ const accentStyles: Record<Accent, { label: string; count: string; chevron: stri
     chevron: 'text-[#6498c8]/60'
   },
   slate: {
-    label: 'text-slate-400 dark:text-white/25',
-    count: 'text-slate-500 dark:text-white/30 bg-slate-100 dark:bg-white/[0.06]',
-    chevron: 'text-slate-300 dark:text-white/20'
+    label: 'text-slate-400 dark:text-white/50',
+    count: 'text-slate-500 dark:text-white/55 bg-slate-100 dark:bg-white/[0.06]',
+    chevron: 'text-slate-300 dark:text-white/50'
   }
 }
 
@@ -153,7 +153,7 @@ export default function RemindersPage() {
             e.stopPropagation()
             setOpen((o) => !o)
           }}
-          className="mt-0.5 w-6 h-6 flex items-center justify-center rounded text-slate-300 dark:text-white/20 hover:text-slate-500 dark:hover:text-white/50 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
+          className="mt-0.5 w-6 h-6 flex items-center justify-center rounded text-slate-300 dark:text-white/50 hover:text-slate-500 dark:hover:text-white/50 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
         >
           <MoreHorizontal size={16} />
         </button>
@@ -240,12 +240,12 @@ export default function RemindersPage() {
               </div>
             )}
             <div
-              className={`text-[13px] font-medium truncate group-hover:text-slate-900 dark:group-hover:text-white ${isCompleted ? 'line-through text-slate-400 dark:text-white/30' : 'text-slate-700 dark:text-white/75'}`}
+              className={`text-[13px] font-medium truncate group-hover:text-slate-900 dark:group-hover:text-white ${isCompleted ? 'line-through text-slate-400 dark:text-white/55' : 'text-slate-700 dark:text-white/75'}`}
             >
               {item.title}
             </div>
             {item.description && (
-              <div className="text-[11px] text-slate-400 dark:text-white/30 mt-0.5 truncate">
+              <div className="text-[11px] text-slate-400 dark:text-white/55 mt-0.5 truncate">
                 {item.description}
               </div>
             )}
@@ -288,7 +288,7 @@ export default function RemindersPage() {
         actions={
           <button
             onClick={() => setNewReminderDate(today().toString())}
-            className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 dark:text-white/30 hover:text-slate-700 dark:hover:text-white/60 transition-colors px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-white/[0.06]"
+            className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 dark:text-white/55 hover:text-slate-700 dark:hover:text-white/60 transition-colors px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-white/[0.06]"
           >
             <Plus size={20} />
             Add
@@ -299,7 +299,7 @@ export default function RemindersPage() {
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
         {isEmpty ? (
-          <p className="text-[12px] text-slate-400 dark:text-white/25 px-4 py-6 text-center leading-relaxed">
+          <p className="text-[12px] text-slate-400 dark:text-white/50 px-4 py-6 text-center leading-relaxed">
             No reminders
             <br />
             in the next 30 days

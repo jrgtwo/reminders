@@ -130,7 +130,7 @@ export default function WeekView({ displayDate }: Props) {
                 style={{ gridTemplateColumns: '3.5rem repeat(7, 1fr)' }}
               >
                 <div className="sticky left-0 z-10 flex items-center justify-end pr-2 py-1 bg-[var(--bg-app)]">
-                  <span className="text-[9px] font-medium uppercase tracking-wide text-slate-300 dark:text-white/20">all‑day</span>
+                  <span className="text-[9px] font-medium uppercase tracking-wide text-slate-300 dark:text-white/50">all‑day</span>
                 </div>
                 {days.map((day) => {
                   const dateStr = day.toString()
@@ -182,7 +182,7 @@ export default function WeekView({ displayDate }: Props) {
                       {!allDayExpanded && hiddenCount > 0 && (
                         <button
                           onClick={(e) => { e.stopPropagation(); setAllDayExpanded(true) }}
-                          className="w-full text-center text-[9px] font-semibold text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/50 transition-colors py-[1px]"
+                          className="w-full text-center text-[9px] font-semibold text-slate-400 dark:text-white/55 hover:text-slate-600 dark:hover:text-white/50 transition-colors py-[1px]"
                         >
                           +{hiddenCount} more
                         </button>
@@ -196,7 +196,7 @@ export default function WeekView({ displayDate }: Props) {
             {maxAllDayCount > COLLAPSED_LIMIT && (
               <button
                 onClick={() => setAllDayExpanded(!allDayExpanded)}
-                className="w-full flex items-center justify-center gap-1 py-[2px] text-[9px] font-semibold text-slate-400 dark:text-white/25 hover:text-slate-600 dark:hover:text-white/50 transition-colors"
+                className="w-full flex items-center justify-center gap-1 py-[2px] text-[9px] font-semibold text-slate-400 dark:text-white/50 hover:text-slate-600 dark:hover:text-white/50 transition-colors"
               >
                 <svg
                   className={['w-3 h-3 transition-transform duration-200', allDayExpanded ? 'rotate-180' : ''].join(' ')}
@@ -235,7 +235,7 @@ export default function WeekView({ displayDate }: Props) {
                 style={{ height: `${SLOT_H}px` }}
               >
                 {hour !== 0 && (
-                  <span className="text-[10px] font-medium text-slate-400 dark:text-white/40 -translate-y-[0.45em]">
+                  <span className="text-[10px] font-medium text-slate-400 dark:text-white/60 -translate-y-[0.45em]">
                     {formatHour(hour, timeFormat)}
                   </span>
                 )}

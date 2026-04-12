@@ -38,14 +38,14 @@ export default function ReminderItem({ reminder, date, onToggle, onEdit, onDelet
         <p
           className={`text-sm leading-snug ${
             isCompleted
-              ? 'line-through text-slate-300 dark:text-white/20'
+              ? 'line-through text-slate-300 dark:text-white/50'
               : 'text-slate-800 dark:text-white/80 font-medium'
           }`}
         >
           {reminder.title}
         </p>
         {reminder.description && (
-          <p className="text-xs text-slate-400 dark:text-white/30 mt-0.5 leading-snug">
+          <p className="text-xs text-slate-400 dark:text-white/55 mt-0.5 leading-snug">
             {reminder.description}
           </p>
         )}
@@ -71,13 +71,13 @@ export default function ReminderItem({ reminder, date, onToggle, onEdit, onDelet
       <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5">
         <button
           onClick={() => onEdit(reminder)}
-          className="w-6 h-6 flex items-center justify-center rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-all"
+          className="w-6 h-6 flex items-center justify-center rounded text-slate-300 dark:text-white/50 hover:text-slate-600 dark:hover:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-all"
         >
           <Edit2 size={20} />
         </button>
         <button
           onClick={() => onDelete(reminder.id)}
-          className="w-6 h-6 flex items-center justify-center rounded text-slate-300 dark:text-white/20 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"
+          className="w-6 h-6 flex items-center justify-center rounded text-slate-300 dark:text-white/50 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"
         >
           <Trash2 size={20} />
         </button>

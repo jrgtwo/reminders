@@ -41,7 +41,7 @@ export default function CalendarHeader({
             {monthName}
           </h2>
           {yearStr && (
-            <span className="text-xl font-normal text-slate-300 dark:text-white/25 tracking-tight" style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 400 }}>
+            <span className="text-xl font-normal text-slate-300 dark:text-white/50 tracking-tight" style={{ fontFamily: "'Archivo Variable', 'Archivo', sans-serif", fontWeight: 400 }}>
               {yearStr}
             </span>
           )}
@@ -50,14 +50,14 @@ export default function CalendarHeader({
           <button
             onClick={onPrev}
             aria-label="Previous"
-            className="w-7 h-7 flex items-center justify-center rounded-md text-slate-300 dark:text-white/20 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-all"
+            className="w-7 h-7 flex items-center justify-center rounded-md text-slate-300 dark:text-white/50 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-all"
           >
             <ChevronLeft size={20} />
           </button>
           <button
             onClick={onNext}
             aria-label="Next"
-            className="w-7 h-7 flex items-center justify-center rounded-md text-slate-300 dark:text-white/20 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-all"
+            className="w-7 h-7 flex items-center justify-center rounded-md text-slate-300 dark:text-white/50 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-all"
           >
             <ChevronRight size={20} />
           </button>
@@ -67,7 +67,7 @@ export default function CalendarHeader({
       <div className="flex items-center gap-2 pt-1 sm:pt-0">
         <button
           onClick={onToday}
-          className="px-3 py-1.5 text-xs font-semibold rounded-md border border-slate-200 dark:border-white/[0.1] text-slate-500 dark:text-white/40 hover:text-slate-800 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-all"
+          className="px-3 py-1.5 text-xs font-semibold rounded-md border border-slate-200 dark:border-white/[0.1] text-slate-500 dark:text-white/60 hover:text-slate-800 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-all"
         >
           Today
         </button>
@@ -80,7 +80,7 @@ export default function CalendarHeader({
                 'px-3 py-1.5 text-xs font-semibold rounded-md transition-all capitalize',
                 view === v
                   ? 'bg-white dark:bg-white/[0.12] text-slate-900 dark:text-white shadow-sm'
-                  : 'text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/60',
+                  : 'text-slate-400 dark:text-white/55 hover:text-slate-600 dark:hover:text-white/60',
               ].join(' ')}
             >
               {v}

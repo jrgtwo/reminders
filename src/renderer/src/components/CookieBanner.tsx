@@ -74,7 +74,7 @@ export default function CookieBanner({ onDismiss }: Props) {
             </button>
             <button
               onClick={handleSavePreferences}
-              className="flex-1 py-2 rounded-lg bg-[#6498c8] hover:bg-[#7aabd4] text-sm font-medium text-white transition-colors"
+              className="flex-1 py-2 rounded-lg bg-[#2b6ca0] hover:bg-[#3a7fb5] text-sm font-medium text-white transition-colors"
             >
               Save Preferences
             </button>
@@ -90,7 +90,7 @@ export default function CookieBanner({ onDismiss }: Props) {
         <p className="text-sm text-[var(--text-primary,rgba(255,255,255,0.8))] mb-1">
           This site uses cookies
         </p>
-        <p className="text-xs text-[var(--text-secondary,rgba(255,255,255,0.4))] mb-4 leading-relaxed">
+        <p className="text-xs text-[var(--text-secondary,rgba(255,255,255,0.6))] mb-4 leading-relaxed">
           We use essential cookies for app functionality and optional analytics cookies to improve
           the experience.
         </p>
@@ -109,7 +109,7 @@ export default function CookieBanner({ onDismiss }: Props) {
           </button>
           <button
             onClick={handleAcceptAll}
-            className="flex-1 py-2 rounded-lg bg-[#6498c8] hover:bg-[#7aabd4] text-sm font-medium text-white transition-colors"
+            className="flex-1 py-2 rounded-lg bg-[#2b6ca0] hover:bg-[#3a7fb5] text-sm font-medium text-white transition-colors"
           >
             Accept All
           </button>

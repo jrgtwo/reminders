@@ -35,7 +35,7 @@ export function DateTree<I>({
 
   if (years.length === 0) {
     return (
-      <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2">{emptyMessage}</p>
+      <p className="text-[11px] text-slate-400 dark:text-white/50 px-4 py-2">{emptyMessage}</p>
     )
   }
 
@@ -51,11 +51,11 @@ export function DateTree<I>({
               className="flex items-center gap-1.5 w-full px-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
             >
               {yearCollapsed ? (
-                <ChevronRight size={20} className="text-slate-300 dark:text-white/20 shrink-0" />
+                <ChevronRight size={20} className="text-slate-300 dark:text-white/50 shrink-0" />
               ) : (
-                <ChevronDown size={20} className="text-slate-300 dark:text-white/20 shrink-0" />
+                <ChevronDown size={20} className="text-slate-300 dark:text-white/50 shrink-0" />
               )}
-              <span className="text-[15px] font-bold text-slate-500 dark:text-white/40 uppercase tracking-wide">
+              <span className="text-[15px] font-bold text-slate-500 dark:text-white/60 uppercase tracking-wide">
                 {year}
               </span>
             </button>
@@ -73,11 +73,11 @@ export function DateTree<I>({
                       className="flex items-center gap-1.5 w-full pl-6 pr-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
                     >
                       {monthCollapsed ? (
-                        <ChevronRight size={20} className="text-slate-300 dark:text-white/20 shrink-0" />
+                        <ChevronRight size={20} className="text-slate-300 dark:text-white/50 shrink-0" />
                       ) : (
-                        <ChevronDown size={20} className="text-slate-300 dark:text-white/20 shrink-0" />
+                        <ChevronDown size={20} className="text-slate-300 dark:text-white/50 shrink-0" />
                       )}
-                      <span className="text-[15px] font-semibold text-slate-400 dark:text-white/30">
+                      <span className="text-[15px] font-semibold text-slate-400 dark:text-white/55">
                         {monthName}
                       </span>
                     </button>
@@ -95,11 +95,11 @@ export function DateTree<I>({
                                 className="flex items-center gap-1.5 flex-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
                               >
                                 {dayCollapsed ? (
-                                  <ChevronRight size={20} className="text-slate-300 dark:text-white/20 shrink-0" />
+                                  <ChevronRight size={20} className="text-slate-300 dark:text-white/50 shrink-0" />
                                 ) : (
-                                  <ChevronDown size={20} className="text-slate-300 dark:text-white/20 shrink-0" />
+                                  <ChevronDown size={20} className="text-slate-300 dark:text-white/50 shrink-0" />
                                 )}
-                                <span className="text-[15px] font-semibold text-slate-400 dark:text-white/25">
+                                <span className="text-[15px] font-semibold text-slate-400 dark:text-white/50">
                                   {ordinal(parseInt(day, 10))}
                                 </span>
                               </button>
@@ -174,7 +174,7 @@ export function SidebarNavItem({
         <Icon
           size={20}
           className={
-            active ? 'shrink-0 text-[#6498c8]' : 'shrink-0 text-slate-400 dark:text-white/25'
+            active ? 'shrink-0 text-[#6498c8]' : 'shrink-0 text-slate-400 dark:text-white/50'
           }
         />
         <span
@@ -299,11 +299,11 @@ export function FolderTree<F extends { id: string; name: string }, I>({
           style={{ paddingLeft: `${pl}px`, paddingRight: '8px' }}
         >
           {collapsed ? (
-            <ChevronRight size={20} className="text-slate-300 dark:text-white/20 shrink-0" />
+            <ChevronRight size={20} className="text-slate-300 dark:text-white/50 shrink-0" />
           ) : (
-            <ChevronDown size={20} className="text-slate-300 dark:text-white/20 shrink-0" />
+            <ChevronDown size={20} className="text-slate-300 dark:text-white/50 shrink-0" />
           )}
-          <span className="text-[15px] font-semibold text-slate-400 dark:text-white/30 truncate flex-1 text-left pr-20 md:pr-0 md:group-hover:pr-20">
+          <span className="text-[15px] font-semibold text-slate-400 dark:text-white/55 truncate flex-1 text-left pr-20 md:pr-0 md:group-hover:pr-20">
             {folder.name}
           </span>
           <div className="absolute right-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">

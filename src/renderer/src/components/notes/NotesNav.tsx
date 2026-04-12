@@ -75,7 +75,7 @@ const NotesNav = forwardRef<NotesNavHandle>(function NotesNav(_, ref) {
   return (
     <>
       {noteCount === 0 && noteFolders.length === 0 && (
-        <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2">No notes yet</p>
+        <p className="text-[11px] text-slate-400 dark:text-white/50 px-4 py-2">No notes yet</p>
       )}
 
       {/* My Notes Collapsible Section */}
@@ -103,7 +103,7 @@ const NotesNav = forwardRef<NotesNavHandle>(function NotesNav(_, ref) {
             <>
               <button
                 onClick={() => navigateTo('/browse')}
-                className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                className="p-1 rounded text-slate-300 dark:text-white/50 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
                 title="Browse all"
               >
                 <Maximize2 size={16} />

@@ -25,7 +25,7 @@ function getDayStatus(date: Temporal.PlainDate) {
   if (cmp < 0)
     return {
       label: 'Past',
-      cls: 'bg-slate-100 text-slate-400 dark:bg-white/[0.06] dark:text-white/30 border border-slate-200 dark:border-white/10'
+      cls: 'bg-slate-100 text-slate-400 dark:bg-white/[0.06] dark:text-white/55 border border-slate-200 dark:border-white/10'
     }
   return null
 }
@@ -86,7 +86,7 @@ export default function DayView() {
       {/* Back */}
       <button
         onClick={() => navigate('/')}
-        className="flex items-center gap-1.5 text-[13px] text-slate-400 dark:text-white/30 hover:text-slate-700 dark:hover:text-white/60 mb-8 transition-colors -ml-0.5"
+        className="flex items-center gap-1.5 text-[13px] text-slate-400 dark:text-white/55 hover:text-slate-700 dark:hover:text-white/60 mb-8 transition-colors -ml-0.5"
       >
         <ArrowLeft size={20} />
         Calendar
@@ -108,8 +108,8 @@ export default function DayView() {
           )}
         </div>
         <p
-          className="text-sm text-slate-400 dark:text-white/35 font-medium"
-          style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 400 }}
+          className="text-sm text-slate-400 dark:text-white/55 font-medium"
+          style={{ fontFamily: "'Archivo Variable', 'Archivo', sans-serif", fontWeight: 400 }}
         >
           {rest}
         </p>
@@ -136,7 +136,7 @@ export default function DayView() {
             className={`relative flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium transition-colors ${
               tab === id
                 ? 'text-slate-900 dark:text-[#f0f0f0]'
-                : 'text-slate-400 dark:text-white/35 hover:text-slate-600 dark:hover:text-white/60'
+                : 'text-slate-400 dark:text-white/55 hover:text-slate-600 dark:hover:text-white/60'
             }`}
           >
             {label}
@@ -183,7 +183,7 @@ export default function DayView() {
                 <div className="mb-8 min-h-[400px] bg-white/[0.03] dark:bg-white/[0.03] rounded-xl border border-slate-200 dark:border-white/[0.08]">
                   <div className="flex items-center justify-center h-64">
                     <div className="text-center">
-                      <p className="text-[13px] text-slate-400 dark:text-white/25 mb-4">
+                      <p className="text-[13px] text-slate-400 dark:text-white/50 mb-4">
                         No notes for this day yet.
                       </p>
                       <button
@@ -208,7 +208,7 @@ export default function DayView() {
                     >
                       <Edit3
                         size={20}
-                        className={`shrink-0 transition-colors ${note.id === editingNoteId ? 'text-[#6498c8]' : 'text-slate-400 dark:text-white/35'}`}
+                        className={`shrink-0 transition-colors ${note.id === editingNoteId ? 'text-[#6498c8]' : 'text-slate-400 dark:text-white/55'}`}
                       />
                       <div className="flex-1 min-w-0">
                         {note.title ? (
@@ -216,12 +216,12 @@ export default function DayView() {
                             {note.title}
                           </div>
                         ) : (
-                          <div className="text-[13px] text-slate-400 dark:text-white/35 italic">
+                          <div className="text-[13px] text-slate-400 dark:text-white/55 italic">
                             Untitled
                           </div>
                         )}
                         {note.content && (
-                          <div className="text-[12px] text-slate-400 dark:text-white/25 mt-0.5 truncate">
+                          <div className="text-[12px] text-slate-400 dark:text-white/50 mt-0.5 truncate">
                             {note.content.replace(/[#*`>\[\]]/g, '').slice(0, 100)}
                             {note.content.length > 100 ? '...' : ''}
                           </div>
@@ -229,7 +229,7 @@ export default function DayView() {
                       </div>
                       <ArrowRight
                         size={20}
-                        className={`shrink-0 text-slate-300 dark:text-white/20 transition-transform ${note.id === editingNoteId ? 'rotate-90' : ''}`}
+                        className={`shrink-0 text-slate-300 dark:text-white/50 transition-transform ${note.id === editingNoteId ? 'rotate-90' : ''}`}
                       />
                       <button
                         onClick={(e) => {
@@ -284,7 +284,7 @@ export default function DayView() {
                 <div className="min-h-[400px] bg-white/[0.03] dark:bg-white/[0.03] rounded-xl border border-slate-200 dark:border-white/[0.08]">
                   <div className="flex items-center justify-center h-64">
                     <div className="text-center">
-                      <p className="text-[13px] text-slate-400 dark:text-white/25 mb-4">No reminders for this day yet.</p>
+                      <p className="text-[13px] text-slate-400 dark:text-white/50 mb-4">No reminders for this day yet.</p>
                       <button
                         onClick={handleAddReminder}
                         className="text-[12px] font-medium text-[#6498c8] hover:opacity-80 transition-opacity"
@@ -320,11 +320,11 @@ export default function DayView() {
                       {isCompleted && <Check size={20} strokeWidth={3} />}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-[14px] font-medium leading-snug ${isCompleted ? 'line-through text-slate-300 dark:text-white/20' : 'text-slate-800 dark:text-white/80'}`}>
-                        {reminder.title || <span className="italic text-slate-400 dark:text-white/35">Untitled</span>}
+                      <p className={`text-[14px] font-medium leading-snug ${isCompleted ? 'line-through text-slate-300 dark:text-white/50' : 'text-slate-800 dark:text-white/80'}`}>
+                        {reminder.title || <span className="italic text-slate-400 dark:text-white/55">Untitled</span>}
                       </p>
                       {reminder.description && (
-                        <p className="text-xs text-slate-400 dark:text-white/30 mt-0.5 leading-snug">{reminder.description}</p>
+                        <p className="text-xs text-slate-400 dark:text-white/55 mt-0.5 leading-snug">{reminder.description}</p>
                       )}
                       {(reminder.startTime || reminder.recurrence) && (
                         <div className="flex items-center gap-1.5 mt-1.5">
@@ -345,11 +345,11 @@ export default function DayView() {
                     </div>
                     <ArrowRight
                       size={20}
-                      className={`shrink-0 text-slate-300 dark:text-white/20 transition-transform mt-1 ${isExpanded ? 'rotate-90' : ''}`}
+                      className={`shrink-0 text-slate-300 dark:text-white/50 transition-transform mt-1 ${isExpanded ? 'rotate-90' : ''}`}
                     />
                     <button
                       onClick={(e) => { e.stopPropagation(); handleDeleteReminder(reminder.id, e) }}
-                      className="w-8 h-8 flex items-center justify-center rounded text-slate-300 dark:text-white/20 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                      className="w-8 h-8 flex items-center justify-center rounded text-slate-300 dark:text-white/50 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                       title="Delete reminder"
                     >
                       <Trash2 size={20} />
@@ -373,7 +373,7 @@ export default function DayView() {
                 {sortedCompleted.length > 0 && (
                   <>
                     <div className="border-t border-slate-200 dark:border-white/[0.07] mt-2 pt-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 dark:text-white/25 mb-2">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 dark:text-white/50 mb-2">
                         Completed
                       </p>
                     </div>
@@ -399,7 +399,7 @@ export default function DayView() {
             <div className="min-h-[400px] bg-white/[0.03] dark:bg-white/[0.03] rounded-xl border border-slate-200 dark:border-white/[0.08]">
               <div className="flex items-center justify-center h-64">
                 <div className="text-center">
-                  <p className="text-[13px] text-slate-400 dark:text-white/25 mb-4">No lists for this day yet.</p>
+                  <p className="text-[13px] text-slate-400 dark:text-white/50 mb-4">No lists for this day yet.</p>
                   <button
                     onClick={handleCreateInlineList}
                     className="text-[12px] font-medium text-[#6498c8] hover:opacity-80 transition-opacity"
@@ -425,14 +425,14 @@ export default function DayView() {
                       >
                         <ChevronRight
                           size={20}
-                          className={`shrink-0 text-slate-400 dark:text-white/30 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                          className={`shrink-0 text-slate-400 dark:text-white/55 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
                         />
                         {editingListTitleId === l.id ? (
                           <input
                             autoFocus
                             defaultValue={l.name}
                             placeholder="List name"
-                            className="flex-1 bg-transparent text-[14px] font-medium text-slate-800 dark:text-white/80 placeholder:text-slate-300 dark:placeholder:text-white/20 focus:outline-none"
+                            className="flex-1 bg-transparent text-[14px] font-medium text-slate-800 dark:text-white/80 placeholder:text-slate-300 dark:placeholder:text-white/50 focus:outline-none"
                             onClick={(e) => e.stopPropagation()}
                             onBlur={(e) => handleSaveListTitle(l.id, e.target.value)}
                             onKeyDown={(e) => {
@@ -442,17 +442,17 @@ export default function DayView() {
                           />
                         ) : (
                           <span className="text-[14px] font-medium text-slate-800 dark:text-white/80 truncate">
-                            {l.name || <span className="italic text-slate-400 dark:text-white/35">Untitled</span>}
+                            {l.name || <span className="italic text-slate-400 dark:text-white/55">Untitled</span>}
                           </span>
                         )}
                         {!isExpanded && totalCount > 0 && (
-                          <span className="shrink-0 text-[11px] text-slate-400 dark:text-white/30 ml-1">{totalCount}</span>
+                          <span className="shrink-0 text-[11px] text-slate-400 dark:text-white/55 ml-1">{totalCount}</span>
                         )}
                       </button>
                       <div className="flex items-center gap-2 shrink-0 ml-2">
                         <button
                           onClick={() => setEditingListTitleId(l.id)}
-                          className="p-1.5 rounded-lg text-slate-400 dark:text-white/30 hover:text-slate-700 dark:hover:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
+                          className="p-1.5 rounded-lg text-slate-400 dark:text-white/55 hover:text-slate-700 dark:hover:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
                         >
                           <Pencil size={20} />
                         </button>
@@ -461,7 +461,7 @@ export default function DayView() {
                             e.stopPropagation()
                             handleDeleteList(l.id, e)
                           }}
-                          className="p-1.5 rounded-lg text-slate-400 dark:text-white/30 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors"
+                          className="p-1.5 rounded-lg text-slate-400 dark:text-white/55 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors"
                         >
                           <Trash2 size={20} />
                         </button>
@@ -478,7 +478,7 @@ export default function DayView() {
                     {isExpanded && (
                       <div className="px-4 pb-3 pt-0 border-t border-slate-100 dark:border-white/[0.05]">
                         {listItems.length === 0 && completedItems.length === 0 ? (
-                          <p className="text-[13px] text-slate-400 dark:text-white/25 pt-3">No items yet. Add one above.</p>
+                          <p className="text-[13px] text-slate-400 dark:text-white/50 pt-3">No items yet. Add one above.</p>
                         ) : (
                           <>
                             <div className="pt-2">
@@ -496,7 +496,7 @@ export default function DayView() {
                             </div>
                             {completedItems.length > 0 && (
                               <div className="mt-4 border-t border-slate-100 dark:border-white/[0.05] pt-3">
-                                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 dark:text-white/25 mb-2">Done</p>
+                                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 dark:text-white/50 mb-2">Done</p>
                                 <SortableTodoList
                                   todos={completedItems}
                                   onToggle={handleToggleItem}

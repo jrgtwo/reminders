@@ -76,7 +76,7 @@ export default function ConfirmDeleteDialog({
         <button
           type="button"
           onClick={onCancel}
-          className="text-[11px] font-medium px-2.5 py-1 rounded-md text-slate-500 dark:text-white/40 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
+          className="text-[11px] font-medium px-2.5 py-1 rounded-md text-slate-500 dark:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
         >
           Cancel
         </button>

@@ -51,15 +51,15 @@ export default function ListsPage() {
                 value={newName}
                 onChange={(e) => { setNewName(e.target.value); setCreateError('') }}
                 placeholder="List name"
-                className="w-full bg-transparent text-2xl text-slate-900 dark:text-white/80 tracking-tight placeholder:text-slate-300 dark:placeholder:text-white/20 focus:outline-none"
+                className="w-full bg-transparent text-2xl text-slate-900 dark:text-white/80 tracking-tight placeholder:text-slate-300 dark:placeholder:text-white/50 focus:outline-none"
                 style={{ fontFamily: "'Bree Serif', serif" }}
               />
               {createError && <p className="text-[12px] text-red-500 mt-1">{createError}</p>}
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-white/30">
-                Date <span className="font-normal normal-case tracking-normal text-slate-300 dark:text-white/20">(optional)</span>
+              <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-white/55">
+                Date <span className="font-normal normal-case tracking-normal text-slate-300 dark:text-white/50">(optional)</span>
               </label>
               <input
                 type="date"
@@ -71,8 +71,8 @@ export default function ListsPage() {
 
             {!newDate && (
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-white/30">
-                  Folder <span className="font-normal normal-case tracking-normal text-slate-300 dark:text-white/20">(optional)</span>
+                <label className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-white/55">
+                  Folder <span className="font-normal normal-case tracking-normal text-slate-300 dark:text-white/50">(optional)</span>
                 </label>
                 <select
                   value={newFolderId}
@@ -98,7 +98,7 @@ export default function ListsPage() {
               <button
                 type="button"
                 onClick={() => navigate(-1)}
-                className="px-3 py-1.5 rounded-lg text-[13px] text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-colors"
+                className="px-3 py-1.5 rounded-lg text-[13px] text-slate-500 dark:text-white/60 hover:text-slate-700 dark:hover:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-colors"
               >
                 Cancel
               </button>
@@ -113,7 +113,7 @@ export default function ListsPage() {
     <div className="overflow-y-auto h-full">
       <div className="max-w-2xl mx-auto px-6 py-8">
         {!selectedList ? (
-          <div className="flex flex-col items-center justify-center py-24 text-slate-400 dark:text-white/25 gap-2">
+          <div className="flex flex-col items-center justify-center py-24 text-slate-400 dark:text-white/50 gap-2">
             <List size={32} className="opacity-30" />
             <p className="text-[13px]">Select a list</p>
           </div>
@@ -131,12 +131,12 @@ export default function ListsPage() {
                       defaultValue={selectedList.dueDate ?? ''}
                       autoFocus
                       onBlur={(e) => handleDateChange(e.target.value)}
-                      className="rounded border border-slate-200 dark:border-white/[0.08] bg-transparent px-1.5 py-0.5 text-[12px] text-slate-500 dark:text-white/40 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="rounded border border-slate-200 dark:border-white/[0.08] bg-transparent px-1.5 py-0.5 text-[12px] text-slate-500 dark:text-white/60 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                   ) : (
                     <button
                       onClick={() => setEditingDate(true)}
-                      className="text-[12px] text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/50 transition-colors"
+                      className="text-[12px] text-slate-400 dark:text-white/55 hover:text-slate-600 dark:hover:text-white/50 transition-colors"
                     >
                       {selectedList.dueDate ?? '+ Add date'}
                     </button>
@@ -146,7 +146,7 @@ export default function ListsPage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setRenameOpen(true)}
-                  className="p-1.5 rounded-lg text-slate-400 dark:text-white/30 hover:text-slate-700 dark:hover:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
+                  className="p-1.5 rounded-lg text-slate-400 dark:text-white/55 hover:text-slate-700 dark:hover:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
                 >
                   <Pencil size={20} />
                 </button>
@@ -160,7 +160,7 @@ export default function ListsPage() {
             </div>
 
             {listItems.length === 0 && completedItems.length === 0 ? (
-              <p className="text-[13px] text-slate-400 dark:text-white/25">No items yet. Add one above.</p>
+              <p className="text-[13px] text-slate-400 dark:text-white/50">No items yet. Add one above.</p>
             ) : (
               <>
                 <SortableTodoList
@@ -176,7 +176,7 @@ export default function ListsPage() {
                 />
                 {completedItems.length > 0 && (
                   <div className="mt-4 border-t border-slate-100 dark:border-white/[0.05] pt-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 dark:text-white/25 mb-2">Done</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-300 dark:text-white/50 mb-2">Done</p>
                     <SortableTodoList
                       todos={completedItems}
                       onToggle={handleToggle}

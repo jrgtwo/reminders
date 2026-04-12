@@ -13,7 +13,7 @@ interface Props {
 
 function SectionHeader({ label }: { label: string }) {
   return (
-    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-300 dark:text-white/25 px-4 mt-4 mb-1">
+    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-300 dark:text-white/50 px-4 mt-4 mb-1">
       {label}
     </p>
   )
@@ -28,12 +28,12 @@ export default function ReminderList({ date, reminders, onAdd, onEdit, onDelete,
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <h2 className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-300 dark:text-white/25">
+        <h2 className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-300 dark:text-white/50">
           Reminders
         </h2>
         <button
           onClick={onAdd}
-          className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 dark:text-white/30 hover:text-slate-700 dark:hover:text-white/60 transition-colors px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-white/[0.06]"
+          className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 dark:text-white/55 hover:text-slate-700 dark:hover:text-white/60 transition-colors px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-white/[0.06]"
         >
           <Plus size={20} />
           Add
@@ -41,7 +41,7 @@ export default function ReminderList({ date, reminders, onAdd, onEdit, onDelete,
       </div>
 
       {reminders.length === 0 ? (
-        <p className="text-[13px] text-slate-300 dark:text-white/20 py-8 text-center">
+        <p className="text-[13px] text-slate-300 dark:text-white/50 py-8 text-center">
           No reminders for this day
         </p>
       ) : (

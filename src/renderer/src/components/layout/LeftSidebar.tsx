@@ -62,7 +62,7 @@ export default function LeftSidebar() {
             {title}
           </div>
           {time && (
-            <div className="text-[11px] text-slate-400 dark:text-white/30 mt-0.5">{time}</div>
+            <div className="text-[11px] text-slate-400 dark:text-white/55 mt-0.5">{time}</div>
           )}
         </button>
       </li>
@@ -165,7 +165,7 @@ export default function LeftSidebar() {
 
             {/* Upcoming */}
             {upcoming.length === 0 && overdue.length === 0 ? (
-              <p className="text-[12px] text-slate-400 dark:text-white/25 px-4 py-6 text-center leading-relaxed">
+              <p className="text-[12px] text-slate-400 dark:text-white/50 px-4 py-6 text-center leading-relaxed">
                 No upcoming reminders
                 <br />
                 in the next 30 days
@@ -247,7 +247,7 @@ export default function LeftSidebar() {
           </>
         ) : (
           <div className="flex flex-col items-center pt-3">
-            <Bell size={20} className="text-slate-300 dark:text-white/20" />
+            <Bell size={20} className="text-slate-300 dark:text-white/50" />
           </div>
         )}
       </div>

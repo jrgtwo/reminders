@@ -67,14 +67,14 @@ export default function NoteItem({ note, onEdit, onDelete }: Props) {
         <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
           <button
             onClick={() => onEdit(note)}
-            className="w-6 h-6 flex items-center justify-center rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+            className="w-6 h-6 flex items-center justify-center rounded text-slate-300 dark:text-white/50 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
             aria-label="Edit"
           >
             <Pencil size={20} />
           </button>
           <button
             onClick={() => onDelete(note.id)}
-            className="w-6 h-6 flex items-center justify-center rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors"
+            className="w-6 h-6 flex items-center justify-center rounded text-slate-300 dark:text-white/50 hover:text-red-500 transition-colors"
             aria-label="Delete"
           >
             <Trash2 size={20} />

@@ -19,7 +19,7 @@ export default function SidebarHeader({
       {side === 'right' && (
         <button
           onClick={onToggle}
-          className={`w-6 h-6 flex items-center justify-center rounded text-white/25 hover:text-white/70 hover:bg-white/[0.08] transition-all ${collapsed ? 'mx-auto' : ''}`}
+          className={`w-6 h-6 flex items-center justify-center rounded text-white/50 hover:text-white/70 hover:bg-white/[0.08] transition-all ${collapsed ? 'mx-auto' : ''}`}
         >
           {collapsed ? chevronWhenClosed : chevronWhenOpen}
         </button>
@@ -35,7 +35,7 @@ export default function SidebarHeader({
       {side === 'left' && (
         <button
           onClick={onToggle}
-          className={`w-6 h-6 flex items-center justify-center rounded text-white/25 hover:text-white/70 hover:bg-white/[0.08] transition-all ${collapsed ? 'mx-auto' : ''}`}
+          className={`w-6 h-6 flex items-center justify-center rounded text-white/50 hover:text-white/70 hover:bg-white/[0.08] transition-all ${collapsed ? 'mx-auto' : ''}`}
         >
           {collapsed ? chevronWhenClosed : chevronWhenOpen}
         </button>

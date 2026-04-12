@@ -1,3 +1,6 @@
+import '@fontsource-variable/inter'
+import '@fontsource/bree-serif'
+import '@fontsource-variable/archivo'
 import './assets/main.css'
 
 import { StrictMode } from 'react'

@@ -6,7 +6,7 @@ export default function PrivacyPolicyPage(): ReactNode {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-[var(--bg-app)] text-gray-900 dark:text-gray-100">
+    <main className="min-h-screen bg-[var(--bg-app)] text-gray-900 dark:text-gray-100">
       <div className="max-w-3xl mx-auto px-6 py-8">
         <button
           onClick={() => navigate(-1)}
@@ -450,7 +450,7 @@ export default function PrivacyPolicyPage(): ReactNode {
           </p>
         </div>
       </div>
-    </div>
+    </main>
   )
 }
 

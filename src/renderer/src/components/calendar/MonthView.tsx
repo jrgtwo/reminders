@@ -32,7 +32,7 @@ export default function MonthView({ displayDate }: Props) {
         {DAY_NAMES.map((name) => (
           <div
             key={name}
-            className="py-2.5 text-center text-[12px] font-semibold text-slate-400 dark:text-white/35"
+            className="py-2.5 text-center text-[12px] font-semibold text-slate-400 dark:text-white/55"
           >
             {name}
           </div>

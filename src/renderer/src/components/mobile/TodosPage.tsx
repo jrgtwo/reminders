@@ -33,7 +33,7 @@ function ListNavItem({
       <List
         size={20}
         className={
-          active ? 'shrink-0 text-[#6498c8]' : 'shrink-0 text-slate-400 dark:text-white/25'
+          active ? 'shrink-0 text-[#6498c8]' : 'shrink-0 text-slate-400 dark:text-white/50'
         }
       />
       <span
@@ -41,7 +41,7 @@ function ListNavItem({
       >
         {l.name}
       </span>
-      <ArrowRight size={20} className="shrink-0 text-slate-300 dark:text-white/20" />
+      <ArrowRight size={20} className="shrink-0 text-slate-300 dark:text-white/50" />
     </button>
   )
 }
@@ -96,7 +96,7 @@ function DateSection({
 
   if (years.length === 0) {
     return (
-      <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2">
+      <p className="text-[11px] text-slate-400 dark:text-white/50 px-4 py-2">
         No date-based lists yet
       </p>
     )
@@ -120,11 +120,11 @@ function DateSection({
               className="flex items-center gap-1.5 w-full px-4 py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
             >
               {yearCollapsed ? (
-                <ChevronRight size={20} className="text-slate-300 dark:text-white/20 shrink-0" />
+                <ChevronRight size={20} className="text-slate-300 dark:text-white/50 shrink-0" />
               ) : (
-                <ChevronDown size={20} className="text-slate-300 dark:text-white/20 shrink-0" />
+                <ChevronDown size={20} className="text-slate-300 dark:text-white/50 shrink-0" />
               )}
-              <span className="text-[11px] font-bold text-slate-500 dark:text-white/40 uppercase tracking-wide">
+              <span className="text-[11px] font-bold text-slate-500 dark:text-white/60 uppercase tracking-wide">
                 {year}
               </span>
             </button>
@@ -151,15 +151,15 @@ function DateSection({
                       {monthCollapsed ? (
                         <ChevronRight
                           size={20}
-                          className="text-slate-300 dark:text-white/20 shrink-0"
+                          className="text-slate-300 dark:text-white/50 shrink-0"
                         />
                       ) : (
                         <ChevronDown
                           size={20}
-                          className="text-slate-300 dark:text-white/20 shrink-0"
+                          className="text-slate-300 dark:text-white/50 shrink-0"
                         />
                       )}
-                      <span className="text-[11px] font-semibold text-slate-400 dark:text-white/30">
+                      <span className="text-[11px] font-semibold text-slate-400 dark:text-white/55">
                         {monthName}
                       </span>
                     </button>
@@ -171,12 +171,12 @@ function DateSection({
                         return (
                           <div key={day}>
                             <div className="flex items-center pl-10 pr-4 py-0.5">
-                              <span className="text-[11px] font-semibold text-slate-400 dark:text-white/25 flex-1">
+                              <span className="text-[11px] font-semibold text-slate-400 dark:text-white/50 flex-1">
                                 {parseInt(day, 10)}
                               </span>
                               <button
                                 onClick={() => onNewListForDate(dateStr)}
-                                className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                                className="p-1 rounded text-slate-300 dark:text-white/50 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
                                 title={`New list for ${dateStr}`}
                               >
                                 <Plus size={20} />
@@ -242,14 +242,14 @@ export default function TodosPage() {
                 <div className="flex items-center gap-0.5 shrink-0">
                   <button
                     onClick={() => openNewList()}
-                    className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                    className="p-1 rounded text-slate-300 dark:text-white/50 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
                     title="New list"
                   >
                     <Plus size={20} />
                   </button>
                   <button
                     onClick={openFolderForm}
-                    className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                    className="p-1 rounded text-slate-300 dark:text-white/50 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
                     title="New folder"
                   >
                     <FolderOpen size={20} />
@@ -258,7 +258,7 @@ export default function TodosPage() {
               }
             >
               {adHocLists.length === 0 && folders.length === 0 && (
-                <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2">
+                <p className="text-[11px] text-slate-400 dark:text-white/50 px-4 py-2">
                   No lists yet
                 </p>
               )}
@@ -292,7 +292,7 @@ export default function TodosPage() {
               headerExtra={
                 <button
                   onClick={() => openNewList()}
-                  className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                  className="p-1 rounded text-slate-300 dark:text-white/50 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
                   title="New date-based list"
                 >
                   <Plus size={20} />

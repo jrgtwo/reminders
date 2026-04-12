@@ -77,7 +77,7 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete, isEditing, 
               onKeyDown={handleTitleKeyDown}
               onBlur={commit}
               placeholder="Item title"
-              className="flex-1 min-w-0 bg-transparent text-[13px] leading-5 text-slate-700 dark:text-white/75 placeholder:text-slate-300 dark:placeholder:text-white/25 focus:outline-none"
+              className="flex-1 min-w-0 bg-transparent text-[13px] leading-5 text-slate-700 dark:text-white/75 placeholder:text-slate-300 dark:placeholder:text-white/50 focus:outline-none"
             />
           ) : (
             <>
@@ -101,8 +101,8 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete, isEditing, 
               onClick={toggleDescription}
               className={`w-6 h-6 flex items-center justify-center rounded transition-colors ${
                 hasDescription || expanded
-                  ? 'text-slate-400 dark:text-white/35 hover:text-slate-600 dark:hover:text-white/60'
-                  : 'text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60'
+                  ? 'text-slate-400 dark:text-white/55 hover:text-slate-600 dark:hover:text-white/60'
+                  : 'text-slate-300 dark:text-white/50 hover:text-slate-600 dark:hover:text-white/60'
               }`}
               aria-label={expanded ? 'Collapse description' : 'Edit description'}
             >
@@ -110,14 +110,14 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete, isEditing, 
             </button>
             <button
               onClick={() => onEdit(todo)}
-              className="w-6 h-6 flex items-center justify-center rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+              className="w-6 h-6 flex items-center justify-center rounded text-slate-300 dark:text-white/50 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
               aria-label="Edit title"
             >
               <Pencil size={20} />
             </button>
             <button
               onClick={(e) => onDelete(todo.id, e)}
-              className="w-6 h-6 flex items-center justify-center rounded text-slate-300 dark:text-white/20 hover:text-red-500 transition-colors"
+              className="w-6 h-6 flex items-center justify-center rounded text-slate-300 dark:text-white/50 hover:text-red-500 transition-colors"
               aria-label="Delete"
             >
               <Trash2 size={20} />
@@ -138,7 +138,7 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete, isEditing, 
               onKeyDown={handleDescKeyDown}
               placeholder="Add a description…"
               rows={3}
-              className="w-full bg-transparent text-[12px] leading-5 text-slate-600 dark:text-white/60 placeholder:text-slate-300 dark:placeholder:text-white/20 focus:outline-none resize-none"
+              className="w-full bg-transparent text-[12px] leading-5 text-slate-600 dark:text-white/60 placeholder:text-slate-300 dark:placeholder:text-white/50 focus:outline-none resize-none"
             />
           ) : hasDescription ? (
             <div onClick={startEditingDesc} className="cursor-text">

@@ -16,9 +16,9 @@ const accentStyles: Record<Accent, { label: string; count: string; chevron: stri
     chevron: 'text-[#6498c8]/60',
   },
   slate: {
-    label: 'text-slate-500 dark:text-white/40',
-    count: 'text-slate-500 dark:text-white/40 bg-slate-100 dark:bg-white/[0.06]',
-    chevron: 'text-slate-400 dark:text-white/30',
+    label: 'text-slate-500 dark:text-white/60',
+    count: 'text-slate-500 dark:text-white/60 bg-slate-100 dark:bg-white/[0.06]',
+    chevron: 'text-slate-400 dark:text-white/55',
   },
 }
 

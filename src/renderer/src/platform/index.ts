@@ -1,6 +1,6 @@
 import type { IStorageAdapter } from './types'
 import { EncryptedAdapter } from './encryptedAdapter'
-import { getEncryptionKey } from '../lib/keyManager'
+import { getEncryptionKey, tryRestoreCachedKey } from '../lib/keyManager'
 
 let innerAdapter: IStorageAdapter | null = null
 let encryptedAdapter: EncryptedAdapter | null = null
@@ -32,6 +32,7 @@ export async function initStorage(): Promise<void> {
     }
   }
 
+  await tryRestoreCachedKey()
   encryptedAdapter = new EncryptedAdapter(innerAdapter, getEncryptionKey)
 }
 

@@ -74,7 +74,7 @@ function BrowseItem({
     >
       <Icon
         size={20}
-        className={active ? 'shrink-0 text-[#6498c8]' : 'shrink-0 text-slate-400 dark:text-white/25'}
+        className={active ? 'shrink-0 text-[#6498c8]' : 'shrink-0 text-slate-400 dark:text-white/50'}
       />
       <div className="flex-1 min-w-0">
         <span
@@ -85,7 +85,7 @@ function BrowseItem({
           {label}
         </span>
         {sublabel && (
-          <span className="text-[12px] text-slate-400 dark:text-white/25 block truncate">{sublabel}</span>
+          <span className="text-[12px] text-slate-400 dark:text-white/50 block truncate">{sublabel}</span>
         )}
       </div>
       <div className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -157,15 +157,15 @@ function BrowseFolderSection<
           style={{ paddingLeft: `${pl}px`, paddingRight: '12px' }}
         >
           {collapsed ? (
-            <ChevronRight size={20} className="text-slate-300 dark:text-white/20 shrink-0" />
+            <ChevronRight size={20} className="text-slate-300 dark:text-white/50 shrink-0" />
           ) : (
-            <ChevronDown size={20} className="text-slate-300 dark:text-white/20 shrink-0" />
+            <ChevronDown size={20} className="text-slate-300 dark:text-white/50 shrink-0" />
           )}
-          <FolderOpen size={18} className="text-slate-400 dark:text-white/25 shrink-0" />
-          <span className="text-[15px] font-semibold text-slate-500 dark:text-white/40 truncate flex-1 text-left">
+          <FolderOpen size={18} className="text-slate-400 dark:text-white/50 shrink-0" />
+          <span className="text-[15px] font-semibold text-slate-500 dark:text-white/60 truncate flex-1 text-left">
             {folder.name}
           </span>
-          <span className="text-[11px] text-slate-400 dark:text-white/25 mr-1">
+          <span className="text-[11px] text-slate-400 dark:text-white/50 mr-1">
             {items.length}
           </span>
           <div className="opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
@@ -278,7 +278,7 @@ export default function BrowsePage() {
         <div className="max-w-4xl mx-auto flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
-            className="p-1.5 rounded-lg text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/50 hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 dark:text-white/55 hover:text-slate-600 dark:hover:text-white/50 hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-colors"
           >
             <ArrowLeft size={20} />
           </button>
@@ -301,7 +301,7 @@ export default function BrowsePage() {
               className={`flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium border-b-2 transition-colors ${
                 activeTab === tab.id
                   ? 'border-[#6498c8] text-[#6498c8]'
-                  : 'border-transparent text-slate-500 dark:text-white/40 hover:text-slate-700 dark:hover:text-white/60'
+                  : 'border-transparent text-slate-500 dark:text-white/60 hover:text-slate-700 dark:hover:text-white/60'
               }`}
             >
               <tab.icon size={16} />
@@ -439,7 +439,7 @@ function ListsTabContent({
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-[13px] font-bold uppercase tracking-wide text-slate-500 dark:text-white/40">
+        <h2 className="text-[13px] font-bold uppercase tracking-wide text-slate-500 dark:text-white/60">
           My Lists
         </h2>
         <div className="flex items-center gap-1">
@@ -453,7 +453,7 @@ function ListsTabContent({
       </div>
 
       {rootFolders.length === 0 && standaloneLists.length === 0 && (
-        <p className="text-[13px] text-slate-400 dark:text-white/25 py-4">No lists yet</p>
+        <p className="text-[13px] text-slate-400 dark:text-white/50 py-4">No lists yet</p>
       )}
 
       <BrowseFolderSection
@@ -504,7 +504,7 @@ function NotesTabContent({
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-[13px] font-bold uppercase tracking-wide text-slate-500 dark:text-white/40">
+        <h2 className="text-[13px] font-bold uppercase tracking-wide text-slate-500 dark:text-white/60">
           My Notes
         </h2>
         <div className="flex items-center gap-1">
@@ -518,7 +518,7 @@ function NotesTabContent({
       </div>
 
       {rootFolders.length === 0 && standaloneNotes.length === 0 && (
-        <p className="text-[13px] text-slate-400 dark:text-white/25 py-4">No notes yet</p>
+        <p className="text-[13px] text-slate-400 dark:text-white/50 py-4">No notes yet</p>
       )}
 
       <BrowseFolderSection
@@ -616,7 +616,7 @@ function ByDateTabContent({
       )}
 
       {dateLists.length === 0 && dateNotes.length === 0 && (
-        <p className="text-[13px] text-slate-400 dark:text-white/25 py-8 text-center">
+        <p className="text-[13px] text-slate-400 dark:text-white/50 py-8 text-center">
           No date-based items yet
         </p>
       )}

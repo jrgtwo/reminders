@@ -43,7 +43,7 @@ export default function AppShell() {
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
               <span
-                className="text-[11px] text-white/40 tracking-[0.2em] uppercase font-medium"
+                className="text-[11px] text-white/60 tracking-[0.2em] uppercase font-medium"
                 style={{ fontFamily: "'Bree Serif', serif", fontWeight: 400 }}
               >
                 Reminder
@@ -61,12 +61,12 @@ export default function AppShell() {
                 className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
               >
                 <span
-                  className={`text-[11px] font-bold tabular-nums ${overdueCount > 0 ? 'text-[#e8a045]' : 'text-white/25'}`}
+                  className={`text-[11px] font-bold tabular-nums ${overdueCount > 0 ? 'text-[#e8a045]' : 'text-white/50'}`}
                 >
                   {overdueCount}
                 </span>
                 <span
-                  className={`text-[11px] ${overdueCount > 0 ? 'text-[#e8a045]/70' : 'text-white/20'}`}
+                  className={`text-[11px] ${overdueCount > 0 ? 'text-[#e8a045]/70' : 'text-white/50'}`}
                 >
                   overdue
                 </span>
@@ -76,12 +76,12 @@ export default function AppShell() {
                 className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
               >
                 <span
-                  className={`text-[11px] font-bold tabular-nums ${upcomingCount > 0 ? 'text-[#6498c8]' : 'text-white/25'}`}
+                  className={`text-[11px] font-bold tabular-nums ${upcomingCount > 0 ? 'text-[#6498c8]' : 'text-white/50'}`}
                 >
                   {upcomingCount}
                 </span>
                 <span
-                  className={`text-[11px] ${upcomingCount > 0 ? 'text-[#6498c8]/70' : 'text-white/20'}`}
+                  className={`text-[11px] ${upcomingCount > 0 ? 'text-[#6498c8]/70' : 'text-white/50'}`}
                 >
                   upcoming
                 </span>
@@ -95,7 +95,7 @@ export default function AppShell() {
           {/* Right: sync + settings */}
           <div className="flex items-center justify-end gap-2">
             {isLoggedIn && (
-              <div className="flex items-center gap-1.5 text-[10px] text-white/30">
+              <div className="flex items-center gap-1.5 text-[10px] text-white/55">
                 {syncStatus === 'syncing' ? (
                   <>
                     <Loader2 size={20} className="animate-spin" />
@@ -113,7 +113,7 @@ export default function AppShell() {
             )}
             <button
               onClick={() => navigate('/settings')}
-              className="w-7 h-7 flex items-center justify-center rounded text-white/30 hover:text-white/80 hover:bg-white/[0.08] transition-all"
+              className="w-7 h-7 flex items-center justify-center rounded text-white/55 hover:text-white/80 hover:bg-white/[0.08] transition-all"
               title="Settings (Ctrl+,)"
             >
               <Settings size={20} />
@@ -131,7 +131,7 @@ export default function AppShell() {
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
               <span
-                className="text-[10px] text-white/40 tracking-[0.2em] uppercase font-medium"
+                className="text-[10px] text-white/60 tracking-[0.2em] uppercase font-medium"
                 style={{ fontFamily: "'Bree Serif', serif", fontWeight: 400 }}
               >
                 Reminder
@@ -145,7 +145,7 @@ export default function AppShell() {
             </button>
             <div className="flex items-center gap-2">
               {isLoggedIn && (
-                <div className="flex items-center gap-1.5 text-[10px] text-white/30">
+                <div className="flex items-center gap-1.5 text-[10px] text-white/55">
                   {syncStatus === 'syncing' ? (
                     <>
                       <Loader2 size={20} className="animate-spin" />
@@ -163,7 +163,7 @@ export default function AppShell() {
               )}
               <button
                 onClick={() => navigate('/settings')}
-                className="w-7 h-7 flex items-center justify-center rounded text-white/30 hover:text-white/80 hover:bg-white/[0.08] transition-all"
+                className="w-7 h-7 flex items-center justify-center rounded text-white/55 hover:text-white/80 hover:bg-white/[0.08] transition-all"
                 title="Settings (Ctrl+,)"
               >
                 <Settings size={20} />

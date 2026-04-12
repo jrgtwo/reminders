@@ -82,7 +82,7 @@ export function MoreMenu({ items, size = 20, className = '' }: Props) {
           e.stopPropagation()
           setOpen((o) => !o)
         }}
-        className={`p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors ${className}`}
+        className={`p-1 rounded text-slate-300 dark:text-white/50 hover:text-slate-600 dark:hover:text-white/60 transition-colors ${className}`}
         title="More actions"
       >
         <MoreHorizontal size={size} />

@@ -16,9 +16,25 @@ export function clearEncryptionKeyChangedFlag(userId: string): void {
 }
 
 const KEY_FP_KEY = (userId: string) => `enc_key_fp_${userId}`
+const LAST_USER_KEY = 'enc_last_user_id'
 
 export function getEncryptionKey(): CryptoKey | null {
   return encryptionKey
+}
+
+/**
+ * Try to restore the encryption key from local cache using the last-known userId.
+ * Called during app init before auth completes, so previously-encrypted data
+ * can be decrypted immediately without waiting for a network round-trip.
+ */
+export async function tryRestoreCachedKey(): Promise<void> {
+  if (encryptionKey) return // already loaded
+  try {
+    const userId = localStorage.getItem(LAST_USER_KEY)
+    if (!userId) return
+    const cached = await loadCachedKey(userId)
+    if (cached) encryptionKey = cached
+  } catch {}
 }
 
 export function setEncryptionKey(key: CryptoKey): void {
@@ -76,6 +92,7 @@ export async function initEncryptionKey(userId: string): Promise<void> {
       const prevFp = localStorage.getItem(KEY_FP_KEY(userId))
       _keyChangedForUser.set(userId, prevFp !== null && prevFp !== data.key_data)
       localStorage.setItem(KEY_FP_KEY(userId), data.key_data)
+      localStorage.setItem(LAST_USER_KEY, userId)
       encryptionKey = await importKey(data.key_data)
       await cacheKeyLocally(userId, data.key_data)
       return
@@ -117,6 +134,7 @@ export async function initEncryptionKey(userId: string): Promise<void> {
       return
     }
 
+    localStorage.setItem(LAST_USER_KEY, userId)
     encryptionKey = key
     await cacheKeyLocally(userId, keyData)
   } catch {
@@ -128,5 +146,6 @@ export async function initEncryptionKey(userId: string): Promise<void> {
 
 export async function clearEncryptionKey(userId: string): Promise<void> {
   encryptionKey = null
+  localStorage.removeItem(LAST_USER_KEY)
   await clearCachedKey(userId)
 }

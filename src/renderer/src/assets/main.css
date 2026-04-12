@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 html, body, #root {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Inter Variable', 'Inter', system-ui, sans-serif;
   font-size: 18px;
   background-color: var(--bg-app);
 }

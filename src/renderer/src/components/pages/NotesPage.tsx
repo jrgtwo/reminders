@@ -14,7 +14,7 @@ function NotesEmptyState() {
   return (
     <div className="flex flex-col items-center justify-center h-full gap-3">
       <FileText size={40} className="text-slate-200 dark:text-white/10" />
-      <p className="text-sm text-slate-400 dark:text-white/25">Select a note or create a new one</p>
+      <p className="text-sm text-slate-400 dark:text-white/50">Select a note or create a new one</p>
     </div>
   )
 }

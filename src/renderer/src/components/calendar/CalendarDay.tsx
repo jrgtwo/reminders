@@ -67,11 +67,11 @@ export default function CalendarDay({
             ? 'text-blue-500 dark:text-[#6498c8]'
             : inMonth
               ? 'text-slate-700 dark:text-white/80'
-              : 'text-slate-300 dark:text-white/20'
+              : 'text-slate-300 dark:text-white/50'
         ]
           .filter(Boolean)
           .join(' ')}
-        style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 400 }}
+        style={{ fontFamily: "'Archivo Variable', 'Archivo', sans-serif", fontWeight: 400 }}
       >
         {formatDayNum(date)}
       </span>
@@ -144,14 +144,14 @@ export default function CalendarDay({
                 className="min-w-0 lg:w-full"
                 onClick={(e) => { e.stopPropagation(); onNoteClick?.() }}
               >
-                <span className="hidden lg:flex items-center gap-1 w-full px-1.5 py-[3px] rounded-md text-[10px] font-medium transition-all duration-150 hover:brightness-125 hover:shadow-md hover:scale-[1.03] bg-slate-100 text-slate-500 dark:bg-white/[0.07] dark:text-white/35">
+                <span className="hidden lg:flex items-center gap-1 w-full px-1.5 py-[3px] rounded-md text-[10px] font-medium transition-all duration-150 hover:brightness-125 hover:shadow-md hover:scale-[1.03] bg-slate-100 text-slate-500 dark:bg-white/[0.07] dark:text-white/55">
                   <FileText size={20} className="shrink-0" />
                   {noteCount > 1 && <span>{noteCount} notes</span>}
                 </span>
-                <span className="hidden md:flex lg:hidden items-center justify-center gap-[3px] px-1 h-[22px] rounded bg-slate-100 text-slate-500 dark:bg-white/[0.07] dark:text-white/35 text-[10px] font-medium">
+                <span className="hidden md:flex lg:hidden items-center justify-center gap-[3px] px-1 h-[22px] rounded bg-slate-100 text-slate-500 dark:bg-white/[0.07] dark:text-white/55 text-[10px] font-medium">
                   <FileText size={20} />{noteCount > 1 && <span>{noteCount}</span>}
                 </span>
-                <span className="flex md:hidden items-center gap-[2px] text-[10px] font-medium text-slate-300 dark:text-white/20">
+                <span className="flex md:hidden items-center gap-[2px] text-[10px] font-medium text-slate-300 dark:text-white/50">
                   <FileText size={12} />{noteCount > 1 && <span>{noteCount}</span>}
                 </span>
               </span>

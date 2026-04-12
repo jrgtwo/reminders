@@ -31,7 +31,11 @@ export class EncryptedAdapter implements IStorageAdapter {
   private async dec(text: string | undefined): Promise<string | undefined> {
     if (text === undefined) return undefined
     const key = this.getKey()
-    if (!key) return text
+    if (!key) {
+      // No key available — never expose raw ciphertext to the UI.
+      // Return plaintext as-is; return empty string for encrypted data.
+      return text.startsWith('enc:') ? '' : text
+    }
     try {
       return await decrypt(key, text)
     } catch (err) {

@@ -104,7 +104,7 @@ export default function RightSidebar() {
             {title}
           </div>
           {time && (
-            <div className="text-[11px] text-slate-400 dark:text-white/30 mt-0.5">{time}</div>
+            <div className="text-[11px] text-slate-400 dark:text-white/55 mt-0.5">{time}</div>
           )}
         </button>
       </li>
@@ -158,7 +158,7 @@ export default function RightSidebar() {
                   headerExtra={
                     <button
                       onClick={() => navigate('/reminders')}
-                      className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                      className="p-1 rounded text-slate-300 dark:text-white/50 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
                       title="Go to Reminders"
                     >
                       <ArrowUpRight size={20} />
@@ -166,7 +166,7 @@ export default function RightSidebar() {
                   }
                 >
                   {overdueReminders.length === 0 && upcomingReminders.length === 0 && (
-                    <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2 text-center">
+                    <p className="text-[11px] text-slate-400 dark:text-white/50 px-4 py-2 text-center">
                       No upcoming reminders
                     </p>
                   )}
@@ -313,7 +313,7 @@ export default function RightSidebar() {
                   headerExtra={
                     <button
                       onClick={() => navigate('/notes')}
-                      className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                      className="p-1 rounded text-slate-300 dark:text-white/50 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
                       title="Go to Notes"
                     >
                       <ArrowUpRight size={20} />
@@ -334,7 +334,7 @@ export default function RightSidebar() {
                   headerExtra={
                     <button
                       onClick={() => navigate('/todos')}
-                      className="p-1 rounded text-slate-300 dark:text-white/20 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
+                      className="p-1 rounded text-slate-300 dark:text-white/50 hover:text-slate-600 dark:hover:text-white/60 transition-colors"
                       title="Go to Lists"
                     >
                       <ArrowUpRight size={20} />
@@ -372,7 +372,7 @@ export default function RightSidebar() {
                     }
                   >
                     {adHocLists.length === 0 && folders.length === 0 && (
-                      <p className="text-[11px] text-slate-400 dark:text-white/25 px-4 py-2">
+                      <p className="text-[11px] text-slate-400 dark:text-white/50 px-4 py-2">
                         No lists yet
                       </p>
                     )}
@@ -457,7 +457,7 @@ export default function RightSidebar() {
 
           {!rightOpen && (
             <div className="flex flex-col items-center pt-3">
-              <CheckSquare size={20} className="text-slate-300 dark:text-white/20" />
+              <CheckSquare size={20} className="text-slate-300 dark:text-white/50" />
               {listCount > 0 && (
                 <span className="text-[11px] font-bold text-blue-500 dark:text-blue-400 mt-2">
                   {listCount}
