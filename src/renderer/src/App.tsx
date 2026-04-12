@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import FirstLoginDialog from './components/sync/FirstLoginDialog'
 import { RouterProvider, createMemoryRouter, createBrowserRouter, Navigate } from 'react-router-dom'
 import AppShell from './components/layout/AppShell'
@@ -106,6 +107,7 @@ export default function App() {
       <RouterProvider router={router} />
       {isLoggedIn && <FirstLoginDialog />}
       {!isElectronOrCapacitor && analyticsAllowed && <Analytics />}
+      {!isElectronOrCapacitor && analyticsAllowed && <SpeedInsights />}
       {showBanner && (
         <CookieBanner
           onDismiss={() => {
