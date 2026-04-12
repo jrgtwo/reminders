@@ -33,12 +33,12 @@ function PaginatedItems<T>({ items, renderItem }: { items: T[]; renderItem: (ite
   const { page, totalPages, totalItems, pageItems, prevPage, nextPage } = usePagination(items, PAGE_SIZE)
 
   return (
-    <>
+    <div className="space-y-2">
       {pageItems.map((item, i) => (
         <div key={i}>{renderItem(item)}</div>
       ))}
       <Pagination page={page} totalPages={totalPages} totalItems={totalItems} onPrev={prevPage} onNext={nextPage} />
-    </>
+    </div>
   )
 }
 
@@ -65,10 +65,10 @@ function BrowseItem({
 
   return (
     <div
-      className={`group relative flex items-center gap-3 px-4 py-3 rounded-lg transition-all cursor-pointer ${
+      className={`group relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer hover:-translate-y-[1.5px] active:translate-y-[1.5px] ${
         active
-          ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.12]'
-          : 'hover:bg-slate-50 dark:hover:bg-white/[0.03]'
+          ? 'bg-white dark:bg-white/[0.04] border border-[#6498c8]/20 dark:border-[#6498c8]/[0.15] border-b-[2.5px] border-b-[#6498c8]/30 dark:border-b-[#6498c8]/[0.25] hover:shadow-sm dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
+          : 'bg-white dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-300/80 dark:border-b-white/[0.15] hover:bg-slate-50 dark:hover:bg-white/[0.07] hover:shadow-sm dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
       }`}
       onClick={() => navigate(route)}
     >
@@ -153,7 +153,7 @@ function BrowseFolderSection<
       <div key={folder.id}>
         <div
           onClick={() => onToggleFolder(folder.id)}
-          className="group flex items-center gap-2 w-full py-2.5 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors cursor-pointer rounded-lg"
+          className="group flex items-center gap-2 w-full py-2.5 bg-white dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-300/80 dark:border-b-white/[0.15] hover:bg-slate-50 dark:hover:bg-white/[0.07] hover:-translate-y-[1.5px] active:translate-y-[1.5px] hover:shadow-sm dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.3)] transition-all cursor-pointer rounded-xl mb-1"
           style={{ paddingLeft: `${pl}px`, paddingRight: '12px' }}
         >
           {collapsed ? (
@@ -298,7 +298,7 @@ export default function BrowsePage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium border-b-2 transition-colors ${
+              className={`flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium border-b-2 transition-all active:translate-y-[1px] ${
                 activeTab === tab.id
                   ? 'border-[#6498c8] text-[#6498c8]'
                   : 'border-transparent text-slate-500 dark:text-white/60 hover:text-slate-700 dark:hover:text-white/60'

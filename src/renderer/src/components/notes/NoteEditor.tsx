@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Milkdown, MilkdownProvider, useEditor } from '@milkdown/react'
 import { Editor, rootCtx, defaultValueCtx } from '@milkdown/core'
@@ -344,6 +344,63 @@ export function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
 }
 
 // ---------------------------------------------------------------------------
+// Inline editable title
+// ---------------------------------------------------------------------------
+
+function InlineTitle({
+  title,
+  onChange,
+}: {
+  title: string | undefined
+  onChange: (t: string) => void
+}) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(title ?? '')
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  function startEditing() {
+    setDraft(title ?? '')
+    setEditing(true)
+    requestAnimationFrame(() => inputRef.current?.focus())
+  }
+
+  function commit() {
+    setEditing(false)
+    const trimmed = draft.trim()
+    if (trimmed !== (title ?? '')) {
+      onChange(trimmed)
+    }
+  }
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') commit()
+          if (e.key === 'Escape') setEditing(false)
+        }}
+        placeholder="Untitled"
+        className="flex-1 text-lg font-semibold text-gray-900 dark:text-gray-100 bg-transparent outline-none border-b border-gray-300 dark:border-[var(--border)] py-0"
+      />
+    )
+  }
+
+  return (
+    <button onClick={startEditing} className="flex-1 text-left truncate">
+      <span
+        className={`text-lg font-semibold ${title ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500'}`}
+      >
+        {title || 'Untitled'}
+      </span>
+    </button>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Public component
 // ---------------------------------------------------------------------------
 
@@ -369,23 +426,7 @@ export default function NoteEditor({ note, onChange, onDelete, onBack }: Props) 
           >
             <ArrowLeft size={20} />
           </button>
-          {note.title ? (
-            <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
-              {note.title}
-            </h1>
-          ) : (
-            <button
-              onClick={() => {
-                const title = prompt('Enter note title:')
-                if (title !== null) handleTitleChange(title)
-              }}
-              className="flex-1 text-left"
-            >
-              <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                Untitled
-              </span>
-            </button>
-          )}
+          <InlineTitle title={note.title} onChange={handleTitleChange} />
           {onDelete && (
             <button
               onClick={(e) => onDelete(e)}

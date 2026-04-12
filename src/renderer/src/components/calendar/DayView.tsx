@@ -88,6 +88,8 @@ export default function DayView() {
     navigate('/')
   }
 
+  const isToday = dateStr === Temporal.Now.plainDateISO().toString()
+
   const handleToday = () => {
     const today = Temporal.Now.plainDateISO().toString()
     setSelectedDate(today)
@@ -108,7 +110,12 @@ export default function DayView() {
         <div className="flex items-center gap-2">
           <button
             onClick={handleToday}
-            className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 dark:border-white/[0.12] border-b-[2.5px] border-b-slate-300 dark:border-b-white/[0.18] bg-white dark:bg-white/[0.08] text-slate-600 dark:text-white/65 hover:text-slate-800 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/[0.1] active:translate-y-[1.5px] transition-all"
+            className={[
+              'px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all capitalize active:translate-y-[1.5px]',
+              isToday
+                ? 'bg-white dark:bg-white/[0.12] text-slate-900 dark:text-white border-slate-200 dark:border-white/[0.12] border-b-[2.5px] border-b-slate-300 dark:border-b-white/[0.2] shadow-sm'
+                : 'bg-slate-50 dark:bg-white/[0.04] text-slate-400 dark:text-white/55 border-slate-200 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-250 dark:border-b-white/[0.12] hover:text-slate-600 dark:hover:text-white/60',
+            ].join(' ')}
           >
             Today
           </button>
