@@ -26,7 +26,7 @@ export default function CookieBanner({ onDismiss }: Props) {
 
   if (showDetails) {
     return (
-      <div className="fixed bottom-0 inset-x-0 z-[9999] p-4">
+      <div className="fixed bottom-0 inset-x-0 z-[9999] p-4 animate-[slideUp_0.3s_ease-out]">
         <div className="max-w-lg mx-auto rounded-xl bg-[var(--bg-elevated,#1c2128)] border border-[var(--border-color,rgba(255,255,255,0.08))] shadow-2xl p-5">
           <h3 className="text-sm font-semibold text-[var(--text-primary,rgba(255,255,255,0.9))] mb-4">
             Cookie Preferences
@@ -85,7 +85,7 @@ export default function CookieBanner({ onDismiss }: Props) {
   }
 
   return (
-    <div className="fixed bottom-0 inset-x-0 z-[9999] p-4">
+    <div className="fixed bottom-0 inset-x-0 z-[9999] p-4 animate-[slideUp_0.3s_ease-out]">
       <div className="max-w-lg mx-auto rounded-xl bg-[var(--bg-elevated,#1c2128)] border border-[var(--border-color,rgba(255,255,255,0.08))] shadow-2xl p-5">
         <p className="text-sm text-[var(--text-primary,rgba(255,255,255,0.8))] mb-1">
           This site uses cookies
