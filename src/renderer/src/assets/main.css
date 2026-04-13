@@ -333,27 +333,25 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 /* ─── Grainy texture ─────────────────────────────────────────────────────────
-   Two layers working together:
-   1. Background grain — noise baked into the page background, visible through
-      semi-transparent surfaces. Covers components without backgrounds.
-   2. Overlay grain   — viewport-wide layer with mix-blend-mode: multiply so
-      it interacts with each surface's color. Covers components with backgrounds.
-   Mouse-responsive via --mx / --my set by GrainOverlay component.
-   Gradient lives only on the main app background (AppShell inline style).
+   Grain is a background-image — not an overlay. It scrolls with content,
+   responds to mouse via background-position, and shows through
+   semi-transparent surfaces. Gradient is layered into the same background.
    ────────────────────────────────────────────────────────────────────────── */
-
-/* Viewport overlay grain — multiply blend makes it interact per-surface */
-.grain-overlay {
-  position: fixed;
-  inset: -10%;
-  width: 120%;
-  height: 120%;
-  pointer-events: none;
-  z-index: 9999;
-  background: white;
-  filter: url(#grain) contrast(170%) brightness(100%);
-  opacity: var(--grain-opacity, 0.04);
-  mix-blend-mode: multiply;
-  transform: translate(calc(var(--mx, 0.5) * -8%), calc(var(--my, 0.5) * -8%));
-  transition: transform 0.4s ease-out;
+.grain-bg {
+  background:
+    linear-gradient(
+      135deg,
+      var(--grain-color-start, transparent) 0%,
+      transparent 40%,
+      var(--grain-color-end, transparent) 100%
+    ),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='4' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='2' intercept='-0.4'/%3E%3CfeFuncG type='linear' slope='2' intercept='-0.4'/%3E%3CfeFuncB type='linear' slope='2' intercept='-0.4'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E"),
+    var(--bg-app);
+  background-size: 100% 100%, 200px 200px, 100% 100%;
+  background-blend-mode: normal, normal, normal;
+  background-position:
+    0 0,
+    calc(var(--mx, 0.5) * 50px) calc(var(--my, 0.5) * 50px),
+    0 0;
+  transition: background-position 0.4s ease-out;
 }

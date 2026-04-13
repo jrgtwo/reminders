@@ -35,10 +35,7 @@ export default function AppShell() {
 
   return (
     <div
-      className="flex flex-col h-screen text-slate-900 dark:text-slate-100 relative overflow-hidden"
-      style={{
-        background: `linear-gradient(135deg, var(--grain-color-start, transparent) 0%, transparent 40%, var(--grain-color-end, transparent) 100%), var(--bg-app)`,
-      }}
+      className="flex flex-col h-screen text-slate-900 dark:text-slate-100 relative overflow-hidden grain-bg"
     >
       <GrainOverlay />
       {/* Top header */}

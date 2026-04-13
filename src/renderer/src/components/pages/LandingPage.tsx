@@ -141,7 +141,7 @@ export default function LandingPage() {
     navigate('/')
   }
   return (
-    <main className="min-h-screen bg-[#0d1117] text-slate-100 overflow-auto">
+    <main className="min-h-screen text-slate-100 overflow-auto grain-bg" style={{ '--bg-app': '#0d1117' } as React.CSSProperties}>
       <GrainOverlay />
       {/* Hero */}
       <section className="relative flex flex-col items-center justify-center px-6 pt-20 pb-16 md:pt-28 md:pb-24">
