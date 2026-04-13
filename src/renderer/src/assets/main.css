@@ -333,10 +333,11 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 /* ─── Grainy texture system ──────────────────────────────────────────────────
-   Three layers create a unified film-grain atmosphere:
+   Per-surface grain so each element owns its own texture:
    1. Base gradient  — accent-tinted, behind content (z-index 0)
-   2. Base noise     — behind content, bleeds through translucent surfaces (z-index 0)
-   3. Film overlay   — on TOP of everything, wraps all elements into one scene (z-index 9999)
+   2. Base noise     — behind content, bleeds through translucent surfaces
+   3. grain-surface  — adds grain to layout areas (header, sidebar, main)
+   4. grain-glass    — adds grain + backdrop blur to cards and panels
    ────────────────────────────────────────────────────────────────────────── */
 
 /* Animated grain — slowly shifts the noise for a living texture */
@@ -351,7 +352,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   position: relative;
 }
 
-/* Layer 1: accent-tinted gradient behind content */
+/* Base gradient behind content */
 .grain-base::before {
   content: '';
   position: fixed;
@@ -366,7 +367,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   );
 }
 
-/* Layer 2: noise texture behind content */
+/* Base noise behind content */
 .grain-base::after {
   content: '';
   position: fixed;
@@ -381,23 +382,44 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   animation: grain-drift 8s ease-in-out infinite;
 }
 
-/* Layer 3: film grain on top of everything — unifies all elements */
-.grain-film {
-  position: fixed;
-  inset: -5%;
-  width: 110%;
-  height: 110%;
+/* Per-surface grain for layout areas — adds its own noise texture via ::after */
+.grain-surface {
+  position: relative;
+  overflow: hidden;
+}
+.grain-surface::after {
+  content: '';
+  position: absolute;
+  inset: -10%;
+  width: 120%;
+  height: 120%;
   pointer-events: none;
-  z-index: 9999;
+  z-index: 1;
   background: white;
-  filter: url(#grain-coarse) contrast(200%) brightness(80%);
-  opacity: calc(var(--grain-opacity, 0.04) * 0.35);
-  mix-blend-mode: overlay;
-  animation: grain-drift 12s ease-in-out infinite reverse;
+  filter: url(#grain-fine) contrast(170%) brightness(100%);
+  opacity: var(--grain-opacity, 0.04);
+  animation: grain-drift 6s ease-in-out infinite;
+  border-radius: inherit;
 }
 
-/* Backdrop blur on translucent surfaces — grain behind them swims and softens */
+/* Per-surface grain for cards + backdrop blur */
 .grain-glass {
+  position: relative;
+  overflow: hidden;
   -webkit-backdrop-filter: blur(12px) saturate(120%);
   backdrop-filter: blur(12px) saturate(120%);
+}
+.grain-glass::after {
+  content: '';
+  position: absolute;
+  inset: -10%;
+  width: 120%;
+  height: 120%;
+  pointer-events: none;
+  z-index: 1;
+  background: white;
+  filter: url(#grain-coarse) contrast(200%) brightness(100%);
+  opacity: calc(var(--grain-opacity, 0.04) * 0.7);
+  animation: grain-drift 10s ease-in-out infinite reverse;
+  border-radius: inherit;
 }
