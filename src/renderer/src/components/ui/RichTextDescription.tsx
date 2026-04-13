@@ -69,7 +69,7 @@ function InnerEditor({ initialContent, onChange, minHeight = '5.5lh', autoFocus 
       .use(gfm)
       .use(history)
       .use(listener),
-    [initialContent]
+    []
   )
 
   const runCommand = useCallback(

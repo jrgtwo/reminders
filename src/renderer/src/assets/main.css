@@ -332,12 +332,26 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
 }
 
-/* Grainy texture — full-viewport layers that bleed through translucent surfaces */
+/* ─── Grainy texture system ──────────────────────────────────────────────────
+   Three layers create a unified film-grain atmosphere:
+   1. Base gradient  — accent-tinted, behind content (z-index 0)
+   2. Base noise     — behind content, bleeds through translucent surfaces (z-index 0)
+   3. Film overlay   — on TOP of everything, wraps all elements into one scene (z-index 9999)
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* Animated grain — slowly shifts the noise for a living texture */
+@keyframes grain-drift {
+  0%, 100% { transform: translate(0, 0); }
+  25%      { transform: translate(-2%, 1%); }
+  50%      { transform: translate(1%, -2%); }
+  75%      { transform: translate(-1%, 2%); }
+}
+
 .grain-base {
   position: relative;
 }
 
-/* Fixed gradient that flows across the entire viewport */
+/* Layer 1: accent-tinted gradient behind content */
 .grain-base::before {
   content: '';
   position: fixed;
@@ -352,14 +366,38 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   );
 }
 
-/* Fixed noise texture across the entire viewport */
+/* Layer 2: noise texture behind content */
 .grain-base::after {
   content: '';
   position: fixed;
-  inset: 0;
+  inset: -5%;
+  width: 110%;
+  height: 110%;
   pointer-events: none;
   z-index: 0;
   background: white;
   filter: url(#grain-fine) contrast(170%) brightness(100%);
   opacity: var(--grain-opacity, 0.04);
+  animation: grain-drift 8s ease-in-out infinite;
+}
+
+/* Layer 3: film grain on top of everything — unifies all elements */
+.grain-film {
+  position: fixed;
+  inset: -5%;
+  width: 110%;
+  height: 110%;
+  pointer-events: none;
+  z-index: 9999;
+  background: white;
+  filter: url(#grain-coarse) contrast(200%) brightness(80%);
+  opacity: calc(var(--grain-opacity, 0.04) * 0.35);
+  mix-blend-mode: overlay;
+  animation: grain-drift 12s ease-in-out infinite reverse;
+}
+
+/* Backdrop blur on translucent surfaces — grain behind them swims and softens */
+.grain-glass {
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+  backdrop-filter: blur(12px) saturate(120%);
 }

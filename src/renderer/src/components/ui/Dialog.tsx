@@ -11,7 +11,7 @@ export default function Dialog({ title, onClose, children }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-[var(--bg-surface)] sm:rounded-xl shadow-xl p-6 w-full sm:max-w-lg sm:mx-4 sm:max-h-[90vh] h-full sm:h-auto overflow-y-auto">
+      <div className="relative bg-[var(--bg-surface)] sm:rounded-xl shadow-xl p-6 w-full sm:max-w-lg sm:mx-4 sm:max-h-[90vh] h-full sm:h-auto overflow-y-auto grain-glass">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
           <button

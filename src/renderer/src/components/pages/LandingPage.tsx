@@ -11,6 +11,7 @@ import {
   Lock
 } from 'lucide-react'
 import logo from '../../assets/logo.svg'
+import GrainFilter from '../ui/GrainOverlay'
 
 const FEATURES = [
   {
@@ -140,7 +141,8 @@ export default function LandingPage() {
     navigate('/')
   }
   return (
-    <main className="min-h-screen bg-[#0d1117] text-slate-100 overflow-auto">
+    <main className="min-h-screen bg-[#0d1117] text-slate-100 overflow-auto grain-base">
+      <GrainFilter />
       {/* Hero */}
       <section className="relative flex flex-col items-center justify-center px-6 pt-20 pb-16 md:pt-28 md:pb-24">
         <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
@@ -151,7 +153,7 @@ export default function LandingPage() {
             Calendar. Reminders. Notes. Todos. One app, on your device, under your control — no
             account required.
           </p>
-          <div className="max-w-lg mb-10 px-4 py-3 rounded-lg bg-[#e8a045]/[0.08] border border-[#e8a045]/20 border-b-[3px] border-b-[#e8a045]/30 text-[#e8a045]/80 text-sm leading-relaxed text-left btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-[#e8a045]/35">
+          <div className="max-w-lg mb-10 px-4 py-3 rounded-lg bg-[#e8a045]/[0.08] border border-[#e8a045]/20 border-b-[3px] border-b-[#e8a045]/30 text-[#e8a045]/80 text-sm leading-relaxed text-left btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-[#e8a045]/35 grain-glass">
             <p className="font-medium text-[#e8a045] mb-1">Beta</p>
             <p>
               Access to all features is currently limited while we finish beta testing. Full
@@ -179,7 +181,7 @@ export default function LandingPage() {
           {FEATURES.map((f) => (
             <div
               key={f.title}
-              className="flex flex-col gap-3 p-5 rounded-xl bg-white/[0.03] border border-white/[0.06] border-b-[3px] border-b-white/[0.12] btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20"
+              className="flex flex-col gap-3 p-5 rounded-xl bg-white/[0.05] border border-white/[0.06] border-b-[3px] border-b-white/[0.12] btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20 grain-glass"
             >
               <f.icon size={22} className="text-white/60" />
               <h2 className="text-sm font-semibold text-white/80">{f.title}</h2>
@@ -203,7 +205,7 @@ export default function LandingPage() {
             {FEATURE_DETAILS.map((f, i) => (
               <div
                 key={f.title}
-                className={`flex flex-col md:flex-row gap-6 items-start p-6 rounded-xl bg-white/[0.03] border border-white/[0.06] border-b-[3px] border-b-white/[0.12] btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20 ${
+                className={`flex flex-col md:flex-row gap-6 items-start p-6 rounded-xl bg-white/[0.05] border border-white/[0.06] border-b-[3px] border-b-white/[0.12] btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20 grain-glass ${
                   i % 2 === 1 ? 'md:flex-row-reverse' : ''
                 }`}
               >
@@ -242,11 +244,11 @@ export default function LandingPage() {
             phone.
           </p>
           <div className="flex items-center justify-center gap-8 text-white/55">
-            <div className="flex flex-col items-center gap-2 p-4 rounded-xl border border-white/[0.06] border-b-[3px] border-b-white/[0.12] bg-white/[0.03] btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20">
+            <div className="flex flex-col items-center gap-2 p-4 rounded-xl border border-white/[0.06] border-b-[3px] border-b-white/[0.12] bg-white/[0.05] btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20 grain-glass">
               <Monitor size={28} />
               <span className="text-xs">Desktop</span>
             </div>
-            <div className="flex flex-col items-center gap-2 p-4 rounded-xl border border-white/[0.06] border-b-[3px] border-b-white/[0.12] bg-white/[0.03] btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20">
+            <div className="flex flex-col items-center gap-2 p-4 rounded-xl border border-white/[0.06] border-b-[3px] border-b-white/[0.12] bg-white/[0.05] btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20 grain-glass">
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -259,7 +261,7 @@ export default function LandingPage() {
               </svg>
               <span className="text-xs">Web</span>
             </div>
-            <div className="flex flex-col items-center gap-2 p-4 rounded-xl border border-white/[0.06] border-b-[3px] border-b-white/[0.12] bg-white/[0.03] btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20">
+            <div className="flex flex-col items-center gap-2 p-4 rounded-xl border border-white/[0.06] border-b-[3px] border-b-white/[0.12] bg-white/[0.05] btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20 grain-glass">
               <Smartphone size={28} />
               <span className="text-xs">Mobile</span>
             </div>
@@ -281,10 +283,10 @@ export default function LandingPage() {
             {TIERS.map((tier) => (
               <div
                 key={tier.name}
-                className={`relative flex flex-col p-6 rounded-xl border border-b-[3px] btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20 ${
+                className={`relative flex flex-col p-6 rounded-xl border border-b-[3px] btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20 grain-glass ${
                   tier.highlight
-                    ? 'bg-white/[0.06] border-[var(--accent)]/40 border-b-[var(--accent)]/50'
-                    : 'bg-white/[0.03] border-white/[0.06] border-b-white/[0.12]'
+                    ? 'bg-white/[0.08] border-[var(--accent)]/40 border-b-[var(--accent)]/50'
+                    : 'bg-white/[0.05] border-white/[0.06] border-b-white/[0.12]'
                 }`}
               >
                 {tier.highlight && (
