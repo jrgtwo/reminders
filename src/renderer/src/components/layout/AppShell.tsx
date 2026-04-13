@@ -7,7 +7,7 @@ import NotificationBanner from '../NotificationBanner'
 import { useAppShell } from './hooks/useAppShell'
 import logo from '../../assets/logo.svg'
 import logoCheckmark from '../../assets/logo-checkmark.svg'
-import GrainOverlay from '../ui/GrainOverlay'
+import GrainFilter from '../ui/GrainOverlay'
 
 function formatLastSynced(isoStr: string): string {
   const minutes = Math.floor((Date.now() - new Date(isoStr).getTime()) / 60_000)
@@ -34,8 +34,8 @@ export default function AppShell() {
   } = useAppShell()
 
   return (
-    <div className="flex flex-col h-screen bg-[var(--bg-app)] text-slate-900 dark:text-slate-100 relative overflow-hidden">
-      <GrainOverlay />
+    <div className="flex flex-col h-screen bg-[var(--bg-app)] text-slate-900 dark:text-slate-100 relative overflow-hidden grain-base">
+      <GrainFilter />
       {/* Top header */}
       <header className="relative flex flex-col border-b border-black/30 dark:border-black/60 shrink-0 bg-[var(--bg-header)]">
         {/* Full-width (lg+): single row, 3-col grid so search is truly centered */}

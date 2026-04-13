@@ -111,7 +111,9 @@ button, a { cursor: pointer; }
   --color-upcoming:      #3b82f6;
   --color-upcoming-muted: rgba(59, 130, 246, 0.08);
 
-  --grain-opacity:       0.25;
+  --grain-opacity:       0.06;
+  --grain-color-start:   rgba(59, 130, 246, 0.15);
+  --grain-color-end:     rgba(139, 92, 246, 0.10);
 
   /* Boost light-mode grays for readability on ~#eee backgrounds */
   --color-slate-300:     #94a3b8;   /* default #cbd5e1 → slate-400 level */
@@ -122,13 +124,13 @@ button, a { cursor: pointer; }
 .dark {
   --bg-app:              #0d1117;
   --bg-header:           #010409;
-  --bg-surface:          #0e1117;
-  --bg-surface-muted:    #0b0d11;
-  --bg-surface-selected: #141c2e;
+  --bg-surface:          rgba(14, 17, 23, 0.85);
+  --bg-surface-muted:    rgba(11, 13, 17, 0.88);
+  --bg-surface-selected: rgba(20, 28, 46, 0.85);
   --bg-grid:             rgba(255, 255, 255, 0.04);
-  --bg-search:           #0e1420;
-  --bg-card:             #161b22;
-  --bg-elevated:         #21262d;
+  --bg-search:           rgba(14, 20, 32, 0.90);
+  --bg-card:             rgba(22, 27, 34, 0.88);
+  --bg-elevated:         rgba(33, 38, 45, 0.88);
   --border:              rgba(255, 255, 255, 0.12);
   --accent:              #5b9cf5;
   --accent-hover:        #6dafff;
@@ -138,19 +140,21 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(91, 156, 245, 0.08);
   --color-upcoming:      #6498c8;
   --color-upcoming-muted: rgba(100, 152, 200, 0.08);
-  --grain-opacity:       0.35;
+  --grain-opacity:       0.10;
+  --grain-color-start:   rgba(91, 156, 245, 0.12);
+  --grain-color-end:     rgba(120, 80, 220, 0.08);
 }
 
 .theme-warm {
   --bg-app:              #18150f;
   --bg-header:           #100e0a;
-  --bg-surface:          #1e1a14;
-  --bg-surface-muted:    #16130e;
-  --bg-surface-selected: #2a2215;
+  --bg-surface:          rgba(30, 26, 20, 0.85);
+  --bg-surface-muted:    rgba(22, 19, 14, 0.88);
+  --bg-surface-selected: rgba(42, 34, 21, 0.85);
   --bg-grid:             rgba(255, 255, 255, 0.04);
-  --bg-search:           #1e1a14;
-  --bg-card:             #252019;
-  --bg-elevated:         #2e2820;
+  --bg-search:           rgba(30, 26, 20, 0.90);
+  --bg-card:             rgba(37, 32, 25, 0.88);
+  --bg-elevated:         rgba(46, 40, 32, 0.88);
   --border:              rgba(255, 255, 255, 0.10);
   --accent:              #e0924a;
   --accent-hover:        #e8a35e;
@@ -160,19 +164,21 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(224, 146, 74, 0.08);
   --color-upcoming:      #6ea88e;
   --color-upcoming-muted: rgba(110, 168, 142, 0.10);
-  --grain-opacity:       0.40;
+  --grain-opacity:       0.12;
+  --grain-color-start:   rgba(224, 146, 74, 0.15);
+  --grain-color-end:     rgba(180, 83, 40, 0.10);
 }
 
 .theme-midnight {
   --bg-app:              #000000;
   --bg-header:           #060606;
-  --bg-surface:          #0a0a0a;
-  --bg-surface-muted:    #050505;
-  --bg-surface-selected: #0f1929;
+  --bg-surface:          rgba(10, 10, 10, 0.85);
+  --bg-surface-muted:    rgba(5, 5, 5, 0.88);
+  --bg-surface-selected: rgba(15, 25, 41, 0.85);
   --bg-grid:             rgba(255, 255, 255, 0.03);
-  --bg-search:           #0a0a0a;
-  --bg-card:             #111111;
-  --bg-elevated:         #1a1a1a;
+  --bg-search:           rgba(10, 10, 10, 0.90);
+  --bg-card:             rgba(17, 17, 17, 0.88);
+  --bg-elevated:         rgba(26, 26, 26, 0.88);
   --border:              rgba(255, 255, 255, 0.08);
   --accent:              #4d90f7;
   --accent-hover:        #60a2ff;
@@ -182,20 +188,22 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(77, 144, 247, 0.08);
   --color-upcoming:      #5a8ec4;
   --color-upcoming-muted: rgba(90, 142, 196, 0.08);
-  --grain-opacity:       0.40;
+  --grain-opacity:       0.12;
+  --grain-color-start:   rgba(77, 144, 247, 0.12);
+  --grain-color-end:     rgba(100, 60, 200, 0.08);
 }
 
 /* Grey — pure neutral, no colour tint */
 .theme-grey {
   --bg-app:              #1a1a1a;
   --bg-header:           #111111;
-  --bg-surface:          #222222;
-  --bg-surface-muted:    #1a1a1a;
-  --bg-surface-selected: #2c2c2c;
+  --bg-surface:          rgba(34, 34, 34, 0.85);
+  --bg-surface-muted:    rgba(26, 26, 26, 0.88);
+  --bg-surface-selected: rgba(44, 44, 44, 0.85);
   --bg-grid:             rgba(255, 255, 255, 0.05);
-  --bg-search:           #222222;
-  --bg-card:             #282828;
-  --bg-elevated:         #333333;
+  --bg-search:           rgba(34, 34, 34, 0.90);
+  --bg-card:             rgba(40, 40, 40, 0.88);
+  --bg-elevated:         rgba(51, 51, 51, 0.88);
   --border:              rgba(255, 255, 255, 0.10);
   --accent:              #5a9fd5;
   --accent-hover:        #6db2e4;
@@ -205,20 +213,22 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(90, 159, 213, 0.08);
   --color-upcoming:      #6498c8;
   --color-upcoming-muted: rgba(100, 152, 200, 0.08);
-  --grain-opacity:       0.35;
+  --grain-opacity:       0.10;
+  --grain-color-start:   rgba(90, 159, 213, 0.10);
+  --grain-color-end:     rgba(120, 120, 160, 0.08);
 }
 
 /* GitHub Dim — mid-slate, softer than Dark */
 .theme-dim {
   --bg-app:              #22272e;
   --bg-header:           #1c2128;
-  --bg-surface:          #2d333b;
-  --bg-surface-muted:    #22272e;
-  --bg-surface-selected: #2a3448;
+  --bg-surface:          rgba(45, 51, 59, 0.85);
+  --bg-surface-muted:    rgba(34, 39, 46, 0.88);
+  --bg-surface-selected: rgba(42, 52, 72, 0.85);
   --bg-grid:             rgba(255, 255, 255, 0.05);
-  --bg-search:           #2d333b;
-  --bg-card:             #2d333b;
-  --bg-elevated:         #373e47;
+  --bg-search:           rgba(45, 51, 59, 0.90);
+  --bg-card:             rgba(45, 51, 59, 0.88);
+  --bg-elevated:         rgba(55, 62, 71, 0.88);
   --border:              rgba(255, 255, 255, 0.10);
   --accent:              #57a3fb;
   --accent-hover:        #6bb5ff;
@@ -228,20 +238,22 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(87, 163, 251, 0.08);
   --color-upcoming:      #6498c8;
   --color-upcoming-muted: rgba(100, 152, 200, 0.08);
-  --grain-opacity:       0.30;
+  --grain-opacity:       0.10;
+  --grain-color-start:   rgba(87, 163, 251, 0.10);
+  --grain-color-end:     rgba(140, 120, 200, 0.08);
 }
 
 /* Nord — Arctic blue-grey */
 .theme-nord {
   --bg-app:              #2e3440;
   --bg-header:           #242933;
-  --bg-surface:          #3b4252;
-  --bg-surface-muted:    #2e3440;
-  --bg-surface-selected: #3d4f6e;
+  --bg-surface:          rgba(59, 66, 82, 0.85);
+  --bg-surface-muted:    rgba(46, 52, 64, 0.88);
+  --bg-surface-selected: rgba(61, 79, 110, 0.85);
   --bg-grid:             rgba(255, 255, 255, 0.06);
-  --bg-search:           #3b4252;
-  --bg-card:             #3b4252;
-  --bg-elevated:         #434c5e;
+  --bg-search:           rgba(59, 66, 82, 0.90);
+  --bg-card:             rgba(59, 66, 82, 0.88);
+  --bg-elevated:         rgba(67, 76, 94, 0.88);
   --border:              rgba(255, 255, 255, 0.12);
   --accent:              #5e81ac;
   --accent-hover:        #7094be;
@@ -251,20 +263,22 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(94, 129, 172, 0.08);
   --color-upcoming:      #81a1c1;
   --color-upcoming-muted: rgba(129, 161, 193, 0.08);
-  --grain-opacity:       0.30;
+  --grain-opacity:       0.10;
+  --grain-color-start:   rgba(94, 129, 172, 0.12);
+  --grain-color-end:     rgba(136, 192, 208, 0.08);
 }
 
 /* Forest — dark green-tinted */
 .theme-forest {
   --bg-app:              #141f14;
   --bg-header:           #0d150d;
-  --bg-surface:          #1a271a;
-  --bg-surface-muted:    #111a11;
-  --bg-surface-selected: #1e3520;
+  --bg-surface:          rgba(26, 39, 26, 0.85);
+  --bg-surface-muted:    rgba(17, 26, 17, 0.88);
+  --bg-surface-selected: rgba(30, 53, 32, 0.85);
   --bg-grid:             rgba(255, 255, 255, 0.04);
-  --bg-search:           #1a271a;
-  --bg-card:             #1f2e1f;
-  --bg-elevated:         #263826;
+  --bg-search:           rgba(26, 39, 26, 0.90);
+  --bg-card:             rgba(31, 46, 31, 0.88);
+  --bg-elevated:         rgba(38, 56, 38, 0.88);
   --border:              rgba(255, 255, 255, 0.10);
   --accent:              #6bb880;
   --accent-hover:        #7cc890;
@@ -274,20 +288,22 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(107, 184, 128, 0.08);
   --color-upcoming:      #6498c8;
   --color-upcoming-muted: rgba(100, 152, 200, 0.08);
-  --grain-opacity:       0.40;
+  --grain-opacity:       0.12;
+  --grain-color-start:   rgba(107, 184, 128, 0.12);
+  --grain-color-end:     rgba(60, 140, 85, 0.08);
 }
 
 /* Dusk — deep purple-violet */
 .theme-dusk {
   --bg-app:              #16101e;
   --bg-header:           #0f0a16;
-  --bg-surface:          #1e1528;
-  --bg-surface-muted:    #130e1a;
-  --bg-surface-selected: #2a1a3e;
+  --bg-surface:          rgba(30, 21, 40, 0.85);
+  --bg-surface-muted:    rgba(19, 14, 26, 0.88);
+  --bg-surface-selected: rgba(42, 26, 62, 0.85);
   --bg-grid:             rgba(255, 255, 255, 0.04);
-  --bg-search:           #1e1528;
-  --bg-card:             #221630;
-  --bg-elevated:         #2c1e3e;
+  --bg-search:           rgba(30, 21, 40, 0.90);
+  --bg-card:             rgba(34, 22, 48, 0.88);
+  --bg-elevated:         rgba(44, 30, 62, 0.88);
   --border:              rgba(255, 255, 255, 0.10);
   --accent:              #9b6dd4;
   --accent-hover:        #ad80e0;
@@ -297,7 +313,9 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(155, 109, 212, 0.08);
   --color-upcoming:      #7a9ec8;
   --color-upcoming-muted: rgba(122, 158, 200, 0.08);
-  --grain-opacity:       0.45;
+  --grain-opacity:       0.14;
+  --grain-color-start:   rgba(155, 109, 212, 0.15);
+  --grain-color-end:     rgba(200, 80, 160, 0.10);
 }
 
 /* Native date/time picker indicator — make visible in dark themes */
@@ -314,16 +332,34 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
 }
 
-/* Grainy texture overlay — adds organic film-grain to backgrounds */
-.grain-overlay {
+/* Grainy texture — full-viewport layers that bleed through translucent surfaces */
+.grain-base {
+  position: relative;
+}
+
+/* Fixed gradient that flows across the entire viewport */
+.grain-base::before {
+  content: '';
   position: fixed;
   inset: 0;
-  z-index: 9999;
   pointer-events: none;
-  opacity: var(--grain-opacity, 0.04);
-  mix-blend-mode: soft-light;
+  z-index: 0;
+  background: linear-gradient(
+    135deg,
+    var(--grain-color-start, transparent) 0%,
+    transparent 40%,
+    var(--grain-color-end, transparent) 100%
+  );
 }
-.grain-overlay > svg {
-  width: 100%;
-  height: 100%;
+
+/* Fixed noise texture across the entire viewport */
+.grain-base::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: white;
+  filter: url(#grain-fine) contrast(170%) brightness(100%);
+  opacity: var(--grain-opacity, 0.04);
 }

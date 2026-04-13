@@ -1,17 +1,25 @@
-export default function GrainOverlay() {
+export default function GrainFilter() {
   return (
-    <div className="grain-overlay" aria-hidden="true">
-      <svg xmlns="http://www.w3.org/2000/svg">
-        <filter id="grain">
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.65"
-            numOctaves="3"
-            stitchTiles="stitch"
-          />
-        </filter>
-        <rect width="100%" height="100%" filter="url(#grain)" />
-      </svg>
-    </div>
+    <svg
+      aria-hidden="true"
+      style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }}
+    >
+      <filter id="grain-fine">
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.70"
+          numOctaves="3"
+          stitchTiles="stitch"
+        />
+      </filter>
+      <filter id="grain-coarse">
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.25"
+          numOctaves="2"
+          stitchTiles="stitch"
+        />
+      </filter>
+    </svg>
   )
 }
