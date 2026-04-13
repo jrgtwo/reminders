@@ -111,7 +111,7 @@ button, a { cursor: pointer; }
   --color-upcoming:      #3b82f6;
   --color-upcoming-muted: rgba(59, 130, 246, 0.08);
 
-  --grain-opacity:       0.04;
+  --grain-opacity:       0.25;
 
   /* Boost light-mode grays for readability on ~#eee backgrounds */
   --color-slate-300:     #94a3b8;   /* default #cbd5e1 → slate-400 level */
@@ -138,7 +138,7 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(91, 156, 245, 0.08);
   --color-upcoming:      #6498c8;
   --color-upcoming-muted: rgba(100, 152, 200, 0.08);
-  --grain-opacity:       0.06;
+  --grain-opacity:       0.35;
 }
 
 .theme-warm {
@@ -160,7 +160,7 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(224, 146, 74, 0.08);
   --color-upcoming:      #6ea88e;
   --color-upcoming-muted: rgba(110, 168, 142, 0.10);
-  --grain-opacity:       0.08;
+  --grain-opacity:       0.40;
 }
 
 .theme-midnight {
@@ -182,7 +182,7 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(77, 144, 247, 0.08);
   --color-upcoming:      #5a8ec4;
   --color-upcoming-muted: rgba(90, 142, 196, 0.08);
-  --grain-opacity:       0.07;
+  --grain-opacity:       0.40;
 }
 
 /* Grey — pure neutral, no colour tint */
@@ -205,7 +205,7 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(90, 159, 213, 0.08);
   --color-upcoming:      #6498c8;
   --color-upcoming-muted: rgba(100, 152, 200, 0.08);
-  --grain-opacity:       0.06;
+  --grain-opacity:       0.35;
 }
 
 /* GitHub Dim — mid-slate, softer than Dark */
@@ -228,7 +228,7 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(87, 163, 251, 0.08);
   --color-upcoming:      #6498c8;
   --color-upcoming-muted: rgba(100, 152, 200, 0.08);
-  --grain-opacity:       0.05;
+  --grain-opacity:       0.30;
 }
 
 /* Nord — Arctic blue-grey */
@@ -251,7 +251,7 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(94, 129, 172, 0.08);
   --color-upcoming:      #81a1c1;
   --color-upcoming-muted: rgba(129, 161, 193, 0.08);
-  --grain-opacity:       0.05;
+  --grain-opacity:       0.30;
 }
 
 /* Forest — dark green-tinted */
@@ -274,7 +274,7 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(107, 184, 128, 0.08);
   --color-upcoming:      #6498c8;
   --color-upcoming-muted: rgba(100, 152, 200, 0.08);
-  --grain-opacity:       0.07;
+  --grain-opacity:       0.40;
 }
 
 /* Dusk — deep purple-violet */
@@ -297,7 +297,7 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(155, 109, 212, 0.08);
   --color-upcoming:      #7a9ec8;
   --color-upcoming-muted: rgba(122, 158, 200, 0.08);
-  --grain-opacity:       0.08;
+  --grain-opacity:       0.45;
 }
 
 /* Native date/time picker indicator — make visible in dark themes */
@@ -321,6 +321,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   z-index: 9999;
   pointer-events: none;
   opacity: var(--grain-opacity, 0.04);
+  mix-blend-mode: overlay;
 }
 .grain-overlay > svg {
   width: 100%;
