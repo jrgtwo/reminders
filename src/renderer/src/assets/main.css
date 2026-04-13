@@ -111,6 +111,8 @@ button, a { cursor: pointer; }
   --color-upcoming:      #3b82f6;
   --color-upcoming-muted: rgba(59, 130, 246, 0.08);
 
+  --grain-opacity:       0.04;
+
   /* Boost light-mode grays for readability on ~#eee backgrounds */
   --color-slate-300:     #94a3b8;   /* default #cbd5e1 → slate-400 level */
   --color-slate-400:     #64748b;   /* default #94a3b8 → slate-500 level */
@@ -136,6 +138,7 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(91, 156, 245, 0.08);
   --color-upcoming:      #6498c8;
   --color-upcoming-muted: rgba(100, 152, 200, 0.08);
+  --grain-opacity:       0.06;
 }
 
 .theme-warm {
@@ -157,6 +160,7 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(224, 146, 74, 0.08);
   --color-upcoming:      #6ea88e;
   --color-upcoming-muted: rgba(110, 168, 142, 0.10);
+  --grain-opacity:       0.08;
 }
 
 .theme-midnight {
@@ -178,6 +182,7 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(77, 144, 247, 0.08);
   --color-upcoming:      #5a8ec4;
   --color-upcoming-muted: rgba(90, 142, 196, 0.08);
+  --grain-opacity:       0.07;
 }
 
 /* Grey — pure neutral, no colour tint */
@@ -200,6 +205,7 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(90, 159, 213, 0.08);
   --color-upcoming:      #6498c8;
   --color-upcoming-muted: rgba(100, 152, 200, 0.08);
+  --grain-opacity:       0.06;
 }
 
 /* GitHub Dim — mid-slate, softer than Dark */
@@ -222,6 +228,7 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(87, 163, 251, 0.08);
   --color-upcoming:      #6498c8;
   --color-upcoming-muted: rgba(100, 152, 200, 0.08);
+  --grain-opacity:       0.05;
 }
 
 /* Nord — Arctic blue-grey */
@@ -244,6 +251,7 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(94, 129, 172, 0.08);
   --color-upcoming:      #81a1c1;
   --color-upcoming-muted: rgba(129, 161, 193, 0.08);
+  --grain-opacity:       0.05;
 }
 
 /* Forest — dark green-tinted */
@@ -266,6 +274,7 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(107, 184, 128, 0.08);
   --color-upcoming:      #6498c8;
   --color-upcoming-muted: rgba(100, 152, 200, 0.08);
+  --grain-opacity:       0.07;
 }
 
 /* Dusk — deep purple-violet */
@@ -288,6 +297,7 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(155, 109, 212, 0.08);
   --color-upcoming:      #7a9ec8;
   --color-upcoming-muted: rgba(122, 158, 200, 0.08);
+  --grain-opacity:       0.08;
 }
 
 /* Native date/time picker indicator — make visible in dark themes */
@@ -302,4 +312,17 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
   opacity: 0.4;
   cursor: pointer;
+}
+
+/* Grainy texture overlay — adds organic film-grain to backgrounds */
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: var(--grain-opacity, 0.04);
+}
+.grain-overlay > svg {
+  width: 100%;
+  height: 100%;
 }
