@@ -47,7 +47,7 @@ export default function LeftSidebar() {
       <li key={`${id}-${dateStr}`}>
         <button
           onClick={() => navigate(`/day/${dateStr}`, { state: { tab: 'reminders' } })}
-          className={`w-full text-left px-3 py-2.5 rounded-xl btn-3d group hover:-translate-y-[3px] dark:hover:brightness-125 dark:hover:border-white/25 ${
+          className={`w-full text-left px-3 py-2.5 rounded-xl btn-3d group hover:-translate-y-[3px] dark:hover:brightness-125 dark:hover:border-white/25 grain-surface ${
             variant === 'overdue'
               ? 'bg-white dark:bg-white/[0.04] border border-red-200/60 dark:border-[#e8a045]/[0.12] border-b-[2.5px] border-b-red-300/60 dark:border-b-[#e8a045]/[0.25] hover:bg-red-50 dark:hover:bg-[#e8a045]/[0.08]'
               : 'bg-white dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-300/80 dark:border-b-white/[0.15] hover:bg-slate-50 dark:hover:bg-white/[0.07]'
@@ -72,7 +72,7 @@ export default function LeftSidebar() {
   return (
     <aside
       ref={asideRef}
-      className="relative h-full flex flex-col border-r border-slate-300/60 dark:border-white/[0.07] overflow-hidden bg-[var(--bg-app)] transition-[width] duration-200 grain-surface"
+      className="relative h-full flex flex-col border-r border-slate-300/60 dark:border-white/[0.07] overflow-hidden bg-[var(--bg-app)] transition-[width] duration-200"
       style={{ width: leftOpen ? width : 44 }}
     >
       {/* Header */}

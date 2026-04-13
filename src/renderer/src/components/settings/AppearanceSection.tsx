@@ -28,7 +28,7 @@ export default function AppearanceSection({
       <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
         Appearance
       </h2>
-      <div className="p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)] space-y-3">
+      <div className="p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)] grain-surface space-y-3">
         <p className="text-sm font-medium">Theme</p>
         <div className="grid grid-cols-4 gap-3">
           {themes.map(({ id, label, header, body }) => (
@@ -56,7 +56,7 @@ export default function AppearanceSection({
           ))}
         </div>
       </div>
-      <div className="p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
+      <div className="p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)] grain-surface">
         <div className="flex items-center justify-between">
           <p className="text-sm font-medium">Time format</p>
           <div className="flex items-center gap-1 p-1 rounded-lg bg-gray-200 dark:bg-[var(--bg-elevated)]">

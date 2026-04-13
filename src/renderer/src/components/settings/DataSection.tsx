@@ -52,7 +52,7 @@ export default function DataSection({
         Data
       </h2>
       <div className="space-y-2">
-        <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
+        <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)] grain-surface">
           <div>
             <p className="text-sm font-medium">Export data</p>
             <p className="text-xs text-gray-400 mt-0.5">
@@ -64,7 +64,7 @@ export default function DataSection({
             {exporting ? 'Exporting…' : 'Export'}
           </Button>
         </div>
-        <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
+        <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)] grain-surface">
           <div>
             <p className="text-sm font-medium">Import data</p>
             <p className="text-xs text-gray-400 mt-0.5">
@@ -76,7 +76,7 @@ export default function DataSection({
             {importing ? 'Importing…' : 'Import'}
           </Button>
         </div>
-        <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
+        <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)] grain-surface">
           <div>
             <p className="text-sm font-medium">Export as iCal</p>
             <p className="text-xs text-gray-400 mt-0.5">
@@ -89,7 +89,7 @@ export default function DataSection({
             {exportingIcal ? 'Exporting…' : 'Export .ics'}
           </Button>
         </div>
-        <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
+        <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)] grain-surface">
           <div>
             <p className="text-sm font-medium">Import from iCal</p>
             <p className="text-xs text-gray-400 mt-0.5">
@@ -115,7 +115,7 @@ export default function DataSection({
           </div>
         )}
         {isLoggedIn && (
-          <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
+          <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)] grain-surface">
             <div className="flex items-center gap-3">
               <RotateCcw size={20} className="text-gray-400 dark:text-gray-500 shrink-0" />
               <div>
@@ -156,7 +156,7 @@ export default function DataSection({
             )}
           </div>
         )}
-        <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
+        <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)] grain-surface">
           <div className="flex items-center gap-3">
             <Trash2 size={20} className="text-gray-400 dark:text-gray-500 shrink-0" />
             <div>

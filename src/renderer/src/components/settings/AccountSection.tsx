@@ -43,7 +43,7 @@ export default function AccountSection({
         Account
       </h2>
       {isLoggedIn && user ? (
-        <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
+        <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)] grain-surface">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-[var(--accent)] flex items-center justify-center text-[#f0f0f0] text-sm font-medium">
               {(user.email ?? '?')[0].toUpperCase()}

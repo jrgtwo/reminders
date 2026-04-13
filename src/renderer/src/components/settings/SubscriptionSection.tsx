@@ -23,7 +23,7 @@ export default function SubscriptionSection({
       <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
         Subscription
       </h2>
-      <div className="p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
+      <div className="p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)] grain-surface">
         {plan === 'pro' || plan === 'comp' ? (
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
