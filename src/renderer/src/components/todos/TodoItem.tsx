@@ -1,6 +1,7 @@
 import { AlignLeft, Check, GripVertical, Pencil, Trash2 } from 'lucide-react'
 import type { TodoListItem } from '../../types/models'
 import MarkdownView from '../ui/MarkdownView'
+import RichTextDescription from '../ui/RichTextDescription'
 import { useTodoItem } from './hooks/useTodoItem'
 
 interface Props {
@@ -30,8 +31,6 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete, isEditing, 
     commit,
     handleTitleKeyDown,
     toggleDescription,
-    handleDescBlur,
-    handleDescKeyDown,
     startEditingDesc,
   } = useTodoItem({ todo, isEditing, onSaveEdit, onCancelEdit, onSaveDesc })
 
@@ -130,15 +129,13 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete, isEditing, 
       {expanded && (
         <div className="pl-9 pr-3 pb-2">
           {editingDesc ? (
-            <textarea
-              autoFocus
+            <RichTextDescription
               value={draftDesc}
-              onChange={(e) => setDraftDesc(e.target.value)}
-              onBlur={handleDescBlur}
-              onKeyDown={handleDescKeyDown}
-              placeholder="Add a description…"
-              rows={3}
-              className="w-full bg-transparent text-[12px] leading-5 text-slate-600 dark:text-white/60 placeholder:text-slate-300 dark:placeholder:text-white/50 focus:outline-none resize-none"
+              onChange={(md) => {
+                setDraftDesc(md)
+                onSaveDesc(todo, md)
+              }}
+              autoFocus
             />
           ) : hasDescription ? (
             <div onClick={startEditingDesc} className="cursor-text">

@@ -2,6 +2,7 @@ import type { TodoListItem } from '../../types/models'
 import Button from '../ui/Button'
 import Dialog from '../ui/Dialog'
 import Input from '../ui/Input'
+import RichTextDescription from '../ui/RichTextDescription'
 import { useTodoForm } from './hooks/useTodoForm'
 
 interface Props {
@@ -33,16 +34,11 @@ export default function TodoForm({ item, listId, onSave, onClose }: Props) {
         <div className="flex flex-col gap-1">
           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Description{' '}
-            <span className="font-normal text-gray-400 dark:text-gray-500">
-              (optional — supports Markdown)
-            </span>
+            <span className="font-normal text-gray-400 dark:text-gray-500">(optional)</span>
           </label>
-          <textarea
+          <RichTextDescription
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Add details... **bold**, _italic_, `code`, - lists"
-            rows={4}
-            className="rounded-lg border border-gray-300 dark:border-[var(--border)] bg-white dark:bg-[var(--bg-card)] px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-[var(--accent-ring)] focus:ring-1 focus:ring-[var(--accent-ring)] resize-none font-mono"
+            onChange={setDescription}
           />
         </div>
 

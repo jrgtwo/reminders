@@ -1,6 +1,7 @@
 import { RefreshCw, Trash2 } from 'lucide-react'
 import type { Reminder } from '../../types/models'
 import Button from '../ui/Button'
+import RichTextDescription from '../ui/RichTextDescription'
 import Toggle from '../ui/Toggle'
 import RecurrenceEditor from './RecurrenceEditor'
 import { useReminderInlineEditor } from './hooks/useReminderInlineEditor'
@@ -63,12 +64,9 @@ export default function ReminderInlineEditor({ reminder, onSave, onCancel, onDel
       </div>
 
       {/* Description */}
-      <textarea
+      <RichTextDescription
         value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        placeholder="Description (optional)"
-        rows={2}
-        className="text-[13px] text-slate-500 dark:text-white/50 placeholder:text-slate-300 dark:placeholder:text-white/50 bg-transparent border border-slate-200 dark:border-white/[0.08] rounded-lg px-3 py-2 focus:outline-none focus:border-white/25 resize-none w-full transition-colors"
+        onChange={setDescription}
       />
 
       {/* Date row */}
