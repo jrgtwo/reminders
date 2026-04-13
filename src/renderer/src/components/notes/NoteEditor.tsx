@@ -417,7 +417,7 @@ export default function NoteEditor({ note, onChange, onDelete, onBack }: Props) 
   if (!loaded) return <div className="mb-8 min-h-[200px]" />
 
   return (
-    <div className="mb-8 min-h-[400px] bg-white/[0.03] dark:bg-white/[0.03]">
+    <div className="mb-8 min-h-[400px] bg-white/[0.03] dark:bg-white/[0.03] grain-surface">
       {onBack && (
         <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100 dark:border-white/[0.05]">
           <button

@@ -15,7 +15,7 @@ export default function SecuritySection({
       <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
         Security
       </h2>
-      <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)] grain-surface">
+      <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
         <div className="flex items-center gap-3">
           <ShieldCheck size={20} className="text-gray-400 dark:text-gray-500 shrink-0" />
           <div>

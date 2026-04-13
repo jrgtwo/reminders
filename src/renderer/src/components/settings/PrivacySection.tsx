@@ -15,7 +15,7 @@ export default function PrivacySection() {
       <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
         Privacy
       </h2>
-      <div className="p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)] grain-surface space-y-4">
+      <div className="p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)] space-y-4">
         <label className="flex items-center justify-between cursor-pointer">
           <div>
             <p className="text-sm font-medium text-gray-900 dark:text-gray-100">

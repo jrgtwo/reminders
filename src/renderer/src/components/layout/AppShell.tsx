@@ -42,7 +42,7 @@ export default function AppShell() {
     >
       <GrainFilter />
       {/* Top header */}
-      <header className="relative flex flex-col border-b border-black/30 dark:border-black/60 shrink-0 bg-[var(--bg-header)]">
+      <header className="relative flex flex-col border-b border-black/30 dark:border-black/60 shrink-0 bg-[var(--bg-header)] grain-surface">
         {/* Full-width (lg+): single row, 3-col grid so search is truly centered */}
         <div className="hidden lg:grid lg:grid-cols-3 lg:items-center px-4 h-16">
           {/* Left: brand + stats */}
@@ -187,7 +187,7 @@ export default function AppShell() {
 
       <div className="flex flex-1 overflow-hidden">
         <SideNav />
-        <main className="flex-1 h-full overflow-auto bg-[var(--bg-app)]">
+        <main className="flex-1 h-full overflow-auto bg-[var(--bg-app)] grain-surface">
           <Outlet />
         </main>
       </div>

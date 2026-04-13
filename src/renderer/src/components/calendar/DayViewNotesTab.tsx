@@ -46,7 +46,7 @@ export default function DayViewNotesTab({
       {existingNotes.map((note) => (
         <div
           key={note.id}
-          className="bg-white dark:bg-white/[0.06] border border-slate-200/60 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-300/80 dark:border-b-white/[0.15] rounded-xl shadow-sm hover:-translate-y-[3px] dark:hover:brightness-125 dark:hover:border-white/25 btn-3d"
+          className="bg-white dark:bg-white/[0.06] border border-slate-200/60 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-300/80 dark:border-b-white/[0.15] rounded-xl shadow-sm hover:-translate-y-[3px] dark:hover:brightness-125 dark:hover:border-white/25 btn-3d grain-surface"
         >
           <button
             onClick={() => setEditingNoteId(note.id === editingNoteId ? null : note.id)}

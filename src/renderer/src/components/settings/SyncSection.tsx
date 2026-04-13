@@ -27,7 +27,7 @@ export default function SyncSection({
       <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
         Sync
       </h2>
-      <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)] grain-surface">
+      <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
         <div className="flex items-center gap-3">
           {syncStatus === 'error' ? (
             <CloudOff size={20} className="text-red-400" />
@@ -59,7 +59,7 @@ export default function SyncSection({
           {syncStatus === 'syncing' ? 'Syncing…' : 'Sync now'}
         </Button>
       </div>
-      <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)] grain-surface">
+      <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
         <div>
           <p className="text-sm font-medium">On login conflict</p>
           <p className="text-xs text-gray-400 mt-0.5">
