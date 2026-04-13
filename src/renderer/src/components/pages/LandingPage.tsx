@@ -151,7 +151,7 @@ export default function LandingPage() {
             Calendar. Reminders. Notes. Todos. One app, on your device, under your control — no
             account required.
           </p>
-          <div className="max-w-lg mb-10 px-4 py-3 rounded-lg bg-[#e8a045]/[0.08] border border-[#e8a045]/20 border-b-[3px] border-b-[#e8a045]/30 text-[#e8a045]/80 text-sm leading-relaxed text-left transition-[translate,filter,border-color] duration-200 ease-out hover:-translate-y-[3px] hover:brightness-125 hover:border-[#e8a045]/35 active:translate-y-[1px] active:brightness-100">
+          <div className="max-w-lg mb-10 px-4 py-3 rounded-lg bg-[#e8a045]/[0.08] border border-[#e8a045]/20 border-b-[3px] border-b-[#e8a045]/30 text-[#e8a045]/80 text-sm leading-relaxed text-left btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-[#e8a045]/35">
             <p className="font-medium text-[#e8a045] mb-1">Beta</p>
             <p>
               Access to all features is currently limited while we finish beta testing. Full
@@ -161,7 +161,7 @@ export default function LandingPage() {
           </div>
           <button
             onClick={onEnter}
-            className="group flex items-center gap-2 px-8 py-3.5 rounded-lg bg-white/10 hover:bg-white/[0.15] border border-white/[0.08] border-b-[3px] border-b-white/[0.15] text-white/90 text-base font-medium transition-[translate,filter,border-color,background-color] duration-200 ease-out hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20 active:translate-y-[1px] active:brightness-100"
+            className="group flex items-center gap-2 px-8 py-3.5 rounded-lg bg-white/10 hover:bg-white/[0.15] border border-white/[0.08] border-b-[3px] border-b-white/[0.15] text-white/90 text-base font-medium btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20"
           >
             Open the App
             <ChevronRight
@@ -179,7 +179,7 @@ export default function LandingPage() {
           {FEATURES.map((f) => (
             <div
               key={f.title}
-              className="flex flex-col gap-3 p-5 rounded-xl bg-white/[0.03] border border-white/[0.06] border-b-[3px] border-b-white/[0.12] transition-[translate,filter,border-color] duration-200 ease-out hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20 active:translate-y-[1px] active:brightness-100"
+              className="flex flex-col gap-3 p-5 rounded-xl bg-white/[0.03] border border-white/[0.06] border-b-[3px] border-b-white/[0.12] btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20"
             >
               <f.icon size={22} className="text-white/60" />
               <h2 className="text-sm font-semibold text-white/80">{f.title}</h2>
@@ -203,7 +203,7 @@ export default function LandingPage() {
             {FEATURE_DETAILS.map((f, i) => (
               <div
                 key={f.title}
-                className={`flex flex-col md:flex-row gap-6 items-start p-6 rounded-xl bg-white/[0.03] border border-white/[0.06] border-b-[3px] border-b-white/[0.12] transition-[translate,filter,border-color] duration-200 ease-out hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20 active:translate-y-[1px] active:brightness-100 ${
+                className={`flex flex-col md:flex-row gap-6 items-start p-6 rounded-xl bg-white/[0.03] border border-white/[0.06] border-b-[3px] border-b-white/[0.12] btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20 ${
                   i % 2 === 1 ? 'md:flex-row-reverse' : ''
                 }`}
               >
@@ -242,11 +242,11 @@ export default function LandingPage() {
             phone.
           </p>
           <div className="flex items-center justify-center gap-8 text-white/55">
-            <div className="flex flex-col items-center gap-2 p-4 rounded-xl border border-white/[0.06] border-b-[3px] border-b-white/[0.12] bg-white/[0.03] transition-[translate,filter,border-color] duration-200 ease-out hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20 active:translate-y-[1px] active:brightness-100">
+            <div className="flex flex-col items-center gap-2 p-4 rounded-xl border border-white/[0.06] border-b-[3px] border-b-white/[0.12] bg-white/[0.03] btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20">
               <Monitor size={28} />
               <span className="text-xs">Desktop</span>
             </div>
-            <div className="flex flex-col items-center gap-2 p-4 rounded-xl border border-white/[0.06] border-b-[3px] border-b-white/[0.12] bg-white/[0.03] transition-[translate,filter,border-color] duration-200 ease-out hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20 active:translate-y-[1px] active:brightness-100">
+            <div className="flex flex-col items-center gap-2 p-4 rounded-xl border border-white/[0.06] border-b-[3px] border-b-white/[0.12] bg-white/[0.03] btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20">
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -259,7 +259,7 @@ export default function LandingPage() {
               </svg>
               <span className="text-xs">Web</span>
             </div>
-            <div className="flex flex-col items-center gap-2 p-4 rounded-xl border border-white/[0.06] border-b-[3px] border-b-white/[0.12] bg-white/[0.03] transition-[translate,filter,border-color] duration-200 ease-out hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20 active:translate-y-[1px] active:brightness-100">
+            <div className="flex flex-col items-center gap-2 p-4 rounded-xl border border-white/[0.06] border-b-[3px] border-b-white/[0.12] bg-white/[0.03] btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20">
               <Smartphone size={28} />
               <span className="text-xs">Mobile</span>
             </div>
@@ -281,7 +281,7 @@ export default function LandingPage() {
             {TIERS.map((tier) => (
               <div
                 key={tier.name}
-                className={`relative flex flex-col p-6 rounded-xl border border-b-[3px] transition-[translate,filter,border-color] duration-200 ease-out hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20 active:translate-y-[1px] active:brightness-100 ${
+                className={`relative flex flex-col p-6 rounded-xl border border-b-[3px] btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20 ${
                   tier.highlight
                     ? 'bg-white/[0.06] border-[var(--accent)]/40 border-b-[var(--accent)]/50'
                     : 'bg-white/[0.03] border-white/[0.06] border-b-white/[0.12]'
@@ -310,7 +310,7 @@ export default function LandingPage() {
                 {tier.name === 'No Account' && (
                   <button
                     onClick={onEnter}
-                    className="mt-6 w-full py-2.5 rounded-lg bg-white/10 hover:bg-white/[0.15] border border-white/[0.08] border-b-[3px] border-b-white/[0.15] text-sm font-medium text-white/80 transition-[translate,filter,border-color,background-color] duration-200 ease-out hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20 active:translate-y-[1px] active:brightness-100"
+                    className="mt-6 w-full py-2.5 rounded-lg bg-white/10 hover:bg-white/[0.15] border border-white/[0.08] border-b-[3px] border-b-white/[0.15] text-sm font-medium text-white/80 btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20"
                   >
                     Get Started
                   </button>
@@ -318,7 +318,7 @@ export default function LandingPage() {
                 {tier.name === 'Free Account' && (
                   <button
                     onClick={onEnter}
-                    className="mt-6 w-full py-2.5 rounded-lg bg-white/10 hover:bg-white/[0.15] border border-white/[0.08] border-b-[3px] border-b-white/[0.15] text-sm font-medium text-white/80 transition-[translate,filter,border-color,background-color] duration-200 ease-out hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20 active:translate-y-[1px] active:brightness-100"
+                    className="mt-6 w-full py-2.5 rounded-lg bg-white/10 hover:bg-white/[0.15] border border-white/[0.08] border-b-[3px] border-b-white/[0.15] text-sm font-medium text-white/80 btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20"
                   >
                     Sign Up in Settings
                   </button>
@@ -326,7 +326,7 @@ export default function LandingPage() {
                 {tier.name === 'Pro' && (
                   <button
                     onClick={onEnter}
-                    className="mt-6 w-full py-2.5 rounded-lg bg-[var(--accent)]/20 hover:bg-[var(--accent)]/30 border border-[var(--accent)]/30 border-b-[3px] border-b-[var(--accent)]/40 text-sm font-medium text-[var(--accent)] transition-[translate,filter,border-color,background-color] duration-200 ease-out hover:-translate-y-[3px] hover:brightness-125 hover:border-[var(--accent)]/45 active:translate-y-[1px] active:brightness-100"
+                    className="mt-6 w-full py-2.5 rounded-lg bg-[var(--accent)]/20 hover:bg-[var(--accent)]/30 border border-[var(--accent)]/30 border-b-[3px] border-b-[var(--accent)]/40 text-sm font-medium text-[var(--accent)] btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-[var(--accent)]/45"
                   >
                     Try Free, Upgrade Later
                   </button>

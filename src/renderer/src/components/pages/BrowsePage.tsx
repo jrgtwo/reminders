@@ -65,7 +65,7 @@ function BrowseItem({
 
   return (
     <div
-      className={`group relative flex items-center gap-3 px-4 py-3 rounded-xl transition-[translate,box-shadow,background-color,border-color,filter] duration-200 ease-out cursor-pointer hover:-translate-y-[3px] hover:shadow-lg dark:hover:shadow-none dark:hover:brightness-125 dark:hover:border-white/25 active:translate-y-[1px] active:shadow-sm dark:active:shadow-none dark:active:brightness-100 ${
+      className={`group relative flex items-center gap-3 px-4 py-3 rounded-xl btn-3d cursor-pointer hover:-translate-y-[3px] dark:hover:brightness-125 dark:hover:border-white/25 ${
         active
           ? 'bg-white dark:bg-white/[0.04] border border-[var(--accent)]/20 dark:border-[var(--accent)]/[0.15] border-b-[2.5px] border-b-[var(--accent)]/30 dark:border-b-[var(--accent)]/[0.25]'
           : 'bg-white dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-300/80 dark:border-b-white/[0.15] hover:bg-slate-50 dark:hover:bg-white/[0.07]'
@@ -153,7 +153,7 @@ function BrowseFolderSection<
       <div key={folder.id}>
         <div
           onClick={() => onToggleFolder(folder.id)}
-          className="group flex items-center gap-2 w-full py-2.5 bg-white dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-300/80 dark:border-b-white/[0.15] hover:bg-slate-50 dark:hover:bg-white/[0.07] hover:-translate-y-[3px] hover:shadow-lg dark:hover:shadow-none dark:hover:brightness-125 dark:hover:border-white/25 active:translate-y-[1px] active:shadow-sm dark:active:shadow-none dark:active:brightness-100 transition-[translate,box-shadow,background-color,border-color,filter] duration-200 ease-out cursor-pointer rounded-xl mb-1"
+          className="group flex items-center gap-2 w-full py-2.5 bg-white dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-300/80 dark:border-b-white/[0.15] hover:bg-slate-50 dark:hover:bg-white/[0.07] hover:-translate-y-[3px] dark:hover:brightness-125 dark:hover:border-white/25 btn-3d cursor-pointer rounded-xl mb-1"
           style={{ paddingLeft: `${pl}px`, paddingRight: '12px' }}
         >
           {collapsed ? (

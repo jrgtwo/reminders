@@ -122,7 +122,7 @@ export default function AppShell() {
               className="flex flex-col leading-none hover:opacity-80 transition-opacity"
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
-              <img src={logoCheckmark} alt="Reminder Today Logo" className="w-8 mb-1" />
+              <img src={logo} alt="Reminder Today Logo" className="w-28 mb-1" />
             </button>
             <div className="flex items-center gap-2">
               {isLoggedIn && (

@@ -5,6 +5,65 @@
   to { transform: translateY(0); }
 }
 
+/* 3D button lift – stacked solid shadows build a sharp bottom edge (zero layout shift).
+   Edge color inherited from border-bottom via CSS variable. */
+.btn-3d {
+  --btn-edge: rgba(0, 0, 0, 0.18);
+  box-shadow:
+    0 1px 0 0 var(--btn-edge),
+    0 2px 0 0 var(--btn-edge),
+    0 0 0 0 transparent,
+    0 0 0 0 transparent,
+    0 0 0 0 transparent;
+  transition:
+    translate 200ms cubic-bezier(0, 0, 0.2, 1),
+    box-shadow 200ms cubic-bezier(0, 0, 0.2, 1),
+    background-color 200ms cubic-bezier(0, 0, 0.2, 1),
+    border-color 200ms cubic-bezier(0, 0, 0.2, 1),
+    filter 200ms cubic-bezier(0, 0, 0.2, 1),
+    opacity 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+.btn-3d:hover {
+  box-shadow:
+    0 1px 0 0 var(--btn-edge),
+    0 2px 0 0 var(--btn-edge),
+    0 3px 0 0 var(--btn-edge),
+    0 4px 0 0 var(--btn-edge),
+    0 5px 0 0 var(--btn-edge);
+}
+.btn-3d:active:not(:has(:active)),
+.btn-3d:has(button:active) {
+  box-shadow:
+    0 1px 0 0 var(--btn-edge),
+    0 0 0 0 transparent,
+    0 0 0 0 transparent,
+    0 0 0 0 transparent,
+    0 0 0 0 transparent;
+  translate: 0 1px;
+}
+:is(.dark) .btn-3d {
+  --btn-edge: #2e3340;
+  --btn-edge-deep: #252a35;
+}
+:is(.dark) .btn-3d:hover {
+  box-shadow:
+    0 1px 0 0 var(--btn-edge),
+    0 2px 0 0 var(--btn-edge),
+    0 3px 0 0 var(--btn-edge-deep),
+    0 4px 0 0 var(--btn-edge-deep),
+    0 5px 0 0 var(--btn-edge-deep);
+}
+:is(.dark) .btn-3d:active:not(:has(:active)),
+:is(.dark) .btn-3d:has(button:active) {
+  box-shadow:
+    0 1px 0 0 var(--btn-edge-deep),
+    0 0 0 0 transparent,
+    0 0 0 0 transparent,
+    0 0 0 0 transparent,
+    0 0 0 0 transparent;
+  filter: brightness(1);
+}
+
 html, body, #root {
   font-family: 'Inter Variable', 'Inter', system-ui, sans-serif;
   font-size: 18px;

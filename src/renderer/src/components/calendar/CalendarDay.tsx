@@ -39,7 +39,7 @@ export default function CalendarDay({
       onClick={onClick}
       className={[
         'relative flex flex-col items-start w-full text-left cursor-pointer rounded-lg overflow-hidden',
-        'transition-[opacity,box-shadow,filter,margin,border,translate] duration-200',
+        'transition-[opacity,box-shadow,filter,border,translate] duration-200',
         'border border-white/50 dark:border-white/[0.10] border-b-[3px] border-b-slate-300/60 dark:border-b-white/[0.18]',
         'hover:-translate-y-[3px] active:translate-y-[1px]',
         isSelected

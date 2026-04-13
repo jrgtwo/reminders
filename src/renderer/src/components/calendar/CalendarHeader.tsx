@@ -67,7 +67,7 @@ export default function CalendarHeader({
       <div className="flex items-center gap-2 pt-1 sm:pt-0">
         <button
           onClick={onToday}
-          className="px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all capitalize active:translate-y-[1.5px] bg-slate-50 dark:bg-white/[0.04] text-slate-400 dark:text-white/55 border-slate-200 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-250 dark:border-b-white/[0.12] hover:text-slate-600 dark:hover:text-white/60"
+          className="px-3 py-1.5 text-xs font-semibold rounded-lg border btn-3d capitalize hover:-translate-y-[3px] dark:hover:brightness-125 dark:hover:border-white/25 bg-slate-50 dark:bg-white/[0.04] text-slate-400 dark:text-white/55 border-slate-200 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-250 dark:border-b-white/[0.12] hover:text-slate-600 dark:hover:text-white/60"
         >
           Today
         </button>
@@ -77,7 +77,7 @@ export default function CalendarHeader({
               key={v}
               onClick={() => onViewChange(v)}
               className={[
-                'px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all capitalize active:translate-y-[1.5px]',
+                'px-3 py-1.5 text-xs font-semibold rounded-lg border btn-3d capitalize hover:-translate-y-[3px] dark:hover:brightness-125 dark:hover:border-white/25',
                 view === v
                   ? 'bg-white dark:bg-white/[0.12] text-slate-900 dark:text-white border-slate-200 dark:border-white/[0.12] border-b-[2.5px] border-b-slate-300 dark:border-b-white/[0.2] shadow-sm'
                   : 'bg-slate-50 dark:bg-white/[0.04] text-slate-400 dark:text-white/55 border-slate-200 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-250 dark:border-b-white/[0.12] hover:text-slate-600 dark:hover:text-white/60',
