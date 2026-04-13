@@ -45,7 +45,7 @@ export default function ReminderInlineEditor({ reminder, onSave, onCancel, onDel
   } = useReminderInlineEditor({ reminder, onSave })
 
   return (
-    <div className="px-4 py-4 rounded-b-xl bg-white dark:bg-white/[0.06] border border-t-0 border-slate-200/60 dark:border-white/[0.08] flex flex-col gap-3 grain-surface">
+    <div className="px-4 py-4 rounded-b-xl bg-white dark:bg-white/[0.06] border border-t-0 border-slate-200/60 dark:border-white/[0.08] flex flex-col gap-3">
       {/* Title */}
       <div>
         <input

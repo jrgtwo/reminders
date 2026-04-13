@@ -28,7 +28,7 @@ export default function CalendarHeader({
   const yearStr = isMonth ? String(displayDate.year) : ''
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-6 py-4 border-b border-slate-200 dark:border-white/[0.07] shrink-0 bg-[var(--bg-surface)] gap-2 grain-surface">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-6 py-4 border-b border-slate-200 dark:border-white/[0.07] shrink-0 bg-[var(--bg-surface)] gap-2">
       <div className="flex items-end gap-3">
         <div className="flex items-baseline gap-2.5 leading-none">
           <h2

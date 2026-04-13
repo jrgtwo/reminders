@@ -56,7 +56,7 @@ const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
       </div>
 
       {open && (
-        <div className="absolute top-full mt-1 left-0 right-0 z-50 bg-white dark:bg-[var(--bg-search)] dark:backdrop-blur-xl rounded-xl shadow-xl shadow-black/20 dark:shadow-black/50 border border-gray-200 dark:border-white/[0.1] overflow-hidden grain-surface">
+        <div className="absolute top-full mt-1 left-0 right-0 z-50 bg-white dark:bg-[var(--bg-search)] dark:backdrop-blur-xl rounded-xl shadow-xl shadow-black/20 dark:shadow-black/50 border border-gray-200 dark:border-white/[0.1] overflow-hidden">
           {results.reminders.length > 0 && (
             <>
               <div className="px-3 py-1.5 text-xs font-semibold text-gray-400 dark:text-white/55 uppercase tracking-wide border-b border-gray-100 dark:border-white/[0.07]">

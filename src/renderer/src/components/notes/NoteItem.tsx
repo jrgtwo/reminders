@@ -30,7 +30,7 @@ export default function NoteItem({ note, onEdit, onDelete }: Props) {
     <div
       ref={setNodeRef}
       style={style}
-      className="group mx-2 rounded-xl bg-white dark:bg-white/[0.04] border border-slate-200/60 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-300/80 dark:border-b-white/[0.15] hover:-translate-y-[3px] dark:hover:brightness-125 dark:hover:border-white/25 btn-3d grain-surface"
+      className="group mx-2 rounded-xl bg-white dark:bg-white/[0.04] border border-slate-200/60 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-300/80 dark:border-b-white/[0.15] hover:-translate-y-[3px] dark:hover:brightness-125 dark:hover:border-white/25 btn-3d"
     >
       {/* Main row */}
       <div className="flex items-center gap-1.5 px-3 py-1.5">
