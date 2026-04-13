@@ -367,20 +367,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   );
 }
 
-/* Base noise behind content */
-.grain-base::after {
-  content: '';
-  position: fixed;
-  inset: -5%;
-  width: 110%;
-  height: 110%;
-  pointer-events: none;
-  z-index: 0;
-  background: white;
-  filter: url(#grain-fine) contrast(170%) brightness(100%);
-  opacity: var(--grain-opacity, 0.04);
-  animation: grain-drift 8s ease-in-out infinite;
-}
 
 /* Per-surface grain for layout areas — adds its own noise texture via ::after */
 .grain-surface {
