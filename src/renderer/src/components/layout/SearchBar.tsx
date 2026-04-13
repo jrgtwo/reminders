@@ -51,7 +51,7 @@ const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
             }
           }}
           placeholder="Search… (/)"
-          className="w-full pl-8 pr-3 py-1.5 text-sm rounded-lg bg-gray-100 dark:bg-white/[0.08] border border-transparent dark:border-white/[0.1] focus:border-blue-400 dark:focus:border-white/25 focus:bg-white dark:focus:bg-white/[0.12] focus:outline-none focus:ring-1 focus:ring-blue-400/20 dark:focus:ring-white/15 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/30 transition-all"
+          className="w-full pl-8 pr-3 py-1.5 text-sm rounded-lg bg-gray-100 dark:bg-white/[0.08] border border-transparent dark:border-white/[0.1] focus:border-[var(--accent-ring)] focus:bg-white dark:focus:bg-white/[0.12] focus:outline-none focus:ring-1 focus:ring-[var(--accent-ring)] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/30 transition-all"
         />
       </div>
 
@@ -68,7 +68,7 @@ const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
                   onClick={() => handleReminderClick(r)}
                   className="flex items-center gap-3 w-full px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-white/[0.07] active:translate-y-[1px] transition-all"
                 >
-                  <Bell size={20} className="text-blue-400 shrink-0" />
+                  <Bell size={20} className="text-[var(--accent)] shrink-0" />
                   <div className="min-w-0">
                     <p className="text-sm text-gray-900 dark:text-white/80 truncate">{r.title}</p>
                     <p className="text-xs text-gray-400 dark:text-white/55">{r.date}</p>
@@ -91,7 +91,7 @@ const SearchBar = forwardRef<HTMLInputElement>(function SearchBar(_props, ref) {
                 >
                   <CheckSquare
                     size={20}
-                    className={`shrink-0 ${i.completed ? 'text-gray-300 dark:text-white/50' : 'text-[#6498c8]'}`}
+                    className={`shrink-0 ${i.completed ? 'text-gray-300 dark:text-white/50' : 'text-[var(--accent)]'}`}
                   />
                   <div className="min-w-0">
                     <p className={`text-sm truncate ${i.completed ? 'line-through text-gray-400 dark:text-white/55' : 'text-gray-900 dark:text-white/80'}`}>{i.title}</p>

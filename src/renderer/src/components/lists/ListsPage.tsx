@@ -65,7 +65,7 @@ export default function ListsPage() {
                 type="date"
                 value={newDate}
                 onChange={(e) => handleNewDateChange(e.target.value)}
-                className="w-fit rounded-md border border-slate-200 dark:border-white/[0.08] bg-transparent px-2 py-1 text-[13px] text-slate-700 dark:text-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-fit rounded-md border border-slate-200 dark:border-white/[0.08] bg-transparent px-2 py-1 text-[13px] text-slate-700 dark:text-white/60 focus:outline-none focus:border-[var(--accent-ring)] focus:ring-1 focus:ring-[var(--accent-ring)]"
               />
             </div>
 
@@ -77,7 +77,7 @@ export default function ListsPage() {
                 <select
                   value={newFolderId}
                   onChange={(e) => handleNewFolderChange(e.target.value)}
-                  className="w-fit rounded-md border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-transparent px-2 py-1 text-[13px] text-slate-700 dark:text-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-fit rounded-md border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-transparent px-2 py-1 text-[13px] text-slate-700 dark:text-white/60 focus:outline-none focus:border-[var(--accent-ring)] focus:ring-1 focus:ring-[var(--accent-ring)]"
                 >
                   <option value="">No folder</option>
                   {folders.map((f) => (
@@ -91,7 +91,7 @@ export default function ListsPage() {
               <button
                 type="submit"
                 disabled={creating}
-                className="px-4 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-[#f0f0f0] text-[13px] font-medium transition-colors disabled:opacity-50"
+                className="px-4 py-1.5 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] active:brightness-90 text-[#f0f0f0] text-[13px] font-medium transition-colors disabled:opacity-50"
               >
                 {creating ? 'Creating…' : 'Create List'}
               </button>
@@ -131,7 +131,7 @@ export default function ListsPage() {
                       defaultValue={selectedList.dueDate ?? ''}
                       autoFocus
                       onBlur={(e) => handleDateChange(e.target.value)}
-                      className="rounded border border-slate-200 dark:border-white/[0.08] bg-transparent px-1.5 py-0.5 text-[12px] text-slate-500 dark:text-white/60 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="rounded border border-slate-200 dark:border-white/[0.08] bg-transparent px-1.5 py-0.5 text-[12px] text-slate-500 dark:text-white/60 focus:outline-none focus:border-[var(--accent-ring)] focus:ring-1 focus:ring-[var(--accent-ring)]"
                     />
                   ) : (
                     <button
@@ -152,7 +152,7 @@ export default function ListsPage() {
                 </button>
                 <button
                   onClick={handleAddItem}
-                  className="text-[12px] font-medium text-[#6498c8] hover:opacity-80 transition-opacity"
+                  className="text-[12px] font-medium text-[var(--accent)] hover:opacity-80 transition-opacity"
                 >
                   + Add
                 </button>

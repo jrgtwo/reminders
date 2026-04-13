@@ -40,7 +40,7 @@ export default function AppearanceSection({
               <div
                 className={`w-full aspect-[4/3] rounded-lg overflow-hidden border-2 transition-all ${
                   theme === id
-                    ? 'border-blue-500 shadow-md shadow-blue-500/20'
+                    ? 'border-[var(--accent)] shadow-md shadow-[var(--accent)]/20'
                     : 'border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20'
                 }`}
               >
@@ -48,7 +48,7 @@ export default function AppearanceSection({
                 <div className="h-[70%]" style={{ background: body }} />
               </div>
               <span
-                className={`text-xs font-medium ${theme === id ? 'text-blue-500' : 'text-gray-400 dark:text-gray-500'}`}
+                className={`text-xs font-medium ${theme === id ? 'text-[var(--accent)]' : 'text-gray-400 dark:text-gray-500'}`}
               >
                 {label}
               </span>

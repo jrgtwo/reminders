@@ -32,9 +32,9 @@ const accentStyles: Record<Accent, { label: string; count: string; chevron: stri
     chevron: 'text-[#e8a045]/60'
   },
   blue: {
-    label: 'text-blue-500 dark:text-[#6498c8]',
-    count: 'text-blue-500 dark:text-[#6498c8] bg-blue-50 dark:bg-[#6498c8]/[0.08]',
-    chevron: 'text-[#6498c8]/60'
+    label: 'text-[var(--color-upcoming)]',
+    count: 'text-[var(--color-upcoming)] bg-[var(--color-upcoming-muted)]',
+    chevron: 'text-[var(--color-upcoming)]/60'
   },
   slate: {
     label: 'text-slate-400 dark:text-white/50',
@@ -232,7 +232,7 @@ export default function RemindersPage() {
           >
             {variant !== 'today' && (
               <div
-                className={`text-[11px] font-semibold mb-0.5 ${variant === 'overdue' ? 'text-red-400 dark:text-[#e8a045]/80' : 'text-blue-500 dark:text-[#6498c8]/80'}`}
+                className={`text-[11px] font-semibold mb-0.5 ${variant === 'overdue' ? 'text-red-400 dark:text-[#e8a045]/80' : 'text-[var(--color-upcoming)]'}`}
               >
                 {variant === 'overdue'
                   ? formatOverdueDate(item.dateStr)
@@ -252,7 +252,7 @@ export default function RemindersPage() {
             {(item.startTime || item.isRecurring) && (
               <div className="flex items-center gap-1.5 mt-1">
                 {item.startTime && (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 border border-blue-200/60 dark:border-blue-400/15 border-b-[2px] border-b-blue-200 dark:border-b-blue-400/25 px-1.5 py-0.5 rounded-md">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[var(--color-upcoming)] bg-[var(--color-upcoming-muted)] border border-[var(--color-upcoming)]/20 border-b-[2px] border-b-[var(--color-upcoming)]/30 px-1.5 py-0.5 rounded-md">
                     <Clock size={20} />
                     {item.startTime}
                   </span>

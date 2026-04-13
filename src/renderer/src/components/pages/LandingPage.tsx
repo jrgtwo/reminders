@@ -16,23 +16,66 @@ const FEATURES = [
   {
     icon: Calendar,
     title: 'Calendar',
-    desc: 'Month and week views with drag-and-drop scheduling'
+    desc: 'Month and week views with drag-and-drop scheduling',
   },
   {
     icon: Bell,
     title: 'Reminders',
-    desc: 'Recurring reminders with desktop notifications'
+    desc: 'Recurring reminders with desktop notifications',
   },
   {
     icon: StickyNote,
     title: 'Notes',
-    desc: 'Markdown notes organized in folders'
+    desc: 'Markdown notes organized in folders',
   },
   {
     icon: ListTodo,
     title: 'Todos',
-    desc: 'Lists with due dates, priorities, and completion tracking'
-  }
+    desc: 'Lists with due dates, priorities, and completion tracking',
+  },
+]
+
+const FEATURE_DETAILS = [
+  {
+    icon: Calendar,
+    title: 'Calendar that stays out of your way',
+    points: [
+      'Switch between month and week views instantly',
+      'Drag and drop to reschedule reminders across days',
+      'Color-coded entries so you can scan your week at a glance',
+      'Click any day to see everything due — reminders, notes, and todos together',
+    ],
+  },
+  {
+    icon: Bell,
+    title: 'Reminders that actually remind you',
+    points: [
+      'Set one-time or recurring reminders — daily, weekly, monthly, or custom',
+      'Desktop notifications so you never miss a deadline',
+      'Mark complete for a single occurrence or the entire series',
+      'Overdue items surface automatically so nothing slips through',
+    ],
+  },
+  {
+    icon: StickyNote,
+    title: 'Notes without the clutter',
+    points: [
+      'Write in plain text or Markdown — formatting is up to you',
+      'Organize into folders and drag to reorder',
+      'Pin notes to specific calendar dates for context',
+      'Search across all your notes instantly',
+    ],
+  },
+  {
+    icon: ListTodo,
+    title: 'Todos that keep you moving',
+    points: [
+      'Create multiple lists for different projects or areas of your life',
+      'Drag and drop to prioritize within and across lists',
+      'Add descriptions to flesh out tasks without losing the overview',
+      'Organize lists into folders when things grow',
+    ],
+  },
 ]
 
 const TIERS = [
@@ -105,8 +148,8 @@ export default function LandingPage() {
             <img src={logo} alt="Reminder Today Logo" className="w-100 mb-1" />
           </h1>
           <p className="text-lg md:text-xl text-white/50 max-w-lg mb-8 leading-relaxed">
-            A calm, local-first productivity app. Your calendar, reminders, notes, and todos — all
-            in one place, private by default.
+            Calendar. Reminders. Notes. Todos. One app, on your device, under your control — no
+            account required.
           </p>
           <div className="max-w-lg mb-10 px-4 py-3 rounded-lg bg-[#e8a045]/[0.08] border border-[#e8a045]/20 border-b-[3px] border-b-[#e8a045]/30 text-[#e8a045]/80 text-sm leading-relaxed text-left transition-[translate,filter,border-color] duration-200 ease-out hover:-translate-y-[3px] hover:brightness-125 hover:border-[#e8a045]/35 active:translate-y-[1px] active:brightness-100">
             <p className="font-medium text-[#e8a045] mb-1">Beta</p>
@@ -143,6 +186,50 @@ export default function LandingPage() {
               <p className="text-xs text-white/60 leading-relaxed">{f.desc}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Feature details */}
+      <section className="px-6 pb-24">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-2xl font-semibold text-white/80 text-center mb-3">
+            Everything you need, nothing you don&apos;t
+          </h2>
+          <p className="text-sm text-white/50 text-center mb-12 max-w-lg mx-auto">
+            Four tools built to work together. No bloat, no learning curve — just open the app and
+            start.
+          </p>
+          <div className="flex flex-col gap-6">
+            {FEATURE_DETAILS.map((f, i) => (
+              <div
+                key={f.title}
+                className={`flex flex-col md:flex-row gap-6 items-start p-6 rounded-xl bg-white/[0.03] border border-white/[0.06] border-b-[3px] border-b-white/[0.12] transition-[translate,filter,border-color] duration-200 ease-out hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20 active:translate-y-[1px] active:brightness-100 ${
+                  i % 2 === 1 ? 'md:flex-row-reverse' : ''
+                }`}
+              >
+                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-white/[0.05] border border-white/[0.08] shrink-0">
+                  <f.icon size={24} className="text-white/60" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base font-semibold text-white/80 mb-3">{f.title}</h3>
+                  <ul className="flex flex-col gap-2">
+                    {f.points.map((p) => (
+                      <li
+                        key={p}
+                        className="flex items-start gap-2.5 text-sm text-white/55 leading-relaxed"
+                      >
+                        <ChevronRight
+                          size={14}
+                          className="shrink-0 mt-[3px] text-white/30"
+                        />
+                        {p}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -196,12 +283,12 @@ export default function LandingPage() {
                 key={tier.name}
                 className={`relative flex flex-col p-6 rounded-xl border border-b-[3px] transition-[translate,filter,border-color] duration-200 ease-out hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20 active:translate-y-[1px] active:brightness-100 ${
                   tier.highlight
-                    ? 'bg-white/[0.06] border-[#6498c8]/40 border-b-[#6498c8]/50'
+                    ? 'bg-white/[0.06] border-[var(--accent)]/40 border-b-[var(--accent)]/50'
                     : 'bg-white/[0.03] border-white/[0.06] border-b-white/[0.12]'
                 }`}
               >
                 {tier.highlight && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-[#2b6ca0] text-white rounded-full">
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-[var(--accent)] text-white rounded-full">
                     Recommended
                   </span>
                 )}
@@ -239,7 +326,7 @@ export default function LandingPage() {
                 {tier.name === 'Pro' && (
                   <button
                     onClick={onEnter}
-                    className="mt-6 w-full py-2.5 rounded-lg bg-[#6498c8]/20 hover:bg-[#6498c8]/30 border border-[#6498c8]/30 border-b-[3px] border-b-[#6498c8]/40 text-sm font-medium text-[#85b3dc] transition-[translate,filter,border-color,background-color] duration-200 ease-out hover:-translate-y-[3px] hover:brightness-125 hover:border-[#6498c8]/45 active:translate-y-[1px] active:brightness-100"
+                    className="mt-6 w-full py-2.5 rounded-lg bg-[var(--accent)]/20 hover:bg-[var(--accent)]/30 border border-[var(--accent)]/30 border-b-[3px] border-b-[var(--accent)]/40 text-sm font-medium text-[var(--accent)] transition-[translate,filter,border-color,background-color] duration-200 ease-out hover:-translate-y-[3px] hover:brightness-125 hover:border-[var(--accent)]/45 active:translate-y-[1px] active:brightness-100"
                   >
                     Try Free, Upgrade Later
                   </button>

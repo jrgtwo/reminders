@@ -1,4 +1,5 @@
 import '@fontsource-variable/inter'
+import '@fontsource-variable/inter/wght-italic.css'
 import '@fontsource/bree-serif'
 import '@fontsource-variable/archivo'
 import './assets/main.css'

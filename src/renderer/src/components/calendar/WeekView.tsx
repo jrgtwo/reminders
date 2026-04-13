@@ -69,17 +69,17 @@ export default function WeekView({ displayDate }: Props) {
                 className={[
                   'relative flex flex-col items-center py-2 gap-0.5 overflow-hidden transition-colors',
                   isToday
-                    ? 'bg-blue-50/60 dark:bg-[#6498c8]/[0.07] hover:bg-blue-100/60 dark:hover:bg-[#6498c8]/[0.12]'
+                    ? 'bg-[var(--accent-muted)] hover:brightness-110'
                     : 'hover:bg-slate-100/60 dark:hover:bg-white/[0.03]',
                 ].join(' ')}
               >
-                {isToday && <div className="absolute top-0 left-0 right-0 h-[5px] bg-blue-500 dark:bg-[#6498c8]" />}
+                {isToday && <div className="absolute top-0 left-0 right-0 h-[5px] bg-[var(--accent)]" />}
                 <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-300 dark:text-white/18">
                   {DAY_NAMES[day.dayOfWeek % 7]}
                 </span>
                 <span className={[
                   'flex items-center justify-center w-8 h-8 text-[15px] font-bold leading-none',
-                  isToday ? 'text-blue-500 dark:text-[#6498c8]'
+                  isToday ? 'text-[var(--accent)]'
                     : isSelected ? 'text-slate-900 dark:text-[#f0f0f0]'
                     : 'text-slate-700 dark:text-white/80',
                 ].filter(Boolean).join(' ')}>
@@ -105,7 +105,7 @@ export default function WeekView({ displayDate }: Props) {
                         key={r.id}
                         onClick={(e) => { e.stopPropagation(); setDetail({ reminder: r, dateStr: r.date }) }}
                         className={[
-                          'absolute top-0 h-full px-1.5 rounded-md font-semibold truncate bg-[#6498c8]/[0.18] text-[#6498c8] border border-[#6498c8]/[0.15] border-b-[2.5px] border-b-[#6498c8]/[0.35] transition-all duration-200 hover:bg-[#6498c8]/[0.32] hover:brightness-125 hover:shadow-md active:translate-y-[1.5px]',
+                          'absolute top-0 h-full px-1.5 rounded-md font-semibold truncate bg-[var(--color-upcoming)]/[0.18] text-[var(--color-upcoming)] border border-[var(--color-upcoming)]/[0.15] border-b-[2.5px] border-b-[var(--color-upcoming)]/[0.35] transition-all duration-200 hover:bg-[var(--color-upcoming)]/[0.32] hover:brightness-125 hover:shadow-md active:translate-y-[1.5px]',
                           allDayExpanded ? 'text-[11px]' : 'text-[10px]',
                         ].join(' ')}
                         style={{
@@ -144,13 +144,13 @@ export default function WeekView({ displayDate }: Props) {
                   const visibleReminders = allDayExpanded ? dayReminders : dayReminders.slice(0, COLLAPSED_LIMIT)
                   const hiddenCount = allDayExpanded ? 0 : totalItems - COLLAPSED_LIMIT
                   return (
-                    <div key={dateStr} className={['flex flex-col gap-[2px] px-1 py-1 min-h-[28px] overflow-hidden min-w-0 transition-all duration-200', dateStr === todayStr ? 'bg-blue-50/60 dark:bg-[#6498c8]/[0.07]' : ''].join(' ')}>
+                    <div key={dateStr} className={['flex flex-col gap-[2px] px-1 py-1 min-h-[28px] overflow-hidden min-w-0 transition-all duration-200', dateStr === todayStr ? 'bg-[var(--accent-muted)]' : ''].join(' ')}>
                       {visibleReminders.map((r) => (
                         <button
                           key={r.id}
                           onClick={(e) => { e.stopPropagation(); setDetail({ reminder: r, dateStr }) }}
                           className={[
-                            'w-full text-left px-1.5 rounded-md bg-[#6498c8]/[0.12] text-[#6498c8] border border-[#6498c8]/[0.12] border-b-[2.5px] border-b-[#6498c8]/[0.30] transition-all duration-200 hover:bg-[#6498c8]/[0.28] hover:brightness-125 hover:shadow-md hover:scale-[1.03] active:translate-y-[1.5px]',
+                            'w-full text-left px-1.5 rounded-md bg-[var(--color-upcoming)]/[0.12] text-[var(--color-upcoming)] border border-[var(--color-upcoming)]/[0.12] border-b-[2.5px] border-b-[var(--color-upcoming)]/[0.30] transition-all duration-200 hover:bg-[var(--color-upcoming)]/[0.28] hover:brightness-125 hover:shadow-md hover:scale-[1.03] active:translate-y-[1.5px]',
                             allDayExpanded ? 'py-1' : 'py-[2px]',
                           ].join(' ')}
                         >
@@ -221,8 +221,8 @@ export default function WeekView({ displayDate }: Props) {
           {days.some((d) => d.toString() === todayStr) && (
             <div className="absolute left-0 right-0 z-[5] pointer-events-none" style={{ top: `${nowTop}px` }}>
               <div className="absolute left-14 right-0 flex items-center">
-                <div className="w-2 h-2 rounded-full bg-blue-500 -ml-1 shrink-0" />
-                <div className="flex-1 h-px bg-blue-500" />
+                <div className="w-2 h-2 rounded-full bg-[var(--accent)] -ml-1 shrink-0" />
+                <div className="flex-1 h-px bg-[var(--accent)]" />
               </div>
             </div>
           )}
@@ -249,7 +249,7 @@ export default function WeekView({ displayDate }: Props) {
                     className={[
                       'border-t border-l border-slate-300/70 dark:border-white/[0.10] min-w-0 cursor-pointer',
                       'opacity-80 hover:opacity-100 hover:brightness-105 transition-all duration-150',
-                      isToday ? 'bg-blue-50/60 dark:bg-[#6498c8]/[0.07]' : 'hover:bg-slate-50/80 dark:hover:bg-white/[0.02]',
+                      isToday ? 'bg-[var(--accent-muted)]' : 'hover:bg-slate-50/80 dark:hover:bg-white/[0.02]',
                     ].filter(Boolean).join(' ')}
                     style={{ height: `${SLOT_H}px` }}
                     onClick={() => setNewForm({ date: dateStr, time: `${String(hour).padStart(2, '0')}:00` })}
@@ -288,7 +288,7 @@ export default function WeekView({ displayDate }: Props) {
                     <button
                       key={r.id}
                       onClick={(e) => { e.stopPropagation(); setDetail({ reminder: r, dateStr }) }}
-                      className="absolute left-1 right-1 px-1.5 py-[3px] rounded-md text-[11px] font-semibold bg-[#6498c8]/[0.15] text-[#6498c8] border border-[#6498c8]/[0.12] border-b-[2.5px] border-b-[#6498c8]/[0.32] transition-all duration-150 hover:bg-[#6498c8]/[0.28] hover:brightness-125 hover:shadow-md active:translate-y-[1.5px] pointer-events-auto overflow-hidden"
+                      className="absolute left-1 right-1 px-1.5 py-[3px] rounded-md text-[11px] font-semibold bg-[var(--color-upcoming)]/[0.15] text-[var(--color-upcoming)] border border-[var(--color-upcoming)]/[0.12] border-b-[2.5px] border-b-[var(--color-upcoming)]/[0.32] transition-all duration-150 hover:bg-[var(--color-upcoming)]/[0.28] hover:brightness-125 hover:shadow-md active:translate-y-[1.5px] pointer-events-auto overflow-hidden"
                       style={{ top, height }}
                     >
                       <span className="block truncate">{r.title}</span>

@@ -39,9 +39,9 @@ export function useCalendarDay({ date, displayMonth, isSelected }: Params) {
             chip: 'bg-amber-50 text-amber-800 dark:bg-[#e8a045]/[0.07] dark:text-[#e8a045]',
           }
         : {
-            dot: 'bg-[#6498c8]',
-            text: 'text-indigo-600 dark:text-[#6498c8]',
-            chip: 'bg-indigo-50 text-indigo-700 dark:bg-[#6498c8]/[0.08] dark:text-[#6498c8]',
+            dot: 'bg-[var(--color-upcoming)]',
+            text: 'text-[var(--color-upcoming)]',
+            chip: 'bg-[var(--color-upcoming-muted)] text-[var(--color-upcoming)]',
           }
 
   const listBadgeCls =
@@ -51,7 +51,7 @@ export function useCalendarDay({ date, displayMonth, isSelected }: Params) {
 
   let bg: string
   if (todayDate) {
-    bg = 'bg-blue-50 dark:bg-[#6498c8]/[0.15]'
+    bg = 'bg-[var(--accent-muted)]'
   } else if (isSelected) {
     bg = 'bg-white dark:bg-white/[0.10]'
   } else if (!inMonth) {

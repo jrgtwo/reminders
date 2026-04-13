@@ -27,6 +27,9 @@ button, a { cursor: pointer; }
    --bg-card             elevated panels, dialogs, form cards (replaces gray-800/900)
    --bg-elevated         hover states, day pills, slightly above card (replaces gray-700)
    --border              all border colours (replaces border-gray-600/700)
+   --accent-*            UI accent (buttons, links, focus rings, active nav items)
+   --color-upcoming      semantic status colour for upcoming/future reminders
+   --color-upcoming-muted  light bg tint for upcoming badges
    ─────────────────────────────────────────────────────────────────────────── */
 
 :root {
@@ -40,6 +43,19 @@ button, a { cursor: pointer; }
   --bg-card:             #edeef1;
   --bg-elevated:         #e5e6ea;
   --border:              #c5c9d0;
+  --accent:              #3b82f6;
+  --accent-hover:        #2563eb;
+  --accent-border:       rgba(37, 99, 235, 0.3);
+  --accent-border-b:     rgba(29, 78, 216, 0.4);
+  --accent-ring:         #b0b3bc;
+  --accent-muted:        rgba(59, 130, 246, 0.08);
+  --color-upcoming:      #3b82f6;
+  --color-upcoming-muted: rgba(59, 130, 246, 0.08);
+
+  /* Boost light-mode grays for readability on ~#eee backgrounds */
+  --color-slate-300:     #94a3b8;   /* default #cbd5e1 → slate-400 level */
+  --color-slate-400:     #64748b;   /* default #94a3b8 → slate-500 level */
+  --color-gray-400:      #6b7280;   /* default #9ca3af → gray-500 level */
 }
 
 .dark {
@@ -53,6 +69,14 @@ button, a { cursor: pointer; }
   --bg-card:             #161b22;
   --bg-elevated:         #21262d;
   --border:              rgba(255, 255, 255, 0.12);
+  --accent:              #5b9cf5;
+  --accent-hover:        #6dafff;
+  --accent-border:       rgba(60, 130, 220, 0.4);
+  --accent-border-b:     rgba(45, 110, 200, 0.6);
+  --accent-ring:         #3a4250;
+  --accent-muted:        rgba(91, 156, 245, 0.08);
+  --color-upcoming:      #6498c8;
+  --color-upcoming-muted: rgba(100, 152, 200, 0.08);
 }
 
 .theme-warm {
@@ -66,6 +90,14 @@ button, a { cursor: pointer; }
   --bg-card:             #252019;
   --bg-elevated:         #2e2820;
   --border:              rgba(255, 255, 255, 0.10);
+  --accent:              #e0924a;
+  --accent-hover:        #e8a35e;
+  --accent-border:       rgba(200, 120, 50, 0.4);
+  --accent-border-b:     rgba(180, 100, 35, 0.6);
+  --accent-ring:         #4a4238;
+  --accent-muted:        rgba(224, 146, 74, 0.08);
+  --color-upcoming:      #6ea88e;
+  --color-upcoming-muted: rgba(110, 168, 142, 0.10);
 }
 
 .theme-midnight {
@@ -79,6 +111,14 @@ button, a { cursor: pointer; }
   --bg-card:             #111111;
   --bg-elevated:         #1a1a1a;
   --border:              rgba(255, 255, 255, 0.08);
+  --accent:              #4d90f7;
+  --accent-hover:        #60a2ff;
+  --accent-border:       rgba(50, 115, 220, 0.4);
+  --accent-border-b:     rgba(35, 95, 200, 0.6);
+  --accent-ring:         #333333;
+  --accent-muted:        rgba(77, 144, 247, 0.08);
+  --color-upcoming:      #5a8ec4;
+  --color-upcoming-muted: rgba(90, 142, 196, 0.08);
 }
 
 /* Grey — pure neutral, no colour tint */
@@ -93,6 +133,14 @@ button, a { cursor: pointer; }
   --bg-card:             #282828;
   --bg-elevated:         #333333;
   --border:              rgba(255, 255, 255, 0.10);
+  --accent:              #5a9fd5;
+  --accent-hover:        #6db2e4;
+  --accent-border:       rgba(65, 135, 190, 0.4);
+  --accent-border-b:     rgba(50, 115, 170, 0.6);
+  --accent-ring:         #4a4a4a;
+  --accent-muted:        rgba(90, 159, 213, 0.08);
+  --color-upcoming:      #6498c8;
+  --color-upcoming-muted: rgba(100, 152, 200, 0.08);
 }
 
 /* GitHub Dim — mid-slate, softer than Dark */
@@ -107,6 +155,14 @@ button, a { cursor: pointer; }
   --bg-card:             #2d333b;
   --bg-elevated:         #373e47;
   --border:              rgba(255, 255, 255, 0.10);
+  --accent:              #57a3fb;
+  --accent-hover:        #6bb5ff;
+  --accent-border:       rgba(60, 140, 225, 0.4);
+  --accent-border-b:     rgba(45, 120, 205, 0.6);
+  --accent-ring:         #515a65;
+  --accent-muted:        rgba(87, 163, 251, 0.08);
+  --color-upcoming:      #6498c8;
+  --color-upcoming-muted: rgba(100, 152, 200, 0.08);
 }
 
 /* Nord — Arctic blue-grey */
@@ -121,6 +177,14 @@ button, a { cursor: pointer; }
   --bg-card:             #3b4252;
   --bg-elevated:         #434c5e;
   --border:              rgba(255, 255, 255, 0.12);
+  --accent:              #5e81ac;
+  --accent-hover:        #7094be;
+  --accent-border:       rgba(70, 105, 150, 0.4);
+  --accent-border-b:     rgba(55, 85, 130, 0.6);
+  --accent-ring:         #5d6878;
+  --accent-muted:        rgba(94, 129, 172, 0.08);
+  --color-upcoming:      #81a1c1;
+  --color-upcoming-muted: rgba(129, 161, 193, 0.08);
 }
 
 /* Forest — dark green-tinted */
@@ -135,6 +199,14 @@ button, a { cursor: pointer; }
   --bg-card:             #1f2e1f;
   --bg-elevated:         #263826;
   --border:              rgba(255, 255, 255, 0.10);
+  --accent:              #6bb880;
+  --accent-hover:        #7cc890;
+  --accent-border:       rgba(85, 160, 105, 0.4);
+  --accent-border-b:     rgba(70, 140, 85, 0.6);
+  --accent-ring:         #3a4f3a;
+  --accent-muted:        rgba(107, 184, 128, 0.08);
+  --color-upcoming:      #6498c8;
+  --color-upcoming-muted: rgba(100, 152, 200, 0.08);
 }
 
 /* Dusk — deep purple-violet */
@@ -149,6 +221,14 @@ button, a { cursor: pointer; }
   --bg-card:             #221630;
   --bg-elevated:         #2c1e3e;
   --border:              rgba(255, 255, 255, 0.10);
+  --accent:              #9b6dd4;
+  --accent-hover:        #ad80e0;
+  --accent-border:       rgba(130, 85, 190, 0.4);
+  --accent-border-b:     rgba(110, 65, 170, 0.6);
+  --accent-ring:         #443658;
+  --accent-muted:        rgba(155, 109, 212, 0.08);
+  --color-upcoming:      #7a9ec8;
+  --color-upcoming-muted: rgba(122, 158, 200, 0.08);
 }
 
 /* Native date/time picker indicator — make visible in dark themes */

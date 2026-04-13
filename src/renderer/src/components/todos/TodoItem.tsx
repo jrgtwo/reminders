@@ -59,8 +59,8 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete, isEditing, 
           onClick={() => onToggle(todo)}
           className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
             todo.completed
-              ? 'bg-blue-500 border-blue-500 dark:bg-[#6498c8] dark:border-[#6498c8]'
-              : 'border-slate-300 dark:border-white/20 hover:border-blue-400 dark:hover:border-[#6498c8]/60'
+              ? 'bg-[var(--accent)] border-[var(--accent)]'
+              : 'border-slate-300 dark:border-white/20 hover:border-[var(--accent)]'
           }`}
           aria-label="Toggle complete"
         >

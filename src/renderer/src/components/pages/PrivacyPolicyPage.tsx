@@ -44,7 +44,7 @@ export default function PrivacyPolicyPage(): ReactNode {
             not use our Services. If you still have any questions or concerns, please contact us at{' '}
             <a
               href="mailto:support@remindertoday.com"
-              className="text-[#6498c8] hover:underline"
+              className="text-[var(--accent)] hover:underline"
             >
               support@remindertoday.com
             </a>
@@ -137,7 +137,7 @@ export default function PrivacyPolicyPage(): ReactNode {
                 href="https://stripe.com/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#6498c8] hover:underline"
+                className="text-[var(--accent)] hover:underline"
               >
                 Stripe
               </a>
@@ -301,7 +301,7 @@ export default function PrivacyPolicyPage(): ReactNode {
               at{' '}
               <a
                 href="mailto:support@remindertoday.com"
-                className="text-[#6498c8] hover:underline"
+                className="text-[var(--accent)] hover:underline"
               >
                 support@remindertoday.com
               </a>
@@ -346,7 +346,7 @@ export default function PrivacyPolicyPage(): ReactNode {
               If you have questions or comments about your privacy rights, you may email us at{' '}
               <a
                 href="mailto:support@remindertoday.com"
-                className="text-[#6498c8] hover:underline"
+                className="text-[var(--accent)] hover:underline"
               >
                 support@remindertoday.com
               </a>
@@ -398,7 +398,7 @@ export default function PrivacyPolicyPage(): ReactNode {
               To exercise these rights, you can contact us by emailing{' '}
               <a
                 href="mailto:support@remindertoday.com"
-                className="text-[#6498c8] hover:underline"
+                className="text-[var(--accent)] hover:underline"
               >
                 support@remindertoday.com
               </a>
@@ -424,7 +424,7 @@ export default function PrivacyPolicyPage(): ReactNode {
               If you have questions or comments about this notice, you may email us at{' '}
               <a
                 href="mailto:support@remindertoday.com"
-                className="text-[#6498c8] hover:underline"
+                className="text-[var(--accent)] hover:underline"
               >
                 support@remindertoday.com
               </a>{' '}

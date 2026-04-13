@@ -31,7 +31,7 @@ export default function DayViewNotesTab({
             </p>
             <button
               onClick={handleNewNote}
-              className="text-[12px] font-medium text-[#6498c8] hover:opacity-80 transition-opacity"
+              className="text-[12px] font-medium text-[var(--accent)] hover:opacity-80 transition-opacity"
             >
               + Create your first note
             </button>
@@ -51,7 +51,7 @@ export default function DayViewNotesTab({
           >
             <Edit3
               size={20}
-              className={`shrink-0 transition-colors ${note.id === editingNoteId ? 'text-[#6498c8]' : 'text-slate-400 dark:text-white/55'}`}
+              className={`shrink-0 transition-colors ${note.id === editingNoteId ? 'text-[var(--accent)]' : 'text-slate-400 dark:text-white/55'}`}
             />
             <div className="flex-1 min-w-0">
               {note.title ? (
@@ -97,7 +97,7 @@ export default function DayViewNotesTab({
       ))}
       <button
         onClick={handleNewNote}
-        className="flex items-center gap-2 w-full px-4 py-3 rounded-xl text-left bg-transparent border border-dashed border-slate-300 dark:border-white/[0.06] hover:border-[#6498c8] dark:hover:border-[#6498c8] text-[#6498c8] dark:text-[#6498c8] text-[13px] font-medium transition-colors"
+        className="flex items-center gap-2 w-full px-4 py-3 rounded-xl text-left bg-transparent border border-dashed border-slate-300 dark:border-white/[0.06] hover:border-[var(--accent)] dark:hover:border-[var(--accent)] text-[var(--accent)] dark:text-[var(--accent)] text-[13px] font-medium transition-colors"
       >
         <span className="text-lg leading-none">+</span>
         Add note

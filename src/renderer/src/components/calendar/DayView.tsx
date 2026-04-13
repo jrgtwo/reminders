@@ -19,7 +19,7 @@ function getDayStatus(date: Temporal.PlainDate) {
   if (cmp === 0)
     return {
       label: 'Today',
-      cls: 'bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400 border border-blue-100 dark:border-blue-500/20',
+      cls: 'bg-[var(--accent-muted)] text-[var(--accent)] border border-[var(--accent-border)]',
     }
   if (cmp < 0)
     return {
@@ -189,7 +189,7 @@ export default function DayView() {
                   </span>
                 )}
                 {'upcoming' in rest && rest.upcoming > 0 && (
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#6498c8]/[0.15] text-[#6498c8]">
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[var(--color-upcoming-muted)] text-[var(--color-upcoming)]">
                     {rest.upcoming}
                   </span>
                 )}
@@ -197,7 +197,7 @@ export default function DayView() {
             ) : (
               count !== null &&
               count > 0 && (
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#6498c8]/[0.15] text-[#6498c8]">
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[var(--color-upcoming-muted)] text-[var(--color-upcoming)]">
                   {count}
                 </span>
               )

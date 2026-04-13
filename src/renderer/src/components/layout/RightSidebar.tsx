@@ -205,14 +205,14 @@ export default function RightSidebar() {
                         if (draggingFolderId) handleFolderDrop(undefined)
                         else handleListDrop(undefined)
                       }}
-                      className={`transition-colors rounded mx-1 ${listDropTarget === 'standalone' ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.08] ring-1 ring-[#6498c8]/30' : ''}`}
+                      className={`transition-colors rounded mx-1 ${listDropTarget === 'standalone' ? 'bg-[var(--accent)]/10 dark:bg-[var(--accent)]/[0.08] ring-1 ring-[var(--accent)]/30' : ''}`}
                     >
                       {standaloneLists.map((l) => renderList(l, false))}
                       {listDropTarget === 'standalone' && standaloneLists.length === 0 && draggingListId && (
-                        <p className="text-[11px] text-[#6498c8]/60 px-4 py-2">Drop here to remove from folder</p>
+                        <p className="text-[11px] text-[var(--accent)]/60 px-4 py-2">Drop here to remove from folder</p>
                       )}
                       {listDropTarget === 'standalone' && draggingFolderId && (
-                        <p className="text-[11px] text-[#6498c8]/60 px-4 py-2">Drop here to move to top level</p>
+                        <p className="text-[11px] text-[var(--accent)]/60 px-4 py-2">Drop here to move to top level</p>
                       )}
                     </div>
                     <FolderTree
@@ -278,7 +278,7 @@ export default function RightSidebar() {
             <div className="flex flex-col items-center pt-3">
               <CheckSquare size={20} className="text-slate-300 dark:text-white/50" />
               {listCount > 0 && (
-                <span className="text-[11px] font-bold text-blue-500 dark:text-blue-400 mt-2">
+                <span className="text-[11px] font-bold text-[var(--accent)] mt-2">
                   {listCount}
                 </span>
               )}
@@ -290,7 +290,7 @@ export default function RightSidebar() {
         {rightOpen && (
           <div
             onMouseDown={onResizeStart}
-            className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500/30 transition-colors"
+            className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-[var(--accent)]/30 transition-colors"
           />
         )}
 

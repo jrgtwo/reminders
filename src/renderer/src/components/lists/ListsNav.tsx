@@ -142,14 +142,14 @@ const ListsNav = forwardRef<ListsNavHandle>(function ListsNav(_, ref) {
               if (draggingFolderId) handleFolderDrop(undefined)
               else handleListDrop(undefined)
             }}
-            className={`transition-colors rounded mx-1 ${listDropTarget === 'standalone' ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.08] ring-1 ring-[#6498c8]/30' : ''}`}
+            className={`transition-colors rounded mx-1 ${listDropTarget === 'standalone' ? 'bg-[var(--accent)]/10 dark:bg-[var(--accent)]/[0.08] ring-1 ring-[var(--accent)]/30' : ''}`}
           >
             {standaloneLists.map((l) => renderList(l, false))}
             {listDropTarget === 'standalone' && standaloneLists.length === 0 && draggingListId && (
-              <p className="text-[11px] text-[#6498c8]/60 px-4 py-2">Drop here to remove from folder</p>
+              <p className="text-[11px] text-[var(--accent)]/60 px-4 py-2">Drop here to remove from folder</p>
             )}
             {listDropTarget === 'standalone' && draggingFolderId && (
-              <p className="text-[11px] text-[#6498c8]/60 px-4 py-2">Drop here to move to top level</p>
+              <p className="text-[11px] text-[var(--accent)]/60 px-4 py-2">Drop here to move to top level</p>
             )}
           </div>
         </CollapsibleSection>

@@ -67,19 +67,19 @@ function BrowseItem({
     <div
       className={`group relative flex items-center gap-3 px-4 py-3 rounded-xl transition-[translate,box-shadow,background-color,border-color,filter] duration-200 ease-out cursor-pointer hover:-translate-y-[3px] hover:shadow-lg dark:hover:shadow-none dark:hover:brightness-125 dark:hover:border-white/25 active:translate-y-[1px] active:shadow-sm dark:active:shadow-none dark:active:brightness-100 ${
         active
-          ? 'bg-white dark:bg-white/[0.04] border border-[#6498c8]/20 dark:border-[#6498c8]/[0.15] border-b-[2.5px] border-b-[#6498c8]/30 dark:border-b-[#6498c8]/[0.25]'
+          ? 'bg-white dark:bg-white/[0.04] border border-[var(--accent)]/20 dark:border-[var(--accent)]/[0.15] border-b-[2.5px] border-b-[var(--accent)]/30 dark:border-b-[var(--accent)]/[0.25]'
           : 'bg-white dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-300/80 dark:border-b-white/[0.15] hover:bg-slate-50 dark:hover:bg-white/[0.07]'
       }`}
       onClick={() => navigate(route)}
     >
       <Icon
         size={20}
-        className={active ? 'shrink-0 text-[#6498c8]' : 'shrink-0 text-slate-400 dark:text-white/50'}
+        className={active ? 'shrink-0 text-[var(--accent)]' : 'shrink-0 text-slate-400 dark:text-white/50'}
       />
       <div className="flex-1 min-w-0">
         <span
           className={`text-[15px] block truncate ${
-            active ? 'font-medium text-[#6498c8]' : 'text-slate-600 dark:text-white/60'
+            active ? 'font-medium text-[var(--accent)]' : 'text-slate-600 dark:text-white/60'
           }`}
         >
           {label}
@@ -300,7 +300,7 @@ export default function BrowsePage() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium border-b-2 transition-all active:translate-y-[1px] ${
                 activeTab === tab.id
-                  ? 'border-[#6498c8] text-[#6498c8]'
+                  ? 'border-[var(--accent)] text-[var(--accent)]'
                   : 'border-transparent text-slate-500 dark:text-white/60 hover:text-slate-700 dark:hover:text-white/60'
               }`}
             >

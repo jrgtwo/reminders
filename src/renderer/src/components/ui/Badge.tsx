@@ -6,7 +6,7 @@ interface Props {
 }
 
 const variants = {
-  blue: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+  blue: 'bg-[var(--accent-muted)] text-[var(--accent)]',
   green: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
   orange: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
   gray: 'bg-gray-100 text-gray-700 dark:bg-[var(--bg-elevated)] dark:text-gray-300',

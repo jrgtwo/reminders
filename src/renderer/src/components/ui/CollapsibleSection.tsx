@@ -11,9 +11,9 @@ const accentStyles: Record<Accent, { label: string; count: string; chevron: stri
     chevron: 'text-[#e8a045]/60',
   },
   blue: {
-    label: 'text-blue-500 dark:text-[#6498c8]',
-    count: 'text-blue-500 dark:text-[#6498c8] bg-blue-50 dark:bg-[#6498c8]/[0.08]',
-    chevron: 'text-[#6498c8]/60',
+    label: 'text-[var(--color-upcoming)]',
+    count: 'text-[var(--color-upcoming)] bg-[var(--color-upcoming-muted)]',
+    chevron: 'text-[var(--color-upcoming)]/60',
   },
   slate: {
     label: 'text-slate-500 dark:text-white/60',
@@ -68,7 +68,7 @@ export function CollapsibleSection({
         onDragOver={onHeaderDragOver}
         onDragLeave={onHeaderDragLeave}
         onDrop={onHeaderDrop}
-        className={`flex items-center gap-1 transition-colors ${indent ? 'px-3 py-1.5' : 'px-4 py-2'} ${isHeaderDropTarget ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.08] ring-1 ring-[#6498c8]/30 rounded' : ''}`}
+        className={`flex items-center gap-1 transition-colors ${indent ? 'px-3 py-1.5' : 'px-4 py-2'} ${isHeaderDropTarget ? 'bg-[var(--accent)]/10 dark:bg-[var(--accent)]/[0.08] ring-1 ring-[var(--accent)]/30 rounded' : ''}`}
       >
         <button
           onClick={handleToggle}

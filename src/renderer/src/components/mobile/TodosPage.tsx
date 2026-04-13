@@ -26,18 +26,18 @@ function ListNavItem({
       onClick={() => navigate(`/lists/${l.id}`)}
       className={`flex items-center gap-2 w-full py-1.5 rounded-lg border border-transparent transition-all text-left active:translate-y-[1px] ${indent ? 'pl-8 pr-4' : 'px-4'} ${
         active
-          ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.12] border-[#6498c8]/20 dark:border-[#6498c8]/[0.15] border-b-[2.5px] border-b-[#6498c8]/30 dark:border-b-[#6498c8]/[0.25]'
+          ? 'bg-[var(--accent)]/10 dark:bg-[var(--accent)]/[0.12] border-[var(--accent)]/20 dark:border-[var(--accent)]/[0.15] border-b-[2.5px] border-b-[var(--accent)]/30 dark:border-b-[var(--accent)]/[0.25]'
           : 'hover:bg-slate-50 dark:hover:bg-white/[0.03]'
       }`}
     >
       <List
         size={20}
         className={
-          active ? 'shrink-0 text-[#6498c8]' : 'shrink-0 text-slate-400 dark:text-white/50'
+          active ? 'shrink-0 text-[var(--accent)]' : 'shrink-0 text-slate-400 dark:text-white/50'
         }
       />
       <span
-        className={`text-[13px] truncate flex-1 ${active ? 'font-medium text-[#6498c8]' : 'text-slate-600 dark:text-white/60'}`}
+        className={`text-[13px] truncate flex-1 ${active ? 'font-medium text-[var(--accent)]' : 'text-slate-600 dark:text-white/60'}`}
       >
         {l.name}
       </span>

@@ -289,12 +289,12 @@ export function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
                 if (e.key === 'Escape') cancelLink()
               }}
               placeholder="https://..."
-              className="flex-1 rounded-lg border border-gray-300 dark:border-[var(--border)] bg-white dark:bg-[var(--bg-card)] text-gray-900 dark:text-gray-100 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 rounded-lg border border-gray-300 dark:border-[var(--border)] bg-white dark:bg-[var(--bg-card)] text-gray-900 dark:text-gray-100 px-3 py-1.5 text-sm focus:outline-none focus:border-[var(--accent-ring)] focus:ring-1 focus:ring-[var(--accent-ring)]"
             />
             <button
               type="button"
               onClick={submitLink}
-              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-[#f0f0f0] text-sm rounded-lg transition-colors"
+              className="px-3 py-1.5 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[#f0f0f0] text-sm rounded-lg transition-colors"
             >
               Apply
             </button>
@@ -317,7 +317,7 @@ export function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
           [&_.ProseMirror]:outline-none
           [&_.ProseMirror]:whitespace-pre-wrap
           [&_.ProseMirror]:min-h-[360px]
-          [&_.ProseMirror]:caret-[#6498c8]
+          [&_.ProseMirror]:caret-[var(--accent)]
           [&_.ProseMirror]:font-normal
           [&_.ProseMirror_p]:mb-2
           [&_.ProseMirror_p:last-child]:mb-0
@@ -330,7 +330,7 @@ export function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
           [&_.ProseMirror_blockquote]:border-l-4 [&_.ProseMirror_blockquote]:border-gray-300 [&_.ProseMirror_blockquote]:dark:border-[var(--border)] [&_.ProseMirror_blockquote]:pl-3 [&_.ProseMirror_blockquote]:text-gray-500 [&_.ProseMirror_blockquote]:italic
           [&_.ProseMirror_code]:bg-gray-200 [&_.ProseMirror_code]:dark:bg-[var(--bg-elevated)] [&_.ProseMirror_code]:px-1 [&_.ProseMirror_code]:rounded [&_.ProseMirror_code]:text-xs [&_.ProseMirror_code]:font-mono
           [&_.ProseMirror_pre]:bg-gray-200 [&_.ProseMirror_pre]:dark:bg-[var(--bg-elevated)] [&_.ProseMirror_pre]:p-3 [&_.ProseMirror_pre]:rounded-lg [&_.ProseMirror_pre]:mb-2 [&_.ProseMirror_pre]:overflow-x-auto
-          [&_.ProseMirror_a]:text-blue-600 [&_.ProseMirror_a]:underline
+          [&_.ProseMirror_a]:text-[var(--accent)] [&_.ProseMirror_a]:underline
           [&_.ProseMirror_strong]:font-semibold
           [&_.ProseMirror_em]:italic
           [&_.ProseMirror_s]:line-through

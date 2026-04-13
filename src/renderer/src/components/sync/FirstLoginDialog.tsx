@@ -42,7 +42,7 @@ export default function FirstLoginDialog() {
           type="checkbox"
           checked={remember}
           onChange={(e) => setRemember(e.target.checked)}
-          className="w-3.5 h-3.5 rounded accent-blue-600 cursor-pointer"
+          className="w-3.5 h-3.5 rounded accent-[var(--accent)] cursor-pointer"
         />
         <span className="text-xs text-gray-400 dark:text-gray-500">Remember my choice</span>
       </label>
@@ -55,7 +55,7 @@ export default function FirstLoginDialog() {
         </button>
         <button
           onClick={() => completeMigration('sync', remember)}
-          className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-[#f0f0f0] hover:bg-blue-700 transition-colors"
+          className="px-4 py-2 text-sm rounded-lg bg-[var(--accent)] text-[#f0f0f0] hover:bg-[var(--accent-hover)] transition-colors"
         >
           {confirm}
         </button>

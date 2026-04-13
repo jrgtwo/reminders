@@ -30,7 +30,7 @@ function ReminderItem({
         }`}
       >
         <div
-          className={`text-[11px] font-semibold mb-0.5 ${variant === 'overdue' ? 'text-red-400 dark:text-[#e8a045]/80' : 'text-blue-500 dark:text-[#6498c8]/80'}`}
+          className={`text-[11px] font-semibold mb-0.5 ${variant === 'overdue' ? 'text-red-400 dark:text-[#e8a045]/80' : 'text-[var(--color-upcoming)]'}`}
         >
           {variant === 'overdue' ? formatOverdueDate(dateStr) : formatUpcomingDate(dateStr)}
         </div>

@@ -29,7 +29,7 @@ export default function PrivacySection() {
             type="checkbox"
             checked={analytics}
             onChange={(e) => handleToggle(e.target.checked)}
-            className="accent-[#6498c8] w-4 h-4 cursor-pointer"
+            className="accent-[var(--accent)] w-4 h-4 cursor-pointer"
           />
         </label>
         <div className="flex items-center justify-between">
@@ -41,14 +41,14 @@ export default function PrivacySection() {
               Required for the app to function (always on)
             </p>
           </div>
-          <input type="checkbox" checked disabled className="accent-[#6498c8] w-4 h-4" />
+          <input type="checkbox" checked disabled className="accent-[var(--accent)] w-4 h-4" />
         </div>
         <div className="border-t border-gray-200 dark:border-white/10 pt-3">
           <a
             href="/privacy"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-[#6498c8] hover:underline"
+            className="text-sm text-[var(--accent)] hover:underline"
           >
             Privacy Policy
           </a>

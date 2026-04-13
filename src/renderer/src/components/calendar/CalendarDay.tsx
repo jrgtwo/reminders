@@ -56,7 +56,7 @@ export default function CalendarDay({
     >
       {/* Today stripe */}
       {todayDate && (
-        <div className="absolute top-0 left-0 right-0 h-[5px] bg-blue-500 dark:bg-[#6498c8] rounded-t-lg" />
+        <div className="absolute top-0 left-0 right-0 h-[5px] bg-[var(--accent)] rounded-t-lg" />
       )}
 
       {/* Date number */}
@@ -65,7 +65,7 @@ export default function CalendarDay({
           'flex items-center justify-center rounded-full shrink-0 leading-none',
           tall ? 'text-[15px]' : 'text-[14px]',
           todayDate
-            ? 'text-blue-500 dark:text-[#6498c8]'
+            ? 'text-[var(--accent)]'
             : inMonth
               ? 'text-slate-700 dark:text-white/80'
               : 'text-slate-300 dark:text-white/50'

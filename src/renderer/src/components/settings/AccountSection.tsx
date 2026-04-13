@@ -45,7 +45,7 @@ export default function AccountSection({
       {isLoggedIn && user ? (
         <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[var(--bg-card)]">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-[#f0f0f0] text-sm font-medium">
+            <div className="w-8 h-8 rounded-full bg-[var(--accent)] flex items-center justify-center text-[#f0f0f0] text-sm font-medium">
               {(user.email ?? '?')[0].toUpperCase()}
             </div>
             <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.email}</p>
@@ -78,7 +78,7 @@ export default function AccountSection({
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
               required
-              className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-[var(--border)] bg-white dark:bg-[var(--bg-card)] text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-[var(--border)] bg-white dark:bg-[var(--bg-card)] text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-[var(--accent-ring)] focus:ring-1 focus:ring-[var(--accent-ring)]"
             />
             <Button
               type="submit"

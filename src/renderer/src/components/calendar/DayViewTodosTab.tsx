@@ -52,7 +52,7 @@ export default function DayViewTodosTab({
               </p>
               <button
                 onClick={handleCreateInlineList}
-                className="text-[12px] font-medium text-[#6498c8] hover:opacity-80 transition-opacity"
+                className="text-[12px] font-medium text-[var(--accent)] hover:opacity-80 transition-opacity"
               >
                 + New list
               </button>
@@ -139,7 +139,7 @@ export default function DayViewTodosTab({
                 {isExpanded && (
                   <button
                     onClick={() => handleAddItem(l.id)}
-                    className="text-[12px] font-medium text-[#6498c8] hover:opacity-80 transition-opacity"
+                    className="text-[12px] font-medium text-[var(--accent)] hover:opacity-80 transition-opacity"
                   >
                     + Add item
                   </button>
@@ -194,7 +194,7 @@ export default function DayViewTodosTab({
       })}
       <button
         onClick={handleCreateInlineList}
-        className="flex items-center gap-2 w-full px-4 py-3 rounded-xl text-left bg-transparent border border-dashed border-slate-300 dark:border-white/[0.06] hover:border-[#6498c8] dark:hover:border-[#6498c8] text-[#6498c8] dark:text-[#6498c8] text-[13px] font-medium transition-colors"
+        className="flex items-center gap-2 w-full px-4 py-3 rounded-xl text-left bg-transparent border border-dashed border-slate-300 dark:border-white/[0.06] hover:border-[var(--accent)] dark:hover:border-[var(--accent)] text-[var(--accent)] dark:text-[var(--accent)] text-[13px] font-medium transition-colors"
       >
         <span className="text-lg leading-none">+</span>
         New list

@@ -3,6 +3,7 @@ import type { Reminder } from '../../types/models'
 import Button from '../ui/Button'
 import Dialog from '../ui/Dialog'
 import Input from '../ui/Input'
+import Toggle from '../ui/Toggle'
 import RecurrenceEditor from './RecurrenceEditor'
 import { useReminderForm } from './hooks/useReminderForm'
 
@@ -61,7 +62,7 @@ export default function ReminderForm({ date, reminder, defaultTime, onSave, onCl
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Add details..."
             rows={3}
-            className="rounded-lg border border-gray-300 dark:border-[var(--border)] bg-white dark:bg-[var(--bg-elevated)] px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#6498c8] focus:border-transparent resize-none"
+            className="rounded-lg border border-gray-300 dark:border-[var(--border)] bg-white dark:bg-[var(--bg-elevated)] px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-[var(--accent-ring)] focus:ring-1 focus:ring-[var(--accent-ring)] resize-none"
           />
         </div>
 
@@ -105,21 +106,7 @@ export default function ReminderForm({ date, reminder, defaultTime, onSave, onCl
             <RefreshCw size={20} className="text-gray-400 dark:text-gray-500" />
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Repeat</span>
           </div>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={recurring}
-            onClick={() => setRecurring(!recurring)}
-            className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#6498c8] focus:ring-offset-1 dark:focus:ring-offset-[var(--bg-surface)] ${
-              recurring ? 'bg-blue-500 dark:bg-[#6498c8]' : 'bg-gray-200 dark:bg-[var(--bg-elevated)]'
-            }`}
-          >
-            <span
-              className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
-                recurring ? 'translate-x-4' : 'translate-x-0'
-              }`}
-            />
-          </button>
+          <Toggle checked={recurring} onChange={setRecurring} />
         </div>
 
         {recurring && (
@@ -132,7 +119,7 @@ export default function ReminderForm({ date, reminder, defaultTime, onSave, onCl
           <Button type="button" variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" disabled={saving}>
+          <Button type="submit" variant="accent" disabled={saving}>
             {saving ? 'Saving…' : isNew ? 'Add Reminder' : 'Save Changes'}
           </Button>
         </div>

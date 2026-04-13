@@ -163,7 +163,7 @@ export function SidebarNavItem({
       onDragEnd={() => onDragEnd?.()}
       className={`group relative flex items-center gap-2 mx-1.5 mb-0.5 py-2 rounded-lg border border-transparent transition-all ${onDragStart ? 'cursor-grab active:cursor-grabbing' : ''} ${indent ? 'pl-7 pr-2' : 'pl-3 pr-2'} ${
         active
-          ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.12] border-[#6498c8]/20 dark:border-[#6498c8]/[0.15] border-b-[2.5px] border-b-[#6498c8]/30 dark:border-b-[#6498c8]/[0.25]'
+          ? 'bg-[var(--accent)]/10 dark:bg-[var(--accent)]/[0.12] border-[var(--accent)]/20 dark:border-[var(--accent)]/[0.15] border-b-[2.5px] border-b-[var(--accent)]/30 dark:border-b-[var(--accent)]/[0.25]'
           : 'hover:bg-slate-50 dark:hover:bg-white/[0.03] hover:border-slate-200/60 dark:hover:border-white/[0.06] hover:border-b-[2.5px] hover:border-b-slate-300/60 dark:hover:border-b-white/[0.12]'
       } active:translate-y-[1px]`}
     >
@@ -174,11 +174,11 @@ export function SidebarNavItem({
         <Icon
           size={20}
           className={
-            active ? 'shrink-0 text-[#6498c8]' : 'shrink-0 text-slate-400 dark:text-white/50'
+            active ? 'shrink-0 text-[var(--accent)]' : 'shrink-0 text-slate-400 dark:text-white/50'
           }
         />
         <span
-          className={`text-[15px] truncate flex-1 pr-6 md:pr-0 md:group-hover:pr-6 ${active ? 'font-medium text-[#6498c8]' : 'text-slate-600 dark:text-white/60'}`}
+          className={`text-[15px] truncate flex-1 pr-6 md:pr-0 md:group-hover:pr-6 ${active ? 'font-medium text-[var(--accent)]' : 'text-slate-600 dark:text-white/60'}`}
         >
           {label}
         </span>
@@ -295,7 +295,7 @@ export function FolderTree<F extends { id: string; name: string }, I>({
             }
           }}
           onClick={() => onToggleFolder(folder.id)}
-          className={`group relative flex items-center gap-1.5 w-full py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors cursor-pointer rounded ${onFolderDragStart ? 'active:cursor-grabbing' : ''} ${isDropTarget ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.08] ring-1 ring-[#6498c8]/30' : ''}`}
+          className={`group relative flex items-center gap-1.5 w-full py-1 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors cursor-pointer rounded ${onFolderDragStart ? 'active:cursor-grabbing' : ''} ${isDropTarget ? 'bg-[var(--accent)]/10 dark:bg-[var(--accent)]/[0.08] ring-1 ring-[var(--accent)]/30' : ''}`}
           style={{ paddingLeft: `${pl}px`, paddingRight: '8px' }}
         >
           {collapsed ? (

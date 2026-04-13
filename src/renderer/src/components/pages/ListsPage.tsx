@@ -1,5 +1,5 @@
 import { useOutlet } from 'react-router-dom'
-import { List } from 'lucide-react'
+import { List, Plus } from 'lucide-react'
 import { useRef, useState, useCallback } from 'react'
 import ListsNav, { type ListsNavHandle } from '../lists/ListsNav'
 import SidebarAddButton from '../ui/SidebarAddButton'
@@ -10,11 +10,18 @@ const MIN_WIDTH = 160
 const MAX_WIDTH = 480
 const DEFAULT_WIDTH = 256
 
-function ListsEmptyState() {
+function ListsEmptyState({ onAdd }: { onAdd: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center h-full gap-3">
       <List size={40} className="text-slate-200 dark:text-white/10" />
       <p className="text-sm text-slate-400 dark:text-white/50">Select a list or create a new one</p>
+      <button
+        onClick={onAdd}
+        className="flex items-center gap-1.5 mt-1 text-sm font-medium text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors"
+      >
+        <Plus size={16} />
+        New List
+      </button>
     </div>
   )
 }
@@ -78,18 +85,21 @@ export default function ListsPage() {
         />
         {!collapsed && (
           <div className="flex-1 overflow-y-auto" style={{ width: sidebarWidth, minWidth: sidebarWidth }}>
-            <ListsNav />
+            <ListsNav ref={listsNavRef} />
           </div>
+        )}
+        {!collapsed && (
+          <SidebarAddButton label="New List" onClick={() => listsNavRef.current?.openNewList()} />
         )}
       </div>
 
       {/* Resize handle (desktop only) */}
       <div className="hidden md:block shrink-0 relative" style={{ width: 0 }}>
         <div
-          className="absolute inset-y-0 -left-1 w-2 cursor-col-resize hover:bg-blue-500/20 active:bg-blue-500/30 transition-colors z-10 group"
+          className="absolute inset-y-0 -left-1 w-2 cursor-col-resize hover:bg-[var(--accent)]/20 active:bg-[var(--accent)]/30 transition-colors z-10 group"
           onMouseDown={onMouseDown}
         >
-          <div className="absolute inset-y-0 left-[3px] w-px bg-transparent group-hover:bg-blue-500/40 transition-colors" />
+          <div className="absolute inset-y-0 left-[3px] w-px bg-transparent group-hover:bg-[var(--accent)]/40 transition-colors" />
         </div>
       </div>
 
@@ -98,7 +108,7 @@ export default function ListsPage() {
         className={`flex-1 flex flex-col overflow-hidden bg-[var(--bg-app)]
           ${hasList ? 'flex' : 'hidden md:flex'}`}
       >
-        {outlet ?? <ListsEmptyState />}
+        {outlet ?? <ListsEmptyState onAdd={() => listsNavRef.current?.openNewList()} />}
       </div>
     </div>
   )

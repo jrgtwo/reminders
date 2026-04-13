@@ -158,16 +158,16 @@ const NotesNav = forwardRef<NotesNavHandle>(function NotesNav(_, ref) {
               if (draggingNoteFolderId) handleNoteFolderDrop(undefined)
               else handleNoteDrop(undefined)
             }}
-            className={`transition-colors rounded mx-1 ${noteDropTarget === 'standalone' ? 'bg-[#6498c8]/10 dark:bg-[#6498c8]/[0.08] ring-1 ring-[#6498c8]/30' : ''}`}
+            className={`transition-colors rounded mx-1 ${noteDropTarget === 'standalone' ? 'bg-[var(--accent)]/10 dark:bg-[var(--accent)]/[0.08] ring-1 ring-[var(--accent)]/30' : ''}`}
           >
             {standaloneNotes.map((n) => renderNote(n, false))}
             {noteDropTarget === 'standalone' && standaloneNotes.length === 0 && draggingNoteId && (
-              <p className="text-[11px] text-[#6498c8]/60 px-4 py-2">
+              <p className="text-[11px] text-[var(--accent)]/60 px-4 py-2">
                 Drop here to remove from folder
               </p>
             )}
             {noteDropTarget === 'standalone' && draggingNoteFolderId && (
-              <p className="text-[11px] text-[#6498c8]/60 px-4 py-2">
+              <p className="text-[11px] text-[var(--accent)]/60 px-4 py-2">
                 Drop here to move to top level
               </p>
             )}

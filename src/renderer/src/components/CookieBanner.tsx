@@ -43,7 +43,7 @@ export default function CookieBanner({ onDismiss }: Props) {
                   Required for the app to work (theme, preferences)
                 </p>
               </div>
-              <input type="checkbox" checked disabled className="accent-[#6498c8] w-4 h-4" />
+              <input type="checkbox" checked disabled className="accent-[var(--accent)] w-4 h-4" />
             </label>
 
             {/* Analytics */}
@@ -60,7 +60,7 @@ export default function CookieBanner({ onDismiss }: Props) {
                 type="checkbox"
                 checked={analytics}
                 onChange={(e) => setAnalytics(e.target.checked)}
-                className="accent-[#6498c8] w-4 h-4 cursor-pointer"
+                className="accent-[var(--accent)] w-4 h-4 cursor-pointer"
               />
             </label>
           </div>
@@ -74,7 +74,7 @@ export default function CookieBanner({ onDismiss }: Props) {
             </button>
             <button
               onClick={handleSavePreferences}
-              className="flex-1 py-2 rounded-lg bg-[#2b6ca0] hover:bg-[#3a7fb5] text-sm font-medium text-white transition-colors"
+              className="flex-1 py-2 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-sm font-medium text-white transition-colors"
             >
               Save Preferences
             </button>
@@ -109,7 +109,7 @@ export default function CookieBanner({ onDismiss }: Props) {
           </button>
           <button
             onClick={handleAcceptAll}
-            className="flex-1 py-2 rounded-lg bg-[#2b6ca0] hover:bg-[#3a7fb5] text-sm font-medium text-white transition-colors"
+            className="flex-1 py-2 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-sm font-medium text-white transition-colors"
           >
             Accept All
           </button>

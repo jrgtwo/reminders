@@ -54,7 +54,7 @@ export default function LeftSidebar() {
           }`}
         >
           <div
-            className={`text-[11px] font-semibold mb-0.5 ${variant === 'overdue' ? 'text-red-400 dark:text-[#e8a045]/80' : 'text-blue-500 dark:text-[#6498c8]/80'}`}
+            className={`text-[11px] font-semibold mb-0.5 ${variant === 'overdue' ? 'text-red-400 dark:text-[#e8a045]/80' : 'text-[var(--color-upcoming)]'}`}
           >
             {variant === 'overdue' ? formatOverdueDate(dateStr) : formatUpcomingDate(dateStr)}
           </div>
@@ -256,7 +256,7 @@ export default function LeftSidebar() {
       {leftOpen && (
         <div
           onMouseDown={onResizeStart}
-          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500/30 transition-colors"
+          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-[var(--accent)]/30 transition-colors"
         />
       )}
 

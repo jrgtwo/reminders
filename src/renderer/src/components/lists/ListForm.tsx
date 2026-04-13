@@ -44,7 +44,7 @@ export default function ListForm({ list, folders, defaultFolderId, defaultDueDat
             <select
               value={folderId}
               onChange={(e) => handleFolderChange(e.target.value)}
-              className="rounded-lg border border-gray-300 dark:border-[var(--border)] bg-white dark:bg-[var(--bg-card)] px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="rounded-lg border border-gray-300 dark:border-[var(--border)] bg-white dark:bg-[var(--bg-card)] px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:border-[var(--accent-ring)] focus:ring-1 focus:ring-[var(--accent-ring)]"
             >
               <option value="">No folder</option>
               {folders.map((f) => (

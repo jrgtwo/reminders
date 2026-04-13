@@ -1,5 +1,7 @@
 import { RefreshCw, Trash2 } from 'lucide-react'
 import type { Reminder } from '../../types/models'
+import Button from '../ui/Button'
+import Toggle from '../ui/Toggle'
 import RecurrenceEditor from './RecurrenceEditor'
 import { useReminderInlineEditor } from './hooks/useReminderInlineEditor'
 
@@ -11,7 +13,7 @@ interface Props {
 }
 
 const fieldClass =
-  'text-[13px] text-slate-700 dark:text-white/60 bg-transparent border border-slate-200 dark:border-white/[0.08] rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#6498c8] w-full'
+  'text-[13px] text-slate-700 dark:text-white/60 bg-transparent border border-slate-200 dark:border-white/[0.08] rounded-lg px-3 py-1.5 focus:outline-none focus:border-white/25 w-full'
 
 const labelClass =
   'text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-white/55'
@@ -51,7 +53,7 @@ export default function ReminderInlineEditor({ reminder, onSave, onCancel, onDel
           value={title}
           onChange={(e) => { setTitle(e.target.value); setError('') }}
           placeholder="Title"
-          className="w-full text-[14px] font-medium text-slate-800 dark:text-white/80 placeholder:text-slate-300 dark:placeholder:text-white/50 bg-transparent border-b border-slate-200 dark:border-white/[0.08] pb-1.5 focus:outline-none focus:border-[#6498c8] transition-colors"
+          className="w-full text-[14px] font-medium text-slate-800 dark:text-white/80 placeholder:text-slate-300 dark:placeholder:text-white/50 bg-transparent border-b border-slate-200 dark:border-white/[0.08] pb-1.5 focus:outline-none focus:border-white/25 transition-colors"
           onKeyDown={(e) => {
             if (e.key === 'Enter') handleSave()
             if (e.key === 'Escape') onCancel()
@@ -66,7 +68,7 @@ export default function ReminderInlineEditor({ reminder, onSave, onCancel, onDel
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Description (optional)"
         rows={2}
-        className="text-[13px] text-slate-500 dark:text-white/50 placeholder:text-slate-300 dark:placeholder:text-white/50 bg-transparent border border-slate-200 dark:border-white/[0.08] rounded-lg px-3 py-2 focus:outline-none focus:border-[#6498c8] resize-none w-full transition-colors"
+        className="text-[13px] text-slate-500 dark:text-white/50 placeholder:text-slate-300 dark:placeholder:text-white/50 bg-transparent border border-slate-200 dark:border-white/[0.08] rounded-lg px-3 py-2 focus:outline-none focus:border-white/25 resize-none w-full transition-colors"
       />
 
       {/* Date row */}
@@ -129,19 +131,7 @@ export default function ReminderInlineEditor({ reminder, onSave, onCancel, onDel
           <RefreshCw size={20} className="text-slate-400 dark:text-white/55" />
           <span className="text-[13px] text-slate-600 dark:text-white/60">Repeat</span>
         </div>
-        <button
-          type="button"
-          onClick={() => setRecurring(!recurring)}
-          className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
-            recurring ? 'bg-[#6498c8]' : 'bg-slate-200 dark:bg-white/[0.1]'
-          }`}
-        >
-          <span
-            className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out ${
-              recurring ? 'translate-x-4' : 'translate-x-0'
-            }`}
-          />
-        </button>
+        <Toggle checked={recurring} onChange={setRecurring} />
       </div>
 
       {recurring && (
@@ -152,30 +142,17 @@ export default function ReminderInlineEditor({ reminder, onSave, onCancel, onDel
 
       {/* Footer actions */}
       <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-white/[0.05]">
-        <button
-          type="button"
-          onClick={(e) => onDelete(e)}
-          className="flex items-center gap-1.5 text-[12px] text-slate-400 dark:text-white/55 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-        >
-          <Trash2 size={20} />
+        <Button type="button" variant="danger" size="sm" onClick={(e) => onDelete(e)}>
+          <Trash2 size={14} />
           Delete
-        </button>
+        </Button>
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="text-[12px] text-slate-400 dark:text-white/55 hover:text-slate-600 dark:hover:text-white/60 transition-colors px-3 py-1.5"
-          >
+          <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
             Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className="text-[12px] font-medium text-white bg-[#6498c8] hover:bg-[#5387b7] disabled:opacity-50 transition-colors px-3 py-1.5 rounded-lg"
-          >
+          </Button>
+          <Button type="button" variant="accent" size="sm" onClick={handleSave} disabled={saving}>
             {saving ? 'Saving…' : 'Save'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

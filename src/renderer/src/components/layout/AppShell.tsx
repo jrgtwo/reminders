@@ -3,8 +3,10 @@ import { Settings, Cloud, CloudOff, Loader2, X } from 'lucide-react'
 import BottomNav, { SideNav } from './BottomNav'
 import SearchBar from './SearchBar'
 import ReminderForm from '../reminders/ReminderForm'
+import NotificationBanner from '../NotificationBanner'
 import { useAppShell } from './hooks/useAppShell'
 import logo from '../../assets/logo.svg'
+import logoCheckmark from '../../assets/logo-checkmark.svg'
 
 function formatLastSynced(isoStr: string): string {
   const minutes = Math.floor((Date.now() - new Date(isoStr).getTime()) / 60_000)
@@ -66,12 +68,12 @@ export default function AppShell() {
                 className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
               >
                 <span
-                  className={`text-[11px] font-bold tabular-nums ${upcomingCount > 0 ? 'text-[#6498c8]' : 'text-white/50'}`}
+                  className={`text-[11px] font-bold tabular-nums ${upcomingCount > 0 ? 'text-[var(--color-upcoming)]' : 'text-white/50'}`}
                 >
                   {upcomingCount}
                 </span>
                 <span
-                  className={`text-[11px] ${upcomingCount > 0 ? 'text-[#6498c8]/70' : 'text-white/50'}`}
+                  className={`text-[11px] ${upcomingCount > 0 ? 'text-[var(--color-upcoming)]/70' : 'text-white/50'}`}
                 >
                   upcoming
                 </span>
@@ -120,18 +122,7 @@ export default function AppShell() {
               className="flex flex-col leading-none hover:opacity-80 transition-opacity"
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
-              <span
-                className="text-[10px] text-white/60 tracking-[0.2em] uppercase font-medium"
-                style={{ fontFamily: "'Bree Serif', serif", fontWeight: 400 }}
-              >
-                Reminder
-              </span>
-              <span
-                className="text-[22px] text-white/80 tracking-tight -mt-0.5"
-                style={{ fontFamily: "'Bree Serif', serif", fontWeight: 400 }}
-              >
-                Today
-              </span>
+              <img src={logoCheckmark} alt="Reminder Today Logo" className="w-8 mb-1" />
             </button>
             <div className="flex items-center gap-2">
               {isLoggedIn && (
@@ -184,6 +175,8 @@ export default function AppShell() {
           </button>
         </div>
       )}
+
+      <NotificationBanner />
 
       <div className="flex flex-1 overflow-hidden">
         <SideNav />

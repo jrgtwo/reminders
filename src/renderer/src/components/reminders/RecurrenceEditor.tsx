@@ -3,10 +3,10 @@ import type { RecurrenceRule } from '../../types/models'
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 const selectClass =
-  'rounded-lg border border-gray-300 dark:border-[var(--border)] bg-white dark:bg-[var(--bg-elevated)] text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+  'rounded-lg border border-gray-300 dark:border-[var(--border)] bg-white dark:bg-[var(--bg-elevated)] text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:border-[var(--accent-ring)] focus:ring-1 focus:ring-[var(--accent-ring)]'
 
 const numberClass =
-  'w-16 rounded-lg border border-gray-300 dark:border-[var(--border)] bg-white dark:bg-[var(--bg-elevated)] text-gray-900 dark:text-gray-100 px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500'
+  'w-16 rounded-lg border border-gray-300 dark:border-[var(--border)] bg-white dark:bg-[var(--bg-elevated)] text-gray-900 dark:text-gray-100 px-2 py-1.5 text-sm text-center focus:outline-none focus:border-[var(--accent-ring)] focus:ring-1 focus:ring-[var(--accent-ring)]'
 
 interface Props {
   value: RecurrenceRule
@@ -75,7 +75,7 @@ export default function RecurrenceEditor({ value, onChange }: Props) {
                   }}
                   className={`w-9 h-9 rounded-full text-xs font-medium transition-colors ${
                     active
-                      ? 'bg-blue-600 text-[#f0f0f0]'
+                      ? 'bg-[var(--accent)] text-[#f0f0f0]'
                       : 'bg-gray-100 dark:bg-[var(--bg-elevated)] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[var(--bg-elevated)]'
                   }`}
                 >
@@ -122,7 +122,7 @@ export default function RecurrenceEditor({ value, onChange }: Props) {
                 type="date"
                 value={value.endDate}
                 onChange={(e) => set('endDate', e.target.value)}
-                className="ml-1 rounded-lg border border-gray-300 dark:border-[var(--border)] bg-white dark:bg-[var(--bg-card)] text-gray-900 dark:text-gray-100 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="ml-1 rounded-lg border border-gray-300 dark:border-[var(--border)] bg-white dark:bg-[var(--bg-card)] text-gray-900 dark:text-gray-100 px-2 py-1 text-sm focus:outline-none focus:border-[var(--accent-ring)] focus:ring-1 focus:ring-[var(--accent-ring)]"
               />
             )}
           </label>

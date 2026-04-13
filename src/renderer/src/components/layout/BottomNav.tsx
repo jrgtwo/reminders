@@ -22,7 +22,7 @@ export default function BottomNav() {
             onClick={() => navigate(path)}
             className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs transition-all active:translate-y-[1.5px] ${
               active
-                ? 'text-blue-600 dark:text-blue-400'
+                ? 'text-[var(--accent)]'
                 : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
@@ -50,7 +50,7 @@ export function SideNav() {
             title={label}
             className={`flex flex-col items-center gap-1 py-4 text-[10px] transition-all active:translate-y-[1.5px] ${
               active
-                ? 'text-blue-600 dark:text-blue-400'
+                ? 'text-[var(--accent)]'
                 : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
