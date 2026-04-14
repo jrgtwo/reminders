@@ -26,6 +26,7 @@ const PrivacyPolicyPage = lazy(() => import('./components/pages/PrivacyPolicyPag
 import { getConsent } from './lib/consent'
 import { useCalendarPage } from './components/hooks/useCalendarPage'
 import { useApp } from './components/hooks/useApp'
+import PageLoader from './components/ui/PageLoader'
 
 function CalendarPage() {
   const { displayDate, view, weekDays, handlePrev, handleNext, handleToday, setView } =
@@ -62,7 +63,7 @@ function FirstVisitRedirect() {
 }
 
 function Lazy({ children }: { children: React.ReactNode }) {
-  return <Suspense fallback={null}>{children}</Suspense>
+  return <Suspense fallback={<PageLoader />}>{children}</Suspense>
 }
 
 const routes = [

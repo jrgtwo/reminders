@@ -1,5 +1,31 @@
 @import "tailwindcss";
 
+/* Page-transition loading bar */
+@keyframes loadingBarPulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+.page-loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 9999;
+  pointer-events: none;
+  background: linear-gradient(90deg, #d97706, #f59e0b, #fbbf24, #f59e0b, #d97706);
+  animation: loadingBarPulse 1.4s ease-in-out infinite;
+}
+
+/* Page loader logo pulse */
+@keyframes logoPulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.95); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+.page-loader-logo {
+  animation: logoPulse 1.4s ease-in-out infinite;
+}
+
 @keyframes slideUp {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
@@ -373,10 +399,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     var(--bg-app);
   background-size: 100% 100%, 300px 300px, 100% 100%;
   background-blend-mode: normal, soft-light, normal;
-  background-position:
-    0 0,
-    calc(var(--mx, 0.5) * 30px) calc(var(--my, 0.5) * 30px),
-    0 0;
-  transition: background-position 0.4s ease-out;
+  background-position: 0 0, 0 0, 0 0;
 }
 
