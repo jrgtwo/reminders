@@ -42,7 +42,9 @@ export async function tryRestoreCachedKey(): Promise<void> {
     if (!userId) return
     const cached = await loadCachedKey(userId)
     if (cached) encryptionKey = cached
-  } catch {}
+  } catch (err) {
+    console.warn('[encryption] Failed to restore cached key:', err)
+  }
 }
 
 export function setEncryptionKey(key: CryptoKey): void {
@@ -61,7 +63,9 @@ async function loadCachedKey(userId: string): Promise<CryptoKey | null> {
       const b64 = localStorage.getItem(`enc_key_${userId}`)
       if (b64) return importKey(b64)
     }
-  } catch {}
+  } catch (err) {
+    console.warn('[encryption] Failed to load cached key:', err)
+  }
   return null
 }
 
@@ -73,7 +77,9 @@ async function cacheKeyLocally(userId: string, b64: string): Promise<void> {
     } else {
       localStorage.setItem(`enc_key_${userId}`, b64)
     }
-  } catch {}
+  } catch (err) {
+    console.warn('[encryption] Failed to cache key locally:', err)
+  }
 }
 
 async function clearCachedKey(userId: string): Promise<void> {
@@ -84,7 +90,9 @@ async function clearCachedKey(userId: string): Promise<void> {
     } else {
       localStorage.removeItem(`enc_key_${userId}`)
     }
-  } catch {}
+  } catch (err) {
+    console.warn('[encryption] Failed to clear cached key:', err)
+  }
 }
 
 export async function initEncryptionKey(userId: string): Promise<void> {
@@ -146,8 +154,9 @@ export async function initEncryptionKey(userId: string): Promise<void> {
     localStorage.setItem(LAST_USER_KEY, userId)
     encryptionKey = key
     await cacheKeyLocally(userId, keyData)
-  } catch {
+  } catch (err) {
     // Network unavailable — fall back to local cache so offline use still works.
+    console.warn('[encryption] Network unavailable, falling back to cached key:', err)
     const cached = await loadCachedKey(userId)
     if (cached) encryptionKey = cached
   }

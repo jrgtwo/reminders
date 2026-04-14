@@ -1,12 +1,12 @@
 import { Outlet } from 'react-router-dom'
-import { Settings, Cloud, CloudOff, Loader2, X } from 'lucide-react'
+import { Settings, Cloud, CloudOff, Loader2, X, ShieldAlert } from 'lucide-react'
 import BottomNav, { SideNav } from './BottomNav'
 import SearchBar from './SearchBar'
 import ReminderForm from '../reminders/ReminderForm'
 import NotificationBanner from '../NotificationBanner'
 import { useAppShell } from './hooks/useAppShell'
+import { useEncryptionErrorStore } from '../../store/encryption-error.store'
 import logo from '../../assets/logo.svg'
-import logoCheckmark from '../../assets/logo-checkmark.svg'
 import GrainOverlay from '../ui/GrainOverlay'
 
 function formatLastSynced(isoStr: string): string {
@@ -30,13 +30,14 @@ export default function AppShell() {
     upcomingCount,
     syncStatus,
     lastSyncedAt,
-    showErrorBanner,
+    showErrorBanner
   } = useAppShell()
 
+  const encryptionError = useEncryptionErrorStore((s) => s.hasError && !s.dismissed)
+  const dismissEncryptionError = useEncryptionErrorStore((s) => s.dismiss)
+
   return (
-    <div
-      className="flex flex-col h-screen text-slate-900 dark:text-slate-100 relative overflow-hidden grain-bg"
-    >
+    <div className="flex flex-col h-screen text-slate-900 dark:text-slate-100 relative overflow-hidden grain-bg">
       <GrainOverlay />
       {/* Top header */}
       <header className="relative flex flex-col border-b border-black/30 dark:border-black/60 shrink-0 bg-[var(--bg-header)] paper">
@@ -173,6 +174,22 @@ export default function AppShell() {
           </span>
           <button
             onClick={() => setErrorDismissed(true)}
+            className="p-0.5 hover:bg-red-100 dark:hover:bg-red-500/20 rounded"
+          >
+            <X size={20} />
+          </button>
+        </div>
+      )}
+
+      {encryptionError && (
+        <div className="relative flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-500/[0.08] border-b border-red-200 dark:border-red-500/20 text-red-700 dark:text-red-400 text-xs shrink-0">
+          <ShieldAlert size={20} />
+          <span className="flex-1">
+            Encryption key unavailable — saves are disabled until your key is restored. Check your
+            connection and try signing out and back in.
+          </span>
+          <button
+            onClick={dismissEncryptionError}
             className="p-0.5 hover:bg-red-100 dark:hover:bg-red-500/20 rounded"
           >
             <X size={20} />
