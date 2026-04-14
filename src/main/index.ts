@@ -10,6 +10,7 @@ import { registerWindowHandlers } from './ipc/window'
 import { registerAuthHandlers } from './ipc/auth'
 import { registerSyncHandlers } from './ipc/sync'
 import { registerSafeStorageHandlers } from './ipc/safeStorage'
+import { registerPreferencesHandlers } from './ipc/preferences'
 import { startNotificationScheduler } from './notifications'
 import { setupTray } from './tray'
 import { loadWindowState, saveWindowState } from './windowState'
@@ -92,6 +93,7 @@ app.whenReady().then(() => {
   registerAuthHandlers()
   registerSyncHandlers()
   registerSafeStorageHandlers()
+  registerPreferencesHandlers()
   startNotificationScheduler()
   setupAutoUpdater()
 

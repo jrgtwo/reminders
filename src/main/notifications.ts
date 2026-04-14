@@ -1,6 +1,7 @@
 import { Notification } from 'electron'
 import { RRule } from 'rrule'
 import { getAllReminders } from './storage/reminders.repo'
+import { loadPreferences } from './preferences'
 import type { Reminder } from '../renderer/src/types/models'
 
 const FREQ_MAP = {
@@ -67,9 +68,10 @@ function checkAndFire(): void {
     if (fired.has(key)) continue
     fired.add(key)
 
+    const { showNotificationContent } = loadPreferences()
     new Notification({
-      title: r.title,
-      body: r.description ?? `Reminder at ${time}`,
+      title: showNotificationContent ? r.title : 'Reminder',
+      body: showNotificationContent ? (r.description ?? `Reminder at ${time}`) : `You have a reminder at ${time}`,
     }).show()
   }
 }

@@ -81,6 +81,10 @@ const api = {
     save: (defaultName: string, data: string) =>
       ipcRenderer.invoke('dialog:save', { defaultName, data }),
     open: () => ipcRenderer.invoke('dialog:open')
+  },
+  preferences: {
+    get: () => ipcRenderer.invoke('preferences:get'),
+    set: (prefs: Record<string, unknown>) => ipcRenderer.invoke('preferences:set', prefs)
   }
 }
 
