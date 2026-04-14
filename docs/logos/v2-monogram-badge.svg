@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" width="360" height="120">
+  <defs>
+    <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e2a3a"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="badge2" x1="135deg" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <filter id="sh2">
+      <feDropShadow dx="0" dy="5" stdDeviation="9" flood-color="#000" flood-opacity="0.45"/>
+    </filter>
+    <filter id="badgeglow">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#3b82f6" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Card -->
+  <rect x="6" y="6" width="348" height="108" rx="16" fill="url(#bg2)" filter="url(#sh2)"/>
+  <rect x="6" y="6" width="348" height="108" rx="16" fill="none" stroke="#1e3a5f" stroke-width="1"/>
+
+  <!-- Blue monogram circle -->
+  <circle cx="68" cy="60" r="34" fill="url(#badge2)" filter="url(#badgeglow)"/>
+
+  <!-- RT monogram -->
+  <text x="68" y="54"
+    font-family="'Helvetica Neue', Arial, sans-serif"
+    font-size="13" font-weight="700" letter-spacing="1"
+    fill="rgba(255,255,255,0.6)" text-anchor="middle">R</text>
+  <text x="68" y="74"
+    font-family="'Helvetica Neue', Arial, sans-serif"
+    font-size="22" font-weight="900"
+    fill="#ffffff" text-anchor="middle">T</text>
+
+  <!-- Text block -->
+  <text x="118" y="50"
+    font-family="'Helvetica Neue', Arial, sans-serif"
+    font-size="11" font-weight="700" letter-spacing="5"
+    fill="#4b7ab5">REMINDER</text>
+
+  <text x="115" y="88"
+    font-family="'Helvetica Neue', Arial, sans-serif"
+    font-size="42" font-weight="800"
+    fill="#f1f5f9">Today</text>
+</svg>

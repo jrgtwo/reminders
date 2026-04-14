@@ -1,4 +1,4 @@
-package com.reminders.app;
+package com.remindertoday.app;
 
 import com.getcapacitor.BridgeActivity;
 

@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <defs>
+    <linearGradient id="bg5" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a2332"/>
+      <stop offset="100%" stop-color="#0d1520"/>
+    </linearGradient>
+    <linearGradient id="calgrad5" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0ea5e9"/>
+      <stop offset="100%" stop-color="#0369a1"/>
+    </linearGradient>
+    <filter id="sh5">
+      <feDropShadow dx="0" dy="5" stdDeviation="10" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+    <filter id="iconglow5">
+      <feDropShadow dx="0" dy="2" stdDeviation="5" flood-color="#0ea5e9" flood-opacity="0.5"/>
+    </filter>
+    <clipPath id="calClip">
+      <rect x="22" y="22" width="68" height="76" rx="10"/>
+    </clipPath>
+  </defs>
+
+  <!-- Card -->
+  <rect x="6" y="6" width="388" height="108" rx="16" fill="url(#bg5)" filter="url(#sh5)"/>
+  <rect x="6" y="6" width="388" height="108" rx="16" fill="none" stroke="#1e3a52" stroke-width="1"/>
+
+  <!-- Calendar icon -->
+  <g filter="url(#iconglow5)">
+    <!-- Calendar body -->
+    <rect x="22" y="28" width="68" height="66" rx="10" fill="#0c2a3e"/>
+    <rect x="22" y="28" width="68" height="66" rx="10" fill="none" stroke="#0ea5e9" stroke-width="1.5" opacity="0.7"/>
+    <!-- Header band -->
+    <rect x="22" y="28" width="68" height="22" rx="10" fill="url(#calgrad5)"/>
+    <rect x="22" y="40" width="68" height="10" fill="url(#calgrad5)"/>
+    <!-- Pin clips -->
+    <rect x="37" y="20" width="6" height="14" rx="3" fill="#7dd3fc"/>
+    <rect x="69" y="20" width="6" height="14" rx="3" fill="#7dd3fc"/>
+    <!-- Month label -->
+    <text x="56" y="43" font-family="'Helvetica Neue', Arial, sans-serif"
+      font-size="9" font-weight="700" letter-spacing="1" fill="#fff" text-anchor="middle">APR</text>
+    <!-- Day grid -->
+    <rect x="30" y="56" width="10" height="9" rx="2.5" fill="#0ea5e9" opacity="0.9"/>
+    <rect x="44" y="56" width="10" height="9" rx="2.5" fill="#1e3a52" opacity="0.8"/>
+    <rect x="58" y="56" width="10" height="9" rx="2.5" fill="#1e3a52" opacity="0.8"/>
+    <rect x="72" y="56" width="10" height="9" rx="2.5" fill="#1e3a52" opacity="0.8"/>
+    <rect x="30" y="69" width="10" height="9" rx="2.5" fill="#1e3a52" opacity="0.8"/>
+    <rect x="44" y="69" width="10" height="9" rx="2.5" fill="#1e3a52" opacity="0.8"/>
+    <rect x="58" y="69" width="10" height="9" rx="2.5" fill="#1e3a52" opacity="0.8"/>
+    <rect x="72" y="69" width="10" height="9" rx="2.5" fill="#1e3a52" opacity="0.8"/>
+    <rect x="30" y="82" width="10" height="9" rx="2.5" fill="#1e3a52" opacity="0.8"/>
+    <rect x="44" y="82" width="10" height="9" rx="2.5" fill="#1e3a52" opacity="0.8"/>
+  </g>
+
+  <!-- Vertical divider -->
+  <rect x="104" y="26" width="1" height="68" rx="0.5" fill="#1e3a52"/>
+
+  <!-- Text block -->
+  <text x="122" y="56"
+    font-family="'Helvetica Neue', Arial, sans-serif"
+    font-size="11" font-weight="700" letter-spacing="5"
+    fill="#4b8bb5">REMINDER</text>
+
+  <text x="118" y="94"
+    font-family="'Helvetica Neue', Arial, sans-serif"
+    font-size="44" font-weight="800"
+    fill="#f0f9ff">Today</text>
+</svg>
