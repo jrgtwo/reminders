@@ -227,7 +227,7 @@ export default function TodosPage() {
 
   return (
     <>
-      <div className="flex flex-col h-full bg-[var(--bg-app)]">
+      <div className="flex flex-col h-full">
         {/* Header */}
         <MobilePageHeader title="Lists" />
 

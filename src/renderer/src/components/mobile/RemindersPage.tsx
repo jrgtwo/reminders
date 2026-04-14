@@ -281,7 +281,7 @@ export default function RemindersPage() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-[var(--bg-app)]">
+    <div className="flex flex-col h-full">
       {/* Header */}
       <MobilePageHeader
         title="Schedule"

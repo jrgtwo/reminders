@@ -272,7 +272,7 @@ export default function BrowsePage() {
   }
 
   return (
-    <div className="h-full flex flex-col overflow-hidden bg-[var(--bg-app)]">
+    <div className="h-full flex flex-col overflow-hidden">
       {/* Header */}
       <div className="shrink-0 border-b border-slate-200 dark:border-white/[0.07] px-4 md:px-6 py-3">
         <div className="max-w-4xl mx-auto flex items-center gap-3">

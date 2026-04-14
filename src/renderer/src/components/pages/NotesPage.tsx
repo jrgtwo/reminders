@@ -64,7 +64,7 @@ export default function NotesPage() {
   return (
     <div className="h-full flex overflow-hidden">
       {/* Mobile sidebar: full-width when no note open, hidden otherwise */}
-      <div className={`md:hidden shrink-0 border-r border-slate-200 dark:border-white/[0.07] bg-[var(--bg-app)] w-full flex flex-col ${hasNote ? 'hidden' : 'flex'}`}>
+      <div className={`md:hidden shrink-0 border-r border-slate-200 dark:border-white/[0.07] w-full flex flex-col ${hasNote ? 'hidden' : 'flex'}`}>
         <MobilePageHeader title="Notes" />
         <div className="flex-1 overflow-y-auto">
           <NotesNav ref={notesNavRef} />
@@ -74,7 +74,7 @@ export default function NotesPage() {
 
       {/* Desktop sidebar: resizable + collapsible */}
       <div
-        className="hidden md:flex md:flex-col shrink-0 border-r border-slate-300/60 dark:border-white/[0.07] overflow-hidden bg-[var(--bg-app)] relative transition-[width] duration-100"
+        className="hidden md:flex md:flex-col shrink-0 border-r border-slate-300/60 dark:border-white/[0.07] overflow-hidden relative transition-[width] duration-100"
         style={{ width: effectiveWidth }}
       >
         <SidebarHeader
@@ -105,7 +105,7 @@ export default function NotesPage() {
 
       {/* Right panel */}
       <div
-        className={`flex-1 flex flex-col overflow-hidden bg-[var(--bg-app)]
+        className={`flex-1 flex flex-col overflow-hidden
           ${hasNote ? 'flex' : 'hidden md:flex'}`}
       >
         {outlet ?? <NotesEmptyState onAdd={() => notesNavRef.current?.openNewNote()} />}
