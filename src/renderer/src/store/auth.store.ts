@@ -88,14 +88,6 @@ export const useAuthStore = create<AuthState>((set) => ({
         const code = url.searchParams.get('code')
         if (code) {
           await supabase.auth.exchangeCodeForSession(code)
-        } else {
-          // Implicit flow fallback: tokens in the URL hash
-          const hash = new URLSearchParams(url.hash.substring(1))
-          const access_token = hash.get('access_token')
-          const refresh_token = hash.get('refresh_token')
-          if (access_token && refresh_token) {
-            await supabase.auth.setSession({ access_token, refresh_token })
-          }
         }
       })
     }

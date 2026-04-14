@@ -16,13 +16,6 @@ export function setupMobileAuth(): void {
 
     if (code) {
       await supabase.auth.exchangeCodeForSession(code)
-    } else {
-      const hash = new URLSearchParams(parsed.hash.substring(1))
-      const access_token = hash.get('access_token')
-      const refresh_token = hash.get('refresh_token')
-      if (access_token && refresh_token) {
-        await supabase.auth.setSession({ access_token, refresh_token })
-      }
     }
   })
 }

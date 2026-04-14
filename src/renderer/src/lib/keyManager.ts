@@ -3,6 +3,14 @@ import { generateKey, exportKey, importKey } from './encryption'
 
 let encryptionKey: CryptoKey | null = null
 
+async function hashKeyData(keyData: string): Promise<string> {
+  const encoded = new TextEncoder().encode(keyData)
+  const hash = await crypto.subtle.digest('SHA-256', encoded)
+  return Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+}
+
 // Tracks whether the Supabase key differs from the locally-cached fingerprint.
 // Consumed (and reset) by webSync to wipe stale local data before a fresh pull.
 const _keyChangedForUser = new Map<string, boolean>()
@@ -89,9 +97,10 @@ export async function initEncryptionKey(userId: string): Promise<void> {
       .single()
 
     if (data?.key_data) {
+      const keyHash = await hashKeyData(data.key_data)
       const prevFp = localStorage.getItem(KEY_FP_KEY(userId))
-      _keyChangedForUser.set(userId, prevFp !== null && prevFp !== data.key_data)
-      localStorage.setItem(KEY_FP_KEY(userId), data.key_data)
+      _keyChangedForUser.set(userId, prevFp !== null && prevFp !== keyHash)
+      localStorage.setItem(KEY_FP_KEY(userId), keyHash)
       localStorage.setItem(LAST_USER_KEY, userId)
       encryptionKey = await importKey(data.key_data)
       await cacheKeyLocally(userId, data.key_data)

@@ -22,7 +22,7 @@ export class EncryptedAdapter implements IStorageAdapter {
   private async enc(text: string | undefined): Promise<string | undefined> {
     if (text === undefined) return undefined
     const key = this.getKey()
-    if (!key) return text
+    if (!key) throw new Error('Encryption key unavailable — cannot save unencrypted data')
     return encrypt(key, text)
   }
 
