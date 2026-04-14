@@ -5,6 +5,13 @@ import { useNoteFoldersStore } from '../store/note_folders.store'
 import type { Reminder, Note, NoteFolder, TodoList, TodoListItem } from '../types/models'
 import { remindersToIcal } from './icalExport'
 import { parseIcal } from './icalImport'
+import {
+  ReminderSchema,
+  NoteSchema,
+  NoteFolderSchema,
+  TodoListSchema,
+  TodoListItemSchema,
+} from '../../../shared/schemas'
 
 const SCHEMA_VERSION = 3
 
@@ -102,23 +109,62 @@ export async function importFromFile(): Promise<{ success: boolean; message: str
     return { success: false, message: 'Invalid export file format' }
   }
 
-  const items: TodoListItem[] = Array.isArray(data.items) ? data.items : []
+  const rawItems: unknown[] = Array.isArray(data.items) ? data.items : []
+
+  // Validate every record before saving anything
+  const invalid: string[] = []
+  const reminders: Reminder[] = []
+  const notes: Note[] = []
+  const noteFolders: NoteFolder[] = []
+  const lists: TodoList[] = []
+  const items: TodoListItem[] = []
+
+  for (const r of data.reminders) {
+    const result = ReminderSchema.safeParse(r)
+    if (result.success) reminders.push(result.data as Reminder)
+    else invalid.push(`reminder: ${result.error.issues[0]?.message}`)
+  }
+  for (const n of data.notes) {
+    const result = NoteSchema.safeParse(n)
+    if (result.success) notes.push(result.data as Note)
+    else invalid.push(`note: ${result.error.issues[0]?.message}`)
+  }
+  for (const f of data.noteFolders) {
+    const result = NoteFolderSchema.safeParse(f)
+    if (result.success) noteFolders.push(result.data as NoteFolder)
+    else invalid.push(`note folder: ${result.error.issues[0]?.message}`)
+  }
+  for (const l of data.lists) {
+    const result = TodoListSchema.safeParse(l)
+    if (result.success) lists.push(result.data as TodoList)
+    else invalid.push(`list: ${result.error.issues[0]?.message}`)
+  }
+  for (const i of rawItems) {
+    const result = TodoListItemSchema.safeParse(i)
+    if (result.success) items.push(result.data as TodoListItem)
+    else invalid.push(`list item: ${result.error.issues[0]?.message}`)
+  }
+
+  if (reminders.length === 0 && notes.length === 0 && lists.length === 0 && noteFolders.length === 0 && items.length === 0) {
+    return { success: false, message: `No valid records found. ${invalid.length} records failed validation.` }
+  }
 
   try {
     const storage = getStorage()
-    for (const r of data.reminders) await storage.saveReminder(r)
-    for (const n of data.notes) await storage.saveNote(n)
-    for (const f of data.noteFolders) await storage.saveNoteFolder(f)
-    for (const l of data.lists) await storage.saveTodoList(l)
+    for (const r of reminders) await storage.saveReminder(r)
+    for (const n of notes) await storage.saveNote(n)
+    for (const f of noteFolders) await storage.saveNoteFolder(f)
+    for (const l of lists) await storage.saveTodoList(l)
     for (const i of items) await storage.saveTodoListItem(i)
 
     await useRemindersStore.getState().load()
     await useTodoListsStore.getState().load()
     await useNoteFoldersStore.getState().load()
 
+    const skipped = invalid.length > 0 ? ` (${invalid.length} skipped — invalid)` : ''
     return {
       success: true,
-      message: `Imported ${data.reminders.length} reminders, ${data.notes.length} notes, ${data.noteFolders.length} note folders, ${data.lists.length} lists, ${items.length} items`
+      message: `Imported ${reminders.length} reminders, ${notes.length} notes, ${noteFolders.length} note folders, ${lists.length} lists, ${items.length} items${skipped}`,
     }
   } catch {
     return { success: false, message: 'Import failed — error saving data' }

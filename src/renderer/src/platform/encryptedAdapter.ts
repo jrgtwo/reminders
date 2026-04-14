@@ -8,6 +8,7 @@ import type {
   TodoListItem
 } from '../types/models'
 import { encrypt, decrypt } from '../lib/encryption'
+import { isEncryptionExpected } from '../lib/keyManager'
 import { useEncryptionErrorStore } from '../store/encryption-error.store'
 
 export class EncryptedAdapter implements IStorageAdapter {
@@ -24,8 +25,11 @@ export class EncryptedAdapter implements IStorageAdapter {
     if (text === undefined) return undefined
     const key = this.getKey()
     if (!key) {
-      useEncryptionErrorStore.getState().setError()
-      throw new Error('Encryption key unavailable — cannot save unencrypted data')
+      if (isEncryptionExpected()) {
+        useEncryptionErrorStore.getState().setError()
+        throw new Error('Encryption key unavailable — cannot save unencrypted data')
+      }
+      return text
     }
     return encrypt(key, text)
   }

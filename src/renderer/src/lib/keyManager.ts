@@ -30,6 +30,11 @@ export function getEncryptionKey(): CryptoKey | null {
   return encryptionKey
 }
 
+/** True when a user has previously set up encryption (key expected but may not be loaded yet). */
+export function isEncryptionExpected(): boolean {
+  return localStorage.getItem(LAST_USER_KEY) !== null
+}
+
 /**
  * Try to restore the encryption key from local cache using the last-known userId.
  * Called during app init before auth completes, so previously-encrypted data
