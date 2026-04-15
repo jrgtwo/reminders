@@ -31,6 +31,14 @@
   to { transform: translateY(0); }
 }
 
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-fade-in {
+  animation: pageFadeIn 180ms ease-out both;
+}
+
 /* 3D button lift – stacked solid shadows build a sharp bottom edge (zero layout shift).
    Edge color inherited from border-bottom via CSS variable. */
 .btn-3d {
@@ -96,7 +104,7 @@ html, body, #root {
   background-color: var(--bg-app);
 }
 
-button, a { cursor: pointer; }
+button, a { cursor: pointer; touch-action: manipulation; }
 
 /* class-based dark mode */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -330,4 +338,18 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
 }
 
+/* App root: gradient + bg-app */
+.grain-bg {
+  background:
+    linear-gradient(
+      135deg,
+      var(--grain-color-start, transparent) 0%,
+      transparent 40%,
+      var(--grain-color-end, transparent) 100%
+    ),
+    var(--bg-app);
+  background-size: 100% 100%, 100% 100%;
+  background-blend-mode: normal, normal;
+  background-position: 0 0, 0 0;
+}
 
