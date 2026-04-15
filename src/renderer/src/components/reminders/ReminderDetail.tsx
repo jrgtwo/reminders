@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { Clock, Repeat, CalendarDays, ArrowRight, FileText } from 'lucide-react'
+import { Bell, Clock, Repeat, CalendarDays, ArrowRight, FileText } from 'lucide-react'
 import { Temporal } from '@js-temporal/polyfill'
 import type { Reminder } from '../../types/models'
 import Dialog from '../ui/Dialog'
@@ -9,6 +9,16 @@ import { formatTime } from '../../utils/dates'
 function formatDate(dateStr: string): string {
   const d = Temporal.PlainDate.from(dateStr)
   return d.toLocaleString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+}
+
+function formatNotifyBefore(minutes: number): string {
+  if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''}`
+  if (minutes < 1440) {
+    const h = Math.floor(minutes / 60)
+    return `${h} hour${h !== 1 ? 's' : ''}`
+  }
+  const d = Math.floor(minutes / 1440)
+  return `${d} day${d !== 1 ? 's' : ''}`
 }
 
 function formatRecurrence(r: Reminder['recurrence']): string {
@@ -53,6 +63,12 @@ export default function ReminderDetail({ reminder, dateStr, onClose }: Props) {
             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
               <Clock size={20} className="shrink-0 text-[var(--accent)]" />
               <span>{formatTime(reminder.startTime, timeFormat)}{reminder.endTime ? ` – ${formatTime(reminder.endTime, timeFormat)}` : ''}</span>
+            </div>
+          )}
+          {reminder.notifyBefore != null && reminder.notifyBefore > 0 && (
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+              <Bell size={20} className="shrink-0 text-[var(--accent)]" />
+              <span>{formatNotifyBefore(reminder.notifyBefore)} before</span>
             </div>
           )}
           {reminder.recurrence && (

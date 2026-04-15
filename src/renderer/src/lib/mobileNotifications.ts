@@ -22,7 +22,9 @@ export async function scheduleReminderNotification(r: Reminder): Promise<void> {
 
   const [year, month, day] = r.date.split('-').map(Number)
   const [hour, minute] = r.startTime.split(':').map(Number)
+  const notifyMinutes = r.notifyBefore ?? 0
   const fireAt = new Date(year, month - 1, day, hour, minute, 0)
+  fireAt.setMinutes(fireAt.getMinutes() - notifyMinutes)
 
   if (fireAt <= new Date()) return
 
@@ -35,7 +37,7 @@ export async function scheduleReminderNotification(r: Reminder): Promise<void> {
       {
         id: notifId,
         title: r.title,
-        body: r.description ?? `Reminder at ${r.startTime}`,
+        body: r.description ?? (notifyMinutes > 0 ? `Reminder in ${formatMinutes(notifyMinutes)}` : `Reminder at ${r.startTime}`),
         schedule: { at: fireAt, allowWhileIdle: true },
       },
     ],
@@ -53,4 +55,12 @@ export async function cancelReminderNotification(reminderId: string): Promise<vo
 function uuidToInt(uuid: string): number {
   const hex = uuid.replace(/-/g, '').slice(0, 8)
   return Math.abs(parseInt(hex, 16)) || 1
+}
+
+function formatMinutes(minutes: number): string {
+  if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''}`
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  if (m === 0) return `${h} hour${h !== 1 ? 's' : ''}`
+  return `${h}h ${m}m`
 }

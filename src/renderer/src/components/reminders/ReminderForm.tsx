@@ -1,4 +1,4 @@
-import { RefreshCw } from 'lucide-react'
+import { Bell, RefreshCw } from 'lucide-react'
 import type { Reminder } from '../../types/models'
 import Button from '../ui/Button'
 import Dialog from '../ui/Dialog'
@@ -28,6 +28,8 @@ export default function ReminderForm({ date, reminder, defaultTime, onSave, onCl
     startTime,
     endTime,
     setEndTime,
+    notifyBefore,
+    setNotifyBefore,
     isMultiDay,
     recurring,
     setRecurring,
@@ -95,6 +97,31 @@ export default function ReminderForm({ date, reminder, defaultTime, onSave, onCl
               min={startTime || undefined}
               onChange={(e) => setEndTime(e.target.value)}
             />
+          </div>
+        )}
+
+        {/* Notify before — only shown when a start time is set */}
+        {startTime && !isMultiDay && (
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-2">
+              <Bell size={20} className="text-gray-400 dark:text-gray-500" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Remind me</span>
+            </div>
+            <select
+              value={notifyBefore ?? ''}
+              onChange={(e) => setNotifyBefore(e.target.value === '' ? undefined : Number(e.target.value))}
+              className="w-full rounded-lg border border-gray-300 dark:border-[var(--border)] bg-white dark:bg-[var(--bg-elevated)] px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:border-[var(--accent-ring)] focus:ring-1 focus:ring-[var(--accent-ring)] [&>option]:bg-white [&>option]:dark:bg-[var(--bg-elevated)] [&>option]:text-gray-900 [&>option]:dark:text-gray-100"
+            >
+              <option value="">At time of event</option>
+              <option value="5">5 minutes before</option>
+              <option value="10">10 minutes before</option>
+              <option value="15">15 minutes before</option>
+              <option value="30">30 minutes before</option>
+              <option value="60">1 hour before</option>
+              <option value="120">2 hours before</option>
+              <option value="1440">1 day before</option>
+              <option value="2880">2 days before</option>
+            </select>
           </div>
         )}
 

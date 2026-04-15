@@ -1,4 +1,4 @@
-import { Check, Clock, Edit2, RefreshCw, Trash2 } from 'lucide-react'
+import { Bell, Check, Clock, Edit2, RefreshCw, Trash2 } from 'lucide-react'
 import type { Reminder } from '../../types/models'
 import { useUIStore } from '../../store/ui.store'
 import { formatTime } from '../../utils/dates'
@@ -55,6 +55,11 @@ export default function ReminderItem({ reminder, date, onToggle, onEdit, onDelet
               <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[var(--color-upcoming)] bg-[var(--color-upcoming-muted)] border border-[var(--color-upcoming)]/20 border-b-[2px] border-b-[var(--color-upcoming)]/30 px-1.5 py-0.5 rounded-md">
                 <Clock size={20} />
                 {formatTime(reminder.startTime, timeFormat)}{reminder.endTime ? ` – ${formatTime(reminder.endTime, timeFormat)}` : ''}
+              </span>
+            )}
+            {reminder.notifyBefore != null && reminder.notifyBefore > 0 && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-400/10 border border-violet-200/60 dark:border-violet-400/15 border-b-[2px] border-b-violet-200 dark:border-b-violet-400/25 px-1.5 py-0.5 rounded-md">
+                <Bell size={20} />
               </span>
             )}
             {reminder.recurrence && (

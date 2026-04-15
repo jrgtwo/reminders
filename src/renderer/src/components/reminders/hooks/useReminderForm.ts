@@ -21,6 +21,7 @@ export function useReminderForm({ date, reminder, defaultTime, onSave }: Params)
   const [endDate, setEndDate] = useState(reminder?.endDate ?? '')
   const [startTime, setStartTime] = useState(reminder?.startTime ?? defaultTime ?? '')
   const [endTime, setEndTime] = useState(reminder?.endTime ?? '')
+  const [notifyBefore, setNotifyBefore] = useState<number | undefined>(reminder?.notifyBefore)
   const isMultiDay = !!endDate && endDate !== reminderDate
   const [recurring, setRecurring] = useState(!!reminder?.recurrence)
   const [recurrence, setRecurrence] = useState<RecurrenceRule>(
@@ -63,6 +64,7 @@ export function useReminderForm({ date, reminder, defaultTime, onSave }: Params)
       startTime: startTime || undefined,
       endDate: endDate || undefined,
       endTime: endTime || undefined,
+      notifyBefore: startTime ? notifyBefore : undefined,
       recurrence: recurring ? recurrence : undefined,
       completedDates: reminder?.completedDates ?? [],
       createdAt: reminder?.createdAt ?? now,
@@ -88,6 +90,8 @@ export function useReminderForm({ date, reminder, defaultTime, onSave }: Params)
     setStartTime,
     endTime,
     setEndTime,
+    notifyBefore,
+    setNotifyBefore,
     isMultiDay,
     recurring,
     setRecurring,

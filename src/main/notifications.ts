@@ -48,6 +48,20 @@ function hasOccurrenceToday(reminder: Reminder, today: string): boolean {
 // Tracks notifications already fired this session to avoid duplicates within the same minute
 const fired = new Set<string>()
 
+/** Subtract `minutes` from an "HH:MM" time string. Returns { date offset (-1/0), time "HH:MM" }. */
+function subtractMinutes(timeStr: string, minutes: number): { dayOffset: number; time: string } {
+  const [h, m] = timeStr.split(':').map(Number)
+  let total = h * 60 + m - minutes
+  let dayOffset = 0
+  while (total < 0) {
+    total += 24 * 60
+    dayOffset -= 1
+  }
+  const hh = String(Math.floor(total / 60) % 24).padStart(2, '0')
+  const mm = String(total % 60).padStart(2, '0')
+  return { dayOffset, time: `${hh}:${mm}` }
+}
+
 function checkAndFire(): void {
   const today = todayStr()
   const time = currentTimeStr()
@@ -60,20 +74,44 @@ function checkAndFire(): void {
   }
 
   for (const r of reminders) {
-    if (!r.startTime || r.startTime !== time) continue
-    if (!hasOccurrenceToday(r, today)) continue
-    if (r.completedDates.includes(today)) continue
+    if (!r.startTime) continue
 
-    const key = `${r.id}-${today}-${time}`
+    const notifyMinutes = r.notifyBefore ?? 0
+    const { dayOffset, time: fireTime } = subtractMinutes(r.startTime, notifyMinutes)
+
+    if (fireTime !== time) continue
+
+    // Determine which day the occurrence should fall on
+    const occurrenceDate = dayOffset === 0
+      ? today
+      : new Date(new Date(today + 'T00:00:00').getTime() - dayOffset * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .slice(0, 10)
+
+    if (!hasOccurrenceToday(r, occurrenceDate)) continue
+    if (r.completedDates.includes(occurrenceDate)) continue
+
+    const key = `${r.id}-${occurrenceDate}-${fireTime}`
     if (fired.has(key)) continue
     fired.add(key)
 
     const { showNotificationContent } = loadPreferences()
+    const label = notifyMinutes > 0 ? `in ${formatMinutes(notifyMinutes)}` : `at ${r.startTime}`
     new Notification({
       title: showNotificationContent ? r.title : 'Reminder',
-      body: showNotificationContent ? (r.description ?? `Reminder at ${time}`) : `You have a reminder at ${time}`,
+      body: showNotificationContent
+        ? (r.description ?? `Reminder ${label}`)
+        : `You have a reminder ${label}`,
     }).show()
   }
+}
+
+function formatMinutes(minutes: number): string {
+  if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''}`
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  if (m === 0) return `${h} hour${h !== 1 ? 's' : ''}`
+  return `${h}h ${m}m`
 }
 
 export function startNotificationScheduler(): void {

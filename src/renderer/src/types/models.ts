@@ -16,6 +16,7 @@ export interface Reminder {
   endDate?: string
   startTime?: string
   endTime?: string
+  notifyBefore?: number // minutes before startTime to fire notification (0 = at time)
   recurrence?: RecurrenceRule
   completedDates: string[]
   createdAt: string

@@ -124,7 +124,9 @@ const MIGRATIONS = [
   `ALTER TABLE reminders RENAME COLUMN time TO start_time;
     ALTER TABLE reminders ADD COLUMN end_time TEXT;`,
   // MIGRATIONS[8] - Add end_date for multi-day reminders
-  `ALTER TABLE reminders ADD COLUMN end_date TEXT;`
+  `ALTER TABLE reminders ADD COLUMN end_date TEXT;`,
+  // MIGRATIONS[9] - Add notify_before (minutes) for advance reminders
+  `ALTER TABLE reminders ADD COLUMN notify_before INTEGER;`
 ]
 
 export function getDb(): Database.Database {

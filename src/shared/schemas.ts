@@ -24,6 +24,7 @@ export const ReminderSchema = z.object({
   endDate: DateStr.optional(),
   startTime: TimeStr.optional(),
   endTime: TimeStr.optional(),
+  notifyBefore: z.number().int().nonnegative().optional(),
   recurrence: RecurrenceRule.optional(),
   completedDates: z.array(z.string()),
   createdAt: z.string(),

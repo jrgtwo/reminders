@@ -22,13 +22,13 @@ export function getRemindersByDate(date: string): Reminder[] {
 export function saveReminder(r: Reminder): Reminder {
   getDb()
     .prepare(
-      `INSERT INTO reminders (id, title, description, date, end_date, start_time, end_time, recurrence,
+      `INSERT INTO reminders (id, title, description, date, end_date, start_time, end_time, notify_before, recurrence,
  completed_dates, created_at, updated_at)
-        VALUES (@id, @title, @description, @date, @end_date, @start_time, @end_time, @recurrence,
+        VALUES (@id, @title, @description, @date, @end_date, @start_time, @end_time, @notify_before, @recurrence,
  @completed_dates, @created_at, @updated_at)
         ON CONFLICT(id) DO UPDATE SET
           title = @title, description = @description, date = @date, end_date = @end_date,
-          start_time = @start_time, end_time = @end_time, recurrence = @recurrence,
+          start_time = @start_time, end_time = @end_time, notify_before = @notify_before, recurrence = @recurrence,
           completed_dates = @completed_dates, updated_at = @updated_at`
     )
     .run(serialize(r))
@@ -51,6 +51,7 @@ function serialize(r: Reminder) {
     end_date: r.endDate ?? null,
     start_time: r.startTime ?? null,
     end_time: r.endTime ?? null,
+    notify_before: r.notifyBefore ?? null,
     recurrence: r.recurrence ? JSON.stringify(r.recurrence) : null,
     completed_dates: JSON.stringify(trimCompletedDates(r.completedDates)),
     created_at: r.createdAt,
@@ -67,6 +68,7 @@ function deserialize(row: any): Reminder {
     endDate: row.end_date ?? undefined,
     startTime: row.start_time ?? undefined,
     endTime: row.end_time ?? undefined,
+    notifyBefore: row.notify_before ?? undefined,
     recurrence: row.recurrence ? JSON.parse(row.recurrence) : undefined,
     completedDates: JSON.parse(row.completed_dates),
     createdAt: row.created_at,
