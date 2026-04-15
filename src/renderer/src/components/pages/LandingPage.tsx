@@ -11,7 +11,6 @@ import {
   Lock
 } from 'lucide-react'
 import logo from '../../assets/logo.svg'
-import GrainOverlay from '../ui/GrainOverlay'
 
 const FEATURES = [
   {
@@ -141,8 +140,7 @@ export default function LandingPage() {
     navigate('/')
   }
   return (
-    <main className="min-h-screen text-slate-100 overflow-auto grain-bg paper" style={{ '--bg-app': '#0d1117' } as React.CSSProperties}>
-      <GrainOverlay />
+    <main className="min-h-screen text-slate-100 overflow-auto bg-[#0d1117]">
       {/* Hero */}
       <section className="relative flex flex-col items-center justify-center px-6 pt-20 pb-16 md:pt-28 md:pb-24">
         <div className="flex flex-col items-center text-center max-w-2xl mx-auto">

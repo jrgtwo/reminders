@@ -95,7 +95,7 @@ export default function RightSidebar() {
     <>
       <aside
         ref={asideRef}
-        className="relative h-full flex flex-col border-l border-slate-300/60 dark:border-white/[0.07] overflow-hidden bg-[var(--bg-app)] transition-[width] duration-200 paper"
+        className="relative h-full flex flex-col border-l border-slate-300/60 dark:border-white/[0.07] overflow-hidden bg-[var(--bg-app)] transition-[width] duration-200"
         style={{ width: rightOpen ? width : 44 }}
       >
         {/* Header */}

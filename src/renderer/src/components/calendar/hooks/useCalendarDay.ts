@@ -51,13 +51,13 @@ export function useCalendarDay({ date, displayMonth, isSelected }: Params) {
 
   let bg: string
   if (todayDate) {
-    bg = 'bg-[var(--accent-muted)] paper-light'
+    bg = 'bg-[var(--accent-muted)]'
   } else if (isSelected) {
-    bg = 'bg-white dark:bg-white/[0.10] paper-light'
+    bg = 'bg-white dark:bg-white/[0.10]'
   } else if (!inMonth) {
-    bg = 'bg-slate-50 dark:bg-white/[0.03] paper-light'
+    bg = 'bg-slate-50 dark:bg-white/[0.03]'
   } else {
-    bg = 'bg-white dark:bg-white/[0.07] paper-light'
+    bg = 'bg-white dark:bg-white/[0.07]'
   }
 
   return { todayDate, inMonth, cmp, colors, listBadgeCls, bg, tileRef, rectRef }

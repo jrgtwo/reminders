@@ -137,10 +137,6 @@ button, a { cursor: pointer; }
   --color-upcoming:      #3b82f6;
   --color-upcoming-muted: rgba(59, 130, 246, 0.08);
 
-  --grain-opacity:       0.06;
-  --grain-color-start:   rgba(59, 130, 246, 0.15);
-  --grain-color-end:     rgba(139, 92, 246, 0.10);
-
   /* Boost light-mode grays for readability on ~#eee backgrounds */
   --color-slate-300:     #94a3b8;   /* default #cbd5e1 → slate-400 level */
   --color-slate-400:     #64748b;   /* default #94a3b8 → slate-500 level */
@@ -166,9 +162,6 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(91, 156, 245, 0.08);
   --color-upcoming:      #6498c8;
   --color-upcoming-muted: rgba(100, 152, 200, 0.08);
-  --grain-opacity:       0.10;
-  --grain-color-start:   rgba(91, 156, 245, 0.12);
-  --grain-color-end:     rgba(120, 80, 220, 0.08);
 }
 
 .theme-warm {
@@ -190,9 +183,6 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(224, 146, 74, 0.08);
   --color-upcoming:      #6ea88e;
   --color-upcoming-muted: rgba(110, 168, 142, 0.10);
-  --grain-opacity:       0.12;
-  --grain-color-start:   rgba(224, 146, 74, 0.15);
-  --grain-color-end:     rgba(180, 83, 40, 0.10);
 }
 
 .theme-midnight {
@@ -214,9 +204,6 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(77, 144, 247, 0.08);
   --color-upcoming:      #5a8ec4;
   --color-upcoming-muted: rgba(90, 142, 196, 0.08);
-  --grain-opacity:       0.12;
-  --grain-color-start:   rgba(77, 144, 247, 0.12);
-  --grain-color-end:     rgba(100, 60, 200, 0.08);
 }
 
 /* Grey — pure neutral, no colour tint */
@@ -239,9 +226,6 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(90, 159, 213, 0.08);
   --color-upcoming:      #6498c8;
   --color-upcoming-muted: rgba(100, 152, 200, 0.08);
-  --grain-opacity:       0.10;
-  --grain-color-start:   rgba(90, 159, 213, 0.10);
-  --grain-color-end:     rgba(120, 120, 160, 0.08);
 }
 
 /* GitHub Dim — mid-slate, softer than Dark */
@@ -264,9 +248,6 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(87, 163, 251, 0.08);
   --color-upcoming:      #6498c8;
   --color-upcoming-muted: rgba(100, 152, 200, 0.08);
-  --grain-opacity:       0.10;
-  --grain-color-start:   rgba(87, 163, 251, 0.10);
-  --grain-color-end:     rgba(140, 120, 200, 0.08);
 }
 
 /* Nord — Arctic blue-grey */
@@ -289,9 +270,6 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(94, 129, 172, 0.08);
   --color-upcoming:      #81a1c1;
   --color-upcoming-muted: rgba(129, 161, 193, 0.08);
-  --grain-opacity:       0.10;
-  --grain-color-start:   rgba(94, 129, 172, 0.12);
-  --grain-color-end:     rgba(136, 192, 208, 0.08);
 }
 
 /* Forest — dark green-tinted */
@@ -314,9 +292,6 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(107, 184, 128, 0.08);
   --color-upcoming:      #6498c8;
   --color-upcoming-muted: rgba(100, 152, 200, 0.08);
-  --grain-opacity:       0.12;
-  --grain-color-start:   rgba(107, 184, 128, 0.12);
-  --grain-color-end:     rgba(60, 140, 85, 0.08);
 }
 
 /* Dusk — deep purple-violet */
@@ -339,9 +314,6 @@ button, a { cursor: pointer; }
   --accent-muted:        rgba(155, 109, 212, 0.08);
   --color-upcoming:      #7a9ec8;
   --color-upcoming-muted: rgba(122, 158, 200, 0.08);
-  --grain-opacity:       0.14;
-  --grain-color-start:   rgba(155, 109, 212, 0.15);
-  --grain-color-end:     rgba(200, 80, 160, 0.10);
 }
 
 /* Native date/time picker indicator — make visible in dark themes */
@@ -358,47 +330,4 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
 }
 
-/* ─── Construction paper texture ─────────────────────────────────────────────
-   Directional fiber SVG applied to layout surfaces via .paper class.
-   Gradient + texture on the app root via .grain-bg.
-   ────────────────────────────────────────────────────────────────────────── */
-
-:root {
-  --paper-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='p' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.4 0.04' numOctaves='4' seed='1' stitchTiles='stitch' result='f1'/%3E%3CfeTurbulence type='turbulence' baseFrequency='0.05 0.3' numOctaves='3' seed='5' stitchTiles='stitch' result='f2'/%3E%3CfeBlend in='f1' in2='f2' mode='multiply' result='fibers'/%3E%3CfeColorMatrix type='saturate' values='0' in='fibers' result='grey'/%3E%3CfeComponentTransfer in='grey'%3E%3CfeFuncR type='linear' slope='1.2' intercept='-0.1'/%3E%3CfeFuncG type='linear' slope='1.2' intercept='-0.1'/%3E%3CfeFuncB type='linear' slope='1.2' intercept='-0.1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23p)' opacity='0.18'/%3E%3C/svg%3E");
-}
-
-/* Paper texture for individual surfaces */
-.paper {
-  background-image: var(--paper-url);
-  background-size: 300px 300px;
-  background-blend-mode: soft-light;
-  background-repeat: repeat;
-}
-
-/* Lighter paper for smaller elements like calendar cells */
-:root {
-  --paper-light-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='p' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.4 0.04' numOctaves='4' seed='1' stitchTiles='stitch' result='f1'/%3E%3CfeTurbulence type='turbulence' baseFrequency='0.05 0.3' numOctaves='3' seed='5' stitchTiles='stitch' result='f2'/%3E%3CfeBlend in='f1' in2='f2' mode='multiply' result='fibers'/%3E%3CfeColorMatrix type='saturate' values='0' in='fibers' result='grey'/%3E%3CfeComponentTransfer in='grey'%3E%3CfeFuncR type='linear' slope='1.2' intercept='-0.1'/%3E%3CfeFuncG type='linear' slope='1.2' intercept='-0.1'/%3E%3CfeFuncB type='linear' slope='1.2' intercept='-0.1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23p)' opacity='0.04'/%3E%3C/svg%3E");
-}
-.paper-light {
-  background-image: var(--paper-light-url);
-  background-size: 300px 300px;
-  background-blend-mode: soft-light;
-  background-repeat: repeat;
-}
-
-/* App root: gradient + paper + bg-app */
-.grain-bg {
-  background:
-    linear-gradient(
-      135deg,
-      var(--grain-color-start, transparent) 0%,
-      transparent 40%,
-      var(--grain-color-end, transparent) 100%
-    ),
-    var(--paper-url),
-    var(--bg-app);
-  background-size: 100% 100%, 300px 300px, 100% 100%;
-  background-blend-mode: normal, soft-light, normal;
-  background-position: 0 0, 0 0, 0 0;
-}
 

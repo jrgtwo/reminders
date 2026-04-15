@@ -7,7 +7,6 @@ import NotificationBanner from '../NotificationBanner'
 import { useAppShell } from './hooks/useAppShell'
 import { useEncryptionErrorStore } from '../../store/encryption-error.store'
 import logo from '../../assets/logo.svg'
-import GrainOverlay from '../ui/GrainOverlay'
 
 function formatLastSynced(isoStr: string): string {
   const minutes = Math.floor((Date.now() - new Date(isoStr).getTime()) / 60_000)
@@ -37,10 +36,9 @@ export default function AppShell() {
   const dismissEncryptionError = useEncryptionErrorStore((s) => s.dismiss)
 
   return (
-    <div className="flex flex-col h-screen text-slate-900 dark:text-slate-100 relative overflow-hidden grain-bg">
-      <GrainOverlay />
+    <div className="flex flex-col h-screen text-slate-900 dark:text-slate-100 relative overflow-hidden bg-[var(--bg-app)]">
       {/* Top header */}
-      <header className="relative flex flex-col border-b border-black/30 dark:border-black/60 shrink-0 bg-[var(--bg-header)] paper">
+      <header className="relative flex flex-col border-b border-black/30 dark:border-black/60 shrink-0 bg-[var(--bg-header)]">
         {/* Full-width (lg+): single row, 3-col grid so search is truly centered */}
         <div className="hidden lg:grid lg:grid-cols-3 lg:items-center px-4 h-16">
           {/* Left: brand + stats */}
@@ -201,7 +199,7 @@ export default function AppShell() {
 
       <div className="flex flex-1 overflow-hidden">
         <SideNav />
-        <main className="flex-1 h-full overflow-auto bg-[var(--bg-app)] paper">
+        <main className="flex-1 h-full overflow-auto bg-[var(--bg-app)]">
           <Outlet />
         </main>
       </div>
