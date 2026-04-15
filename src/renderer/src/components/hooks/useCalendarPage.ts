@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useTransition } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Temporal } from '@js-temporal/polyfill'
 import { useUIStore } from '../../store/ui.store'
@@ -22,6 +22,7 @@ export function useCalendarPage() {
   const setView = useUIStore((s) => s.setView)
   const load = useRemindersStore((s) => s.load)
   const loadNotes = useNotesStore((s) => s.loadNotes)
+  const [, startTransition] = useTransition()
 
   const [displayDate, setDisplayDate] = useState<Temporal.PlainDate>(() =>
     parseDateStr(selectedDateStr)
@@ -36,18 +37,30 @@ export function useCalendarPage() {
   const weekDays = useMemo(() => getWeekDays(displayDate), [displayDate])
 
   function handlePrev() {
-    setDisplayDate((d: Temporal.PlainDate) => (view === 'week' ? subWeeks(d, 1) : subMonths(d, 1)))
+    startTransition(() => {
+      setDisplayDate((d: Temporal.PlainDate) => (view === 'week' ? subWeeks(d, 1) : subMonths(d, 1)))
+    })
   }
 
   function handleNext() {
-    setDisplayDate((d: Temporal.PlainDate) => (view === 'week' ? addWeeks(d, 1) : addMonths(d, 1)))
+    startTransition(() => {
+      setDisplayDate((d: Temporal.PlainDate) => (view === 'week' ? addWeeks(d, 1) : addMonths(d, 1)))
+    })
   }
 
   function handleToday() {
     const t = today()
-    setDisplayDate(t)
-    setSelectedDate(t.toString())
     navigate(`/day/${t.toString()}`)
+    startTransition(() => {
+      setDisplayDate(t)
+      setSelectedDate(t.toString())
+    })
+  }
+
+  function handleViewChange(v: 'month' | 'week') {
+    startTransition(() => {
+      setView(v)
+    })
   }
 
   return {
@@ -57,6 +70,6 @@ export function useCalendarPage() {
     handlePrev,
     handleNext,
     handleToday,
-    setView
+    setView: handleViewChange
   }
 }

@@ -52,6 +52,21 @@ export function useApp(router: { navigate: (path: string) => void }) {
   }, [])
 
   useEffect(() => {
+    let cleanup: (() => void) | undefined
+    import('@capacitor/core').then(({ Capacitor }) => {
+      if (!Capacitor.isNativePlatform()) return
+      import('@capacitor/app').then(({ App }) => {
+        App.addListener('backButton', () => {
+          router.navigate(-1 as any)
+        }).then((handle) => {
+          cleanup = () => handle.remove()
+        })
+      })
+    }).catch(() => {})
+    return () => cleanup?.()
+  }, [])
+
+  useEffect(() => {
     return useAuthStore.subscribe((state, prev) => {
       if (!prev.isLoggedIn && state.isLoggedIn && state.user) {
         identifyUser(state.user.id)

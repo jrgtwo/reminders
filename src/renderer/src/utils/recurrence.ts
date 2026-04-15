@@ -24,6 +24,29 @@ function fromUTC(date: Date): string {
   return `${y}-${m}-${d}`
 }
 
+// Cache RRule instances keyed by reminder id + recurrence fingerprint so we
+// don't pay the construction cost on every useMemo recomputation.
+const rruleCache = new Map<string, RRule>()
+
+function getRRule(reminder: Reminder): RRule {
+  const r = reminder.recurrence!
+  const key = `${reminder.id}|${reminder.date}|${r.frequency}|${r.interval}|${r.endDate ?? ''}|${r.count ?? ''}|${r.byDay?.join(',') ?? ''}`
+  let rule = rruleCache.get(key)
+  if (!rule) {
+    const baseDate = parseDateStr(reminder.date)
+    rule = new RRule({
+      freq: FREQ_MAP[r.frequency],
+      interval: r.interval,
+      dtstart: toUTC(baseDate),
+      until: r.endDate ? toUTC(parseDateStr(r.endDate)) : undefined,
+      count: r.count,
+      byweekday: r.byDay ? r.byDay.map((d) => WEEKDAYS[d]) : undefined,
+    })
+    rruleCache.set(key, rule)
+  }
+  return rule
+}
+
 export function getOccurrencesInRange(
   reminder: Reminder,
   start: Temporal.PlainDate,
@@ -37,16 +60,5 @@ export function getOccurrencesInRange(
     return cmpStart >= 0 && cmpEnd <= 0 ? [reminder.date] : []
   }
 
-  const { frequency, interval, endDate, count, byDay } = reminder.recurrence
-
-  const rule = new RRule({
-    freq: FREQ_MAP[frequency],
-    interval,
-    dtstart: toUTC(baseDate),
-    until: endDate ? toUTC(parseDateStr(endDate)) : undefined,
-    count,
-    byweekday: byDay ? byDay.map((d) => WEEKDAYS[d]) : undefined,
-  })
-
-  return rule.between(toUTC(start), toUTC(end), true).map(fromUTC)
+  return getRRule(reminder).between(toUTC(start), toUTC(end), true).map(fromUTC)
 }

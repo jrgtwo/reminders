@@ -31,6 +31,14 @@
   to { transform: translateY(0); }
 }
 
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-fade-in {
+  animation: pageFadeIn 180ms ease-out both;
+}
+
 /* 3D button lift – stacked solid shadows build a sharp bottom edge (zero layout shift).
    Edge color inherited from border-bottom via CSS variable. */
 .btn-3d {
@@ -96,7 +104,7 @@ html, body, #root {
   background-color: var(--bg-app);
 }
 
-button, a { cursor: pointer; }
+button, a { cursor: pointer; touch-action: manipulation; }
 
 /* class-based dark mode */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -358,35 +366,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
 }
 
-/* ─── Construction paper texture ─────────────────────────────────────────────
-   Directional fiber SVG applied to layout surfaces via .paper class.
-   Gradient + texture on the app root via .grain-bg.
-   ────────────────────────────────────────────────────────────────────────── */
-
-:root {
-  --paper-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='p' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.4 0.04' numOctaves='4' seed='1' stitchTiles='stitch' result='f1'/%3E%3CfeTurbulence type='turbulence' baseFrequency='0.05 0.3' numOctaves='3' seed='5' stitchTiles='stitch' result='f2'/%3E%3CfeBlend in='f1' in2='f2' mode='multiply' result='fibers'/%3E%3CfeColorMatrix type='saturate' values='0' in='fibers' result='grey'/%3E%3CfeComponentTransfer in='grey'%3E%3CfeFuncR type='linear' slope='1.2' intercept='-0.1'/%3E%3CfeFuncG type='linear' slope='1.2' intercept='-0.1'/%3E%3CfeFuncB type='linear' slope='1.2' intercept='-0.1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23p)' opacity='0.18'/%3E%3C/svg%3E");
-}
-
-/* Paper texture for individual surfaces */
-.paper {
-  background-image: var(--paper-url);
-  background-size: 300px 300px;
-  background-blend-mode: soft-light;
-  background-repeat: repeat;
-}
-
-/* Lighter paper for smaller elements like calendar cells */
-:root {
-  --paper-light-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='p' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.4 0.04' numOctaves='4' seed='1' stitchTiles='stitch' result='f1'/%3E%3CfeTurbulence type='turbulence' baseFrequency='0.05 0.3' numOctaves='3' seed='5' stitchTiles='stitch' result='f2'/%3E%3CfeBlend in='f1' in2='f2' mode='multiply' result='fibers'/%3E%3CfeColorMatrix type='saturate' values='0' in='fibers' result='grey'/%3E%3CfeComponentTransfer in='grey'%3E%3CfeFuncR type='linear' slope='1.2' intercept='-0.1'/%3E%3CfeFuncG type='linear' slope='1.2' intercept='-0.1'/%3E%3CfeFuncB type='linear' slope='1.2' intercept='-0.1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23p)' opacity='0.04'/%3E%3C/svg%3E");
-}
-.paper-light {
-  background-image: var(--paper-light-url);
-  background-size: 300px 300px;
-  background-blend-mode: soft-light;
-  background-repeat: repeat;
-}
-
-/* App root: gradient + paper + bg-app */
+/* App root: gradient + bg-app */
 .grain-bg {
   background:
     linear-gradient(
@@ -395,10 +375,9 @@ input[type="time"]::-webkit-calendar-picker-indicator {
       transparent 40%,
       var(--grain-color-end, transparent) 100%
     ),
-    var(--paper-url),
     var(--bg-app);
-  background-size: 100% 100%, 300px 300px, 100% 100%;
-  background-blend-mode: normal, soft-light, normal;
-  background-position: 0 0, 0 0, 0 0;
+  background-size: 100% 100%, 100% 100%;
+  background-blend-mode: normal, normal;
+  background-position: 0 0, 0 0;
 }
 

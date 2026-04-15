@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Temporal } from '@js-temporal/polyfill'
 import { Bell, Clock, Repeat, FileText, CheckSquare } from 'lucide-react'
 import { formatDayNum } from '../../utils/dates'
@@ -18,7 +19,7 @@ interface Props {
   tall?: boolean
 }
 
-export default function CalendarDay({
+function CalendarDay({
   date,
   displayMonth,
   reminders,
@@ -163,3 +164,5 @@ export default function CalendarDay({
     </button>
   )
 }
+
+export default memo(CalendarDay)

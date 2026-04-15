@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import { Settings, Cloud, CloudOff, Loader2, X, ShieldAlert } from 'lucide-react'
 import BottomNav, { SideNav } from './BottomNav'
 import SearchBar from './SearchBar'
@@ -35,6 +35,7 @@ export default function AppShell() {
 
   const encryptionError = useEncryptionErrorStore((s) => s.hasError && !s.dismissed)
   const dismissEncryptionError = useEncryptionErrorStore((s) => s.dismiss)
+  const location = useLocation()
 
   return (
     <div className="flex flex-col h-screen text-slate-900 dark:text-slate-100 relative overflow-hidden grain-bg">
@@ -201,7 +202,7 @@ export default function AppShell() {
 
       <div className="flex flex-1 overflow-hidden">
         <SideNav />
-        <main className="flex-1 h-full overflow-auto bg-[var(--bg-app)] paper">
+        <main key={location.pathname} className="page-fade-in flex-1 h-full overflow-auto bg-[var(--bg-app)] paper">
           <Outlet />
         </main>
       </div>
