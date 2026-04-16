@@ -1,8 +1,10 @@
-import { Notification } from 'electron'
+import { Notification, dialog } from 'electron'
 import { RRule } from 'rrule'
 import { getAllReminders } from './storage/reminders.repo'
 import { loadPreferences } from './preferences'
 import type { Reminder } from '../renderer/src/types/models'
+
+export const SNOOZE_OPTIONS = [5, 10, 15, 30, 60, 120] as const
 
 const FREQ_MAP = {
   daily: RRule.DAILY,
@@ -48,6 +50,46 @@ function hasOccurrenceToday(reminder: Reminder, today: string): boolean {
 // Tracks notifications already fired this session to avoid duplicates within the same minute
 const fired = new Set<string>()
 
+interface SnoozedEntry {
+  until: number
+  reminder: Reminder
+  date: string
+}
+
+// In-memory snooze state — lost on app restart (acceptable for short-lived snoozes)
+const snoozed = new Map<string, SnoozedEntry>()
+
+/** Snooze a reminder so it re-fires after `minutes`. */
+export function snoozeReminder(reminderId: string, date: string, minutes: number): void {
+  let reminders: Reminder[]
+  try {
+    reminders = getAllReminders()
+  } catch {
+    return
+  }
+  const reminder = reminders.find((r) => r.id === reminderId)
+  if (!reminder) return
+
+  const key = `${reminderId}-${date}`
+  snoozed.set(key, { until: Date.now() + minutes * 60_000, reminder, date })
+
+  // Remove from fired so the snooze re-fire won't be blocked
+  for (const firedKey of fired) {
+    if (firedKey.startsWith(`${reminderId}-${date}-`)) {
+      fired.delete(firedKey)
+    }
+  }
+}
+
+/** Returns active snooze entries for the renderer to display badges. */
+export function getActiveSnoozed(): Array<{ reminderId: string; date: string; until: number }> {
+  const result: Array<{ reminderId: string; date: string; until: number }> = []
+  for (const [, entry] of snoozed) {
+    result.push({ reminderId: entry.reminder.id, date: entry.date, until: entry.until })
+  }
+  return result
+}
+
 /** Subtract `minutes` from an "HH:MM" time string. Returns { date offset (-1/0), time "HH:MM" }. */
 function subtractMinutes(timeStr: string, minutes: number): { dayOffset: number; time: string } {
   const [h, m] = timeStr.split(':').map(Number)
@@ -62,9 +104,48 @@ function subtractMinutes(timeStr: string, minutes: number): { dayOffset: number;
   return { dayOffset, time: `${hh}:${mm}` }
 }
 
+function fireNotification(reminder: Reminder, occurrenceDate: string, label: string): void {
+  const { showNotificationContent } = loadPreferences()
+  const notif = new Notification({
+    title: showNotificationContent ? reminder.title : 'Reminder',
+    body: showNotificationContent
+      ? (reminder.description ?? `Reminder ${label}`)
+      : `You have a reminder ${label}`,
+  })
+
+  notif.on('click', () => {
+    const buttons = ['Dismiss', ...SNOOZE_OPTIONS.map((m) => (m < 60 ? `${m} min` : `${m / 60} hour${m > 60 ? 's' : ''}`))]
+    dialog
+      .showMessageBox({
+        type: 'info',
+        title: reminder.title,
+        message: 'Snooze this reminder?',
+        buttons,
+        defaultId: 0,
+        cancelId: 0,
+      })
+      .then(({ response }) => {
+        if (response > 0) {
+          snoozeReminder(reminder.id, occurrenceDate, SNOOZE_OPTIONS[response - 1])
+        }
+      })
+  })
+
+  notif.show()
+}
+
 function checkAndFire(): void {
   const today = todayStr()
   const time = currentTimeStr()
+
+  // Check snoozed reminders
+  const now = Date.now()
+  for (const [key, entry] of snoozed) {
+    if (now >= entry.until) {
+      snoozed.delete(key)
+      fireNotification(entry.reminder, entry.date, 'snoozed')
+    }
+  }
 
   let reminders: Reminder[]
   try {
@@ -91,18 +172,15 @@ function checkAndFire(): void {
     if (!hasOccurrenceToday(r, occurrenceDate)) continue
     if (r.completedDates.includes(occurrenceDate)) continue
 
+    // Skip if currently snoozed
+    if (snoozed.has(`${r.id}-${occurrenceDate}`)) continue
+
     const key = `${r.id}-${occurrenceDate}-${fireTime}`
     if (fired.has(key)) continue
     fired.add(key)
 
-    const { showNotificationContent } = loadPreferences()
     const label = notifyMinutes > 0 ? `in ${formatMinutes(notifyMinutes)}` : `at ${r.startTime}`
-    new Notification({
-      title: showNotificationContent ? r.title : 'Reminder',
-      body: showNotificationContent
-        ? (r.description ?? `Reminder ${label}`)
-        : `You have a reminder ${label}`,
-    }).show()
+    fireNotification(r, occurrenceDate, label)
   }
 }
 

@@ -4,6 +4,7 @@ import { z } from 'zod'
 
 const PrefsUpdateSchema = z.object({
   showNotificationContent: z.boolean().optional(),
+  snoozeDuration: z.number().int().positive().optional(),
 })
 
 export function registerPreferencesHandlers(): void {

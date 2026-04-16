@@ -55,6 +55,11 @@ const api = {
       return ipcRenderer.invoke('todo_lists:reorderItems', listId, ids)
     }
   },
+  snooze: {
+    set: (reminderId: string, date: string, minutes: number) =>
+      ipcRenderer.invoke('snooze:set', { reminderId, date, minutes }),
+    getActive: () => ipcRenderer.invoke('snooze:getActive'),
+  },
   auth: {
     openExternal: (url: string) => ipcRenderer.invoke('auth:openExternal', url),
     onCallback: (cb: (url: string) => void) => {

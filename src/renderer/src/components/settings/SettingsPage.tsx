@@ -8,6 +8,7 @@ import SecuritySection from './SecuritySection'
 import AppearanceSection from './AppearanceSection'
 import DataSection from './DataSection'
 import DangerZoneSection from './DangerZoneSection'
+import NotificationsSection from './NotificationsSection'
 import PrivacySection from './PrivacySection'
 
 const isNativePlatform =
@@ -107,6 +108,8 @@ export default function SettingsPage() {
         timeFormat={timeFormat}
         setTimeFormat={setTimeFormat}
       />
+
+      <NotificationsSection />
 
       {!isNativePlatform && <PrivacySection />}
 

@@ -4,10 +4,12 @@ import { join } from 'path'
 
 export interface AppPreferences {
   showNotificationContent: boolean
+  snoozeDuration: number // minutes
 }
 
 const DEFAULTS: AppPreferences = {
   showNotificationContent: false,
+  snoozeDuration: 10,
 }
 
 function prefsFile(): string {

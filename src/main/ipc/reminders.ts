@@ -1,6 +1,14 @@
 import { ipcMain } from 'electron'
+import { z } from 'zod'
 import * as repo from '../storage/reminders.repo'
 import { ReminderSchema, DateStr, Id } from './schemas'
+import { snoozeReminder, getActiveSnoozed } from '../notifications'
+
+const SnoozeSchema = z.object({
+  reminderId: z.string().uuid(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  minutes: z.number().int().positive(),
+})
 
 export function registerReminderHandlers() {
   ipcMain.handle('reminders:getAll', () => repo.getAllReminders())
@@ -16,4 +24,10 @@ export function registerReminderHandlers() {
     const validId = Id.parse(id)
     return repo.deleteReminder(validId)
   })
+
+  ipcMain.handle('snooze:set', (_e, data: unknown) => {
+    const { reminderId, date, minutes } = SnoozeSchema.parse(data)
+    snoozeReminder(reminderId, date, minutes)
+  })
+  ipcMain.handle('snooze:getActive', () => getActiveSnoozed())
 }

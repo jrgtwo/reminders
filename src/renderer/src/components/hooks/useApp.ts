@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNotifications } from '../../hooks/useNotifications'
 import { useAuthStore } from '../../store/auth.store'
+import { useRemindersStore } from '../../store/reminders.store'
 import { identifyUser, resetUser } from '../../lib/analytics'
 import { useSyncStore } from '../../store/sync.store'
 import { useUIStore } from '../../store/ui.store'
@@ -27,8 +28,24 @@ export function useApp(router: { navigate: (path: string) => void }) {
         try {
           const { Capacitor } = await import('@capacitor/core')
           if (Capacitor.isNativePlatform()) {
-            const { requestNotificationPermission } = await import('../../lib/mobileNotifications')
+            const {
+              requestNotificationPermission,
+              registerNotificationActions,
+              listenForNotificationActions,
+              snoozeNotification,
+            } = await import('../../lib/mobileNotifications')
             await requestNotificationPermission()
+            await registerNotificationActions()
+            await listenForNotificationActions(
+              async (reminderId) => {
+                const reminders = useRemindersStore.getState().reminders
+                const reminder = reminders.find((r) => r.id === reminderId)
+                if (reminder) await snoozeNotification(reminder)
+              },
+              (reminderId, date) => {
+                useRemindersStore.getState().toggleComplete(reminderId, date)
+              },
+            )
           }
         } catch {
           // not a Capacitor build
