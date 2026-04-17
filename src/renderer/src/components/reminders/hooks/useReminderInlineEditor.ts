@@ -18,6 +18,7 @@ export function useReminderInlineEditor({ reminder, onSave }: Params) {
   const [endDate, setEndDate] = useState(reminder.endDate ?? '')
   const [startTime, setStartTime] = useState(reminder.startTime ?? '')
   const [endTime, setEndTime] = useState(reminder.endTime ?? '')
+  const [notifyBefore, setNotifyBefore] = useState<number | undefined>(reminder.notifyBefore)
   const [recurring, setRecurring] = useState(!!reminder.recurrence)
   const [recurrence, setRecurrence] = useState<RecurrenceRule>(
     reminder.recurrence ?? DEFAULT_RECURRENCE
@@ -60,6 +61,7 @@ export function useReminderInlineEditor({ reminder, onSave }: Params) {
         endDate: endDate || undefined,
         startTime: startTime || undefined,
         endTime: endTime || undefined,
+        notifyBefore: startTime ? notifyBefore : undefined,
         recurrence: recurring ? recurrence : undefined,
         updatedAt: new Date().toISOString(),
       })
@@ -79,6 +81,8 @@ export function useReminderInlineEditor({ reminder, onSave }: Params) {
     setStartTime,
     endTime,
     setEndTime,
+    notifyBefore,
+    setNotifyBefore,
     isMultiDay,
     recurring,
     setRecurring,

@@ -1,4 +1,4 @@
-import { RefreshCw, Trash2 } from 'lucide-react'
+import { Bell, RefreshCw, Trash2 } from 'lucide-react'
 import type { Reminder } from '../../types/models'
 import Button from '../ui/Button'
 import RichTextDescription from '../ui/RichTextDescription'
@@ -30,6 +30,8 @@ export default function ReminderInlineEditor({ reminder, onSave, onCancel, onDel
     startTime,
     endTime,
     setEndTime,
+    notifyBefore,
+    setNotifyBefore,
     isMultiDay,
     recurring,
     setRecurring,
@@ -120,6 +122,31 @@ export default function ReminderInlineEditor({ reminder, onSave, onCancel, onDel
               className={fieldClass}
             />
           </div>
+        </div>
+      )}
+
+      {/* Notify before — only shown when a start time is set */}
+      {startTime && !isMultiDay && (
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-2">
+            <Bell size={20} className="text-slate-400 dark:text-white/55" />
+            <span className="text-[13px] text-slate-600 dark:text-white/60">Remind me</span>
+          </div>
+          <select
+            value={notifyBefore ?? ''}
+            onChange={(e) => setNotifyBefore(e.target.value === '' ? undefined : Number(e.target.value))}
+            className={fieldClass}
+          >
+            <option value="">At time of event</option>
+            <option value="5">5 minutes before</option>
+            <option value="10">10 minutes before</option>
+            <option value="15">15 minutes before</option>
+            <option value="30">30 minutes before</option>
+            <option value="60">1 hour before</option>
+            <option value="120">2 hours before</option>
+            <option value="1440">1 day before</option>
+            <option value="2880">2 days before</option>
+          </select>
         </div>
       )}
 
