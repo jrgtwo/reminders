@@ -44,7 +44,7 @@ function CalendarPage() {
         onViewChange={(v) => setView(v)}
       />
       {view === 'month' ? (
-        <MonthView displayDate={displayDate} />
+        <MonthView displayDate={displayDate} onSwipeLeft={handleNext} onSwipeRight={handlePrev} />
       ) : (
         <WeekView displayDate={displayDate} />
       )}
