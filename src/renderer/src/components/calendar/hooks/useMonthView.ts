@@ -83,6 +83,7 @@ export function useMonthView({ displayDate }: Params) {
 
   function handleGridMouseMove(e: React.MouseEvent<HTMLDivElement>) {
     if (!gridRef.current) return
+    if (window.innerWidth < 768) return
     const rect = gridRef.current.getBoundingClientRect()
     setGlow({ x: e.clientX - rect.left, y: e.clientY - rect.top, active: true })
   }

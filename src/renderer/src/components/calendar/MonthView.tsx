@@ -47,7 +47,7 @@ export default function MonthView({ displayDate }: Props) {
             ? `radial-gradient(circle at ${glow.x}px ${glow.y}px, rgba(255,255,255,0.008) 0%, transparent 100px)`
             : 'none'
         }}
-        className="grid grid-cols-7 auto-rows-[80px] md:auto-rows-[110px] lg:auto-rows-[160px] gap-1 bg-[var(--bg-app)] p-1.5"
+        className="grid grid-cols-7 auto-rows-[80px] md:auto-rows-[110px] lg:auto-rows-[160px] gap-0 md:gap-1 bg-[var(--bg-app)] p-0 md:p-1.5"
       >
         {days.map((day) => (
           <CalendarDay

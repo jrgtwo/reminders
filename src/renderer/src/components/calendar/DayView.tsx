@@ -1,4 +1,3 @@
-import { ArrowLeft } from 'lucide-react'
 import { Temporal } from '@js-temporal/polyfill'
 import ConfirmDeleteDialog from '../ui/ConfirmDeleteDialog'
 import { useDayView } from '../hooks/useDayView'
@@ -97,17 +96,32 @@ export default function DayView() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-8 py-7">
-      {/* Top bar */}
-      <div className="flex items-center justify-between mb-8">
-        <button
-          onClick={() => navigate('/')}
-          className="flex items-center gap-1.5 text-[13px] text-slate-400 dark:text-white/55 hover:text-slate-700 dark:hover:text-white/60 transition-colors -ml-0.5"
-        >
-          <ArrowLeft size={20} />
-          Calendar
-        </button>
-        <div className="flex items-center gap-2">
+    <div className="flex flex-col h-full">
+      {/* Header — matches CalendarHeader layout */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-6 py-4 border-b border-slate-200 dark:border-white/[0.07] shrink-0 bg-[var(--bg-surface)] gap-2">
+        <div className="flex items-end gap-3">
+          <div className="flex items-baseline gap-2.5 leading-none">
+            <h2
+              className="text-3xl tracking-tight text-slate-900 dark:text-white/80"
+              style={{ fontFamily: "'Bree Serif', serif" }}
+            >
+              {weekday}
+            </h2>
+            <span
+              className="text-xl font-normal text-slate-300 dark:text-white/50 tracking-tight"
+              style={{ fontFamily: "'Archivo Variable', 'Archivo', sans-serif", fontWeight: 400 }}
+            >
+              {rest}
+            </span>
+          </div>
+          {status && (
+            <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full mb-1 ${status.cls}`}>
+              {status.label}
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 pt-1 sm:pt-0">
           <button
             onClick={handleToday}
             className={[
@@ -133,28 +147,7 @@ export default function DayView() {
         </div>
       </div>
 
-      {/* Heading */}
-      <div className="mb-8">
-        <div className="flex items-baseline gap-3 mb-1">
-          <h1
-            className="text-3xl text-slate-900 dark:text-white/80 tracking-tight leading-none"
-            style={{ fontFamily: "'Bree Serif', serif" }}
-          >
-            {weekday}
-          </h1>
-          {status && (
-            <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${status.cls}`}>
-              {status.label}
-            </span>
-          )}
-        </div>
-        <p
-          className="text-sm text-slate-400 dark:text-white/55 font-medium"
-          style={{ fontFamily: "'Archivo Variable', 'Archivo', sans-serif", fontWeight: 400 }}
-        >
-          {rest}
-        </p>
-      </div>
+    <div className="max-w-3xl mx-auto px-4 sm:px-8 py-7 w-full">
 
       {/* Tabs */}
       <div className="flex items-center gap-1 border-b border-slate-200/60 dark:border-white/[0.07] mb-6">
@@ -292,6 +285,7 @@ export default function DayView() {
           onCancel={itemDelete.cancelDelete}
         />
       )}
+    </div>
     </div>
   )
 }

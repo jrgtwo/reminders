@@ -39,18 +39,35 @@ function CalendarDay({
       ref={tileRef}
       onClick={onClick}
       className={[
-        'relative flex flex-col items-start w-full text-left cursor-pointer rounded-lg overflow-hidden',
+        'relative flex flex-col items-start w-full text-left cursor-pointer rounded-[2px] md:rounded-lg overflow-hidden',
         'transition-[opacity,box-shadow,filter,border,translate] duration-200',
-        'border border-white/50 dark:border-white/[0.10] border-b-[3px] border-b-slate-300/60 dark:border-b-white/[0.18]',
-        'hover:-translate-y-[3px] active:translate-y-[1px]',
+        // Border: flat on mobile, 2px lip at md, full 3px lip at lg
+        'border-[0.5px] border-white/30 dark:border-white/[0.06] md:border md:border-white/50 md:dark:border-white/[0.10]',
+        'border-b-[0.5px] border-b-slate-200/30 dark:border-b-white/[0.05]',
+        'md:border-b-[2px] md:border-b-slate-300/40 md:dark:border-b-white/[0.12]',
+        'lg:border-b-[3px] lg:border-b-slate-300/60 lg:dark:border-b-white/[0.18]',
+        // Hover lift: none on mobile, reduced at md, full at lg
+        'md:hover:-translate-y-[2px] md:active:translate-y-[1px]',
+        'lg:hover:-translate-y-[3px] lg:active:translate-y-[1px]',
         isSelected
           ? 'z-[10] opacity-100 brightness-110'
           : 'z-[2] opacity-80 hover:z-[10] hover:opacity-100 hover:brightness-110',
         tall ? 'p-3.5 gap-2' : 'p-1.5 gap-1 md:p-2 md:gap-1.5 lg:p-2.5 lg:gap-2',
         bg,
         isSelected
-          ? 'shadow-[0_4px_0_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_0_rgba(0,0,0,0.5),0_2px_4px_rgba(0,0,0,0.2)] outline outline-1 outline-slate-300/60 dark:outline-white/[0.1] active:shadow-[0_1px_0_rgba(0,0,0,0.08)] dark:active:shadow-[0_1px_0_rgba(0,0,0,0.3)]'
-          : 'shadow-[0_3px_0_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-[0_3px_0_rgba(0,0,0,0.35),0_1px_2px_rgba(0,0,0,0.15)] hover:shadow-[0_4px_0_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.06)] dark:hover:shadow-none dark:hover:brightness-125 dark:hover:border-white/25 active:shadow-[0_1px_0_rgba(0,0,0,0.08)] dark:active:shadow-none dark:active:brightness-100'
+          ? [
+              'shadow-sm outline outline-1 outline-slate-300/60 dark:outline-white/[0.1]',
+              'md:shadow-[0_2px_0_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)] md:dark:shadow-[0_2px_0_rgba(0,0,0,0.35),0_1px_2px_rgba(0,0,0,0.15)] md:active:shadow-[0_1px_0_rgba(0,0,0,0.06)]',
+              'lg:shadow-[0_4px_0_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.06)] lg:dark:shadow-[0_4px_0_rgba(0,0,0,0.5),0_2px_4px_rgba(0,0,0,0.2)] lg:active:shadow-[0_1px_0_rgba(0,0,0,0.08)] lg:dark:active:shadow-[0_1px_0_rgba(0,0,0,0.3)]',
+            ].join(' ')
+          : [
+              'shadow-none',
+              'md:shadow-[0_2px_0_rgba(0,0,0,0.06),0_1px_1px_rgba(0,0,0,0.03)] md:dark:shadow-[0_2px_0_rgba(0,0,0,0.25),0_1px_1px_rgba(0,0,0,0.1)]',
+              'md:hover:shadow-[0_3px_0_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)] md:active:shadow-[0_1px_0_rgba(0,0,0,0.06)]',
+              'lg:shadow-[0_3px_0_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)] lg:dark:shadow-[0_3px_0_rgba(0,0,0,0.35),0_1px_2px_rgba(0,0,0,0.15)]',
+              'lg:hover:shadow-[0_4px_0_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.06)] lg:dark:hover:shadow-none lg:dark:hover:brightness-125 lg:dark:hover:border-white/25',
+              'lg:active:shadow-[0_1px_0_rgba(0,0,0,0.08)] lg:dark:active:shadow-none lg:dark:active:brightness-100',
+            ].join(' ')
       ]
         .filter(Boolean)
         .join(' ')}
