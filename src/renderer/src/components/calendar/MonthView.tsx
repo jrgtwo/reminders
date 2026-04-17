@@ -1,4 +1,4 @@
-import { useRef, useCallback, useMemo, useLayoutEffect } from 'react'
+import { useRef, useCallback, useMemo, useLayoutEffect, useImperativeHandle, forwardRef } from 'react'
 import { flushSync } from 'react-dom'
 import { Temporal } from '@js-temporal/polyfill'
 import CalendarDay from './CalendarDay'
@@ -8,6 +8,11 @@ import { getOccurrencesInRange } from '../../utils/recurrence'
 import { useRemindersStore } from '../../store/reminders.store'
 import type { Reminder } from '../../types/models'
 
+export interface MonthViewHandle {
+  animateToMonth: (direction: 'left' | 'right') => void
+  animateToDate: (target: Temporal.PlainDate) => void
+}
+
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const SWIPE_THRESHOLD = 50
 const SETTLE_MS = 200
@@ -16,6 +21,7 @@ interface Props {
   displayDate: Temporal.PlainDate
   onSwipeLeft?: () => void
   onSwipeRight?: () => void
+  onNavigate?: (date: Temporal.PlainDate) => void
 }
 
 interface AdjacentProps {
@@ -62,7 +68,10 @@ function AdjacentMonthGrid({ date, reminders, noteCountByDate, listCountByDate }
   )
 }
 
-export default function MonthView({ displayDate, onSwipeLeft, onSwipeRight }: Props) {
+const MonthView = forwardRef<MonthViewHandle, Props>(function MonthView(
+  { displayDate, onSwipeLeft, onSwipeRight, onNavigate },
+  ref
+) {
   const stripRef = useRef<HTMLDivElement>(null)
   const touchRef = useRef<{
     startX: number
@@ -83,6 +92,45 @@ export default function MonthView({ displayDate, onSwipeLeft, onSwipeRight }: Pr
     el.style.transform = `translateX(calc(-33.333% + ${px}px))`
   }, [])
 
+  /** Slide the strip fully to one side then commit the navigation. */
+  const animateToMonth = useCallback(
+    (direction: 'left' | 'right') => {
+      if (animatingRef.current) return
+      animatingRef.current = true
+      const nav = direction === 'left' ? onSwipeLeft : onSwipeRight
+      const viewW = stripRef.current?.parentElement?.offsetWidth ?? 400
+      const targetPx = direction === 'left' ? -viewW : viewW
+      setStripPx(targetPx, `transform ${SETTLE_MS}ms ease-out`)
+      setTimeout(() => {
+        flushSync(() => nav?.())
+      }, SETTLE_MS)
+    },
+    [onSwipeLeft, onSwipeRight, setStripPx]
+  )
+
+  const animateToDate = useCallback(
+    (target: Temporal.PlainDate) => {
+      if (animatingRef.current) return
+      const cmp = Temporal.PlainYearMonth.compare(
+        displayDate.toPlainYearMonth(),
+        target.toPlainYearMonth()
+      )
+      if (cmp === 0) return
+      animatingRef.current = true
+      const direction = cmp > 0 ? 'right' : 'left'
+      const viewW = stripRef.current?.parentElement?.offsetWidth ?? 400
+      const targetPx = direction === 'left' ? -viewW : viewW
+      setStripPx(targetPx, `transform ${SETTLE_MS}ms ease-out`)
+      setTimeout(() => {
+        flushSync(() => onNavigate?.(target))
+      }, SETTLE_MS)
+    },
+    [displayDate, onNavigate, setStripPx]
+  )
+
+  useImperativeHandle(ref, () => ({ animateToMonth, animateToDate }), [animateToMonth, animateToDate])
+
+  // --- Touch (mobile) ---
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (animatingRef.current) return
     const t = e.touches[0]
@@ -120,23 +168,54 @@ export default function MonthView({ displayDate, onSwipeLeft, onSwipeRight }: Pr
 
     const dx = touch.dx
     touchRef.current = null
-    const committed = touch.locked && Math.abs(dx) > SWIPE_THRESHOLD
-    const nav = committed ? (dx < 0 ? onSwipeLeft : onSwipeRight) : null
 
-    if (!committed) {
+    if (!touch.locked || Math.abs(dx) <= SWIPE_THRESHOLD) {
       setStripPx(0, `transform ${SETTLE_MS}ms ease-out`)
       return
     }
 
     animatingRef.current = true
+    const nav = dx < 0 ? onSwipeLeft : onSwipeRight
     const viewW = stripRef.current?.parentElement?.offsetWidth ?? 400
     const targetPx = dx < 0 ? -viewW : viewW
     setStripPx(targetPx, `transform ${SETTLE_MS}ms ease-out`)
-
     setTimeout(() => {
       flushSync(() => nav?.())
     }, SETTLE_MS)
   }, [onSwipeLeft, onSwipeRight, setStripPx])
+
+  // --- Scroll wheel (desktop) ---
+  const wheelAccum = useRef(0)
+  const wheelTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleWheel = useCallback(
+    (e: React.WheelEvent) => {
+      if (animatingRef.current) return
+
+      // Use deltaX for horizontal scroll (trackpad), deltaY for vertical scroll wheel
+      const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY
+      wheelAccum.current += delta
+
+      // Preview: nudge the strip a small amount in the scroll direction
+      const nudge = Math.sign(wheelAccum.current) * Math.min(Math.abs(wheelAccum.current) * 0.15, 60)
+      setStripPx(-nudge)
+
+      if (wheelTimer.current) clearTimeout(wheelTimer.current)
+
+      if (Math.abs(wheelAccum.current) > 80) {
+        const dir: 'left' | 'right' = wheelAccum.current > 0 ? 'left' : 'right'
+        wheelAccum.current = 0
+        animateToMonth(dir)
+      } else {
+        // Snap back if scrolling stops before threshold
+        wheelTimer.current = setTimeout(() => {
+          wheelAccum.current = 0
+          setStripPx(0, `transform 150ms ease-out`)
+        }, 200)
+      }
+    },
+    [setStripPx, animateToMonth]
+  )
 
   const allReminders = useRemindersStore((s) => s.reminders)
 
@@ -173,6 +252,7 @@ export default function MonthView({ displayDate, onSwipeLeft, onSwipeRight }: Pr
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onWheel={handleWheel}
     >
       <div className="grid grid-cols-7 border-b border-slate-200/60 dark:border-white/[0.06] bg-[var(--bg-app)]">
         {DAY_NAMES.map((name) => (
@@ -242,4 +322,6 @@ export default function MonthView({ displayDate, onSwipeLeft, onSwipeRight }: Pr
       </div>
     </div>
   )
-}
+})
+
+export default MonthView

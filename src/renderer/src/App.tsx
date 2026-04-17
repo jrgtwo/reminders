@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useState, useRef, useCallback } from 'react'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import FirstLoginDialog from './components/sync/FirstLoginDialog'
@@ -6,6 +6,7 @@ import { RouterProvider, createMemoryRouter, createBrowserRouter, Navigate } fro
 import AppShell from './components/layout/AppShell'
 import CalendarHeader from './components/calendar/CalendarHeader'
 import MonthView from './components/calendar/MonthView'
+import type { MonthViewHandle } from './components/calendar/MonthView'
 import WeekView from './components/calendar/WeekView'
 import DayView from './components/calendar/DayView'
 import ErrorPage from './components/pages/ErrorPage'
@@ -29,8 +30,49 @@ import { useApp } from './components/hooks/useApp'
 import PageLoader from './components/ui/PageLoader'
 
 function CalendarPage() {
-  const { displayDate, view, weekDays, handlePrev, handleNext, handleToday, setView } =
+  const { displayDate, view, weekDays, handlePrev, handleNext, handleToday, handleNavigate, setView } =
     useCalendarPage()
+  const monthRef = useRef<MonthViewHandle>(null)
+
+  const onPrev = useCallback(() => {
+    if (view === 'month' && monthRef.current) {
+      monthRef.current.animateToMonth('right')
+    } else {
+      handlePrev()
+    }
+  }, [view, handlePrev])
+
+  const onNext = useCallback(() => {
+    if (view === 'month' && monthRef.current) {
+      monthRef.current.animateToMonth('left')
+    } else {
+      handleNext()
+    }
+  }, [view, handleNext])
+
+  const onMonthSelect = useCallback(
+    (month: number) => {
+      const target = displayDate.with({ month })
+      if (monthRef.current) {
+        monthRef.current.animateToDate(target)
+      } else {
+        handleNavigate(target)
+      }
+    },
+    [displayDate, handleNavigate]
+  )
+
+  const onYearSelect = useCallback(
+    (year: number) => {
+      const target = displayDate.with({ year })
+      if (monthRef.current) {
+        monthRef.current.animateToDate(target)
+      } else {
+        handleNavigate(target)
+      }
+    },
+    [displayDate, handleNavigate]
+  )
 
   return (
     <div className="flex flex-col h-full">
@@ -38,13 +80,15 @@ function CalendarPage() {
         displayDate={displayDate}
         view={view}
         weekDays={weekDays}
-        onPrev={handlePrev}
-        onNext={handleNext}
+        onPrev={onPrev}
+        onNext={onNext}
         onToday={handleToday}
         onViewChange={(v) => setView(v)}
+        onMonthSelect={onMonthSelect}
+        onYearSelect={onYearSelect}
       />
       {view === 'month' ? (
-        <MonthView displayDate={displayDate} onSwipeLeft={handleNext} onSwipeRight={handlePrev} />
+        <MonthView ref={monthRef} displayDate={displayDate} onSwipeLeft={handleNext} onSwipeRight={handlePrev} onNavigate={handleNavigate} />
       ) : (
         <WeekView displayDate={displayDate} />
       )}

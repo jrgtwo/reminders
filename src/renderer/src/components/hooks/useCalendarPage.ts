@@ -63,6 +63,12 @@ export function useCalendarPage() {
     })
   }
 
+  function handleNavigate(date: Temporal.PlainDate) {
+    startTransition(() => {
+      setDisplayDate(date)
+    })
+  }
+
   return {
     displayDate,
     view,
@@ -70,6 +76,7 @@ export function useCalendarPage() {
     handlePrev,
     handleNext,
     handleToday,
+    handleNavigate,
     setView: handleViewChange
   }
 }
