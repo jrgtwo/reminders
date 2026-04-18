@@ -132,6 +132,12 @@ export function useMobileRemindersPage() {
     reminderDelete.requestDelete(id, rect, 'Delete this reminder? This cannot be undone.')
   }
 
+  async function clearAllOverdue() {
+    for (const item of overdue) {
+      await toggleComplete(item.id, item.dateStr)
+    }
+  }
+
   async function handleSnooze(item: ScheduleItem) {
     const reminder = reminders.find((r) => r.id === item.id)
     if (!reminder) return
@@ -162,6 +168,7 @@ export function useMobileRemindersPage() {
     upcomingThisWeek,
     upcomingLater,
     isEmpty,
-    handleSnooze
+    handleSnooze,
+    clearAllOverdue
   }
 }

@@ -93,6 +93,7 @@ export default function RemindersPage() {
     handleDeleteReminder,
     reminderDelete,
     setNewReminderDate,
+    clearAllOverdue,
     overdue,
     todayItems,
     upcoming,
@@ -104,6 +105,8 @@ export default function RemindersPage() {
     isEmpty,
     handleSnooze
   } = useMobileRemindersPage()
+
+  const [confirmClearAll, setConfirmClearAll] = useState(false)
 
   // When navigating from header counts, auto-open the first available sub-section
   const autoOpenOverdue = navSection === 'overdue'
@@ -286,13 +289,47 @@ export default function RemindersPage() {
       <MobilePageHeader
         title="Schedule"
         actions={
-          <button
-            onClick={() => setNewReminderDate(today().toString())}
-            className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 dark:text-white/55 hover:text-slate-700 dark:hover:text-white/60 transition-colors px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-white/[0.06]"
-          >
-            <Plus size={20} />
-            Add
-          </button>
+          <div className="flex items-center gap-1">
+            {overdue.length > 0 && (
+              confirmClearAll ? (
+                <div className="flex items-center gap-2 text-[11px]">
+                  <span className="text-slate-500 dark:text-white/50">
+                    Clear {overdue.length} overdue?
+                  </span>
+                  <button
+                    onClick={() => {
+                      clearAllOverdue()
+                      setConfirmClearAll(false)
+                    }}
+                    className="font-semibold text-red-500 dark:text-[#e8a045] hover:underline"
+                  >
+                    Yes
+                  </button>
+                  <button
+                    onClick={() => setConfirmClearAll(false)}
+                    className="font-semibold text-slate-400 dark:text-white/40 hover:underline"
+                  >
+                    No
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirmClearAll(true)}
+                  className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 dark:text-white/55 hover:text-red-500 dark:hover:text-[#e8a045] transition-colors px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-white/[0.06]"
+                >
+                  <Check size={12} />
+                  Clear all overdue
+                </button>
+              )
+            )}
+            <button
+              onClick={() => setNewReminderDate(today().toString())}
+              className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 dark:text-white/55 hover:text-slate-700 dark:hover:text-white/60 transition-colors px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-white/[0.06]"
+            >
+              <Plus size={20} />
+              Add
+            </button>
+          </div>
         }
       />
 

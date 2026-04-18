@@ -65,6 +65,13 @@ export default function DayViewTodosTab({
 
   return (
     <div className="mb-8 flex flex-col gap-2">
+      <button
+        onClick={handleCreateInlineList}
+        className="flex items-center gap-1.5 self-end text-[12px] font-semibold text-[var(--accent)] hover:opacity-80 transition-opacity px-2 py-1 rounded-lg hover:bg-[var(--accent)]/[0.06]"
+      >
+        <span className="text-sm leading-none">+</span>
+        New List
+      </button>
       {dayLists.map((l) => {
         const isExpanded = expandedListIds.has(l.id)
         const listItems = (items.get(l.id) ?? [])

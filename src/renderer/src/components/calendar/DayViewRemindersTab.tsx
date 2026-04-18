@@ -151,6 +151,13 @@ export default function DayViewRemindersTab({
 
   return (
     <div className="mb-8 flex flex-col gap-2">
+      <button
+        onClick={handleAddReminder}
+        className="flex items-center gap-1.5 self-end text-[12px] font-semibold text-[var(--accent)] hover:opacity-80 transition-opacity px-2 py-1 rounded-lg hover:bg-[var(--accent)]/[0.06]"
+      >
+        <span className="text-sm leading-none">+</span>
+        Add Reminder
+      </button>
       {sortedUncompleted.map((r) => renderReminder(r, false))}
       {sortedCompleted.length > 0 && (
         <>

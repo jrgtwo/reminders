@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState, useRef, useCallback } from 'react'
+import { Temporal } from '@js-temporal/polyfill'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import FirstLoginDialog from './components/sync/FirstLoginDialog'
@@ -8,6 +9,7 @@ import CalendarHeader from './components/calendar/CalendarHeader'
 import MonthView from './components/calendar/MonthView'
 import type { MonthViewHandle } from './components/calendar/MonthView'
 import WeekView from './components/calendar/WeekView'
+import type { WeekViewHandle } from './components/calendar/WeekView'
 import DayView from './components/calendar/DayView'
 import ErrorPage from './components/pages/ErrorPage'
 import CookieBanner from './components/CookieBanner'
@@ -33,10 +35,13 @@ function CalendarPage() {
   const { displayDate, view, weekDays, handlePrev, handleNext, handleToday, handleNavigate, setView } =
     useCalendarPage()
   const monthRef = useRef<MonthViewHandle>(null)
+  const weekRef = useRef<WeekViewHandle>(null)
 
   const onPrev = useCallback(() => {
     if (view === 'month' && monthRef.current) {
       monthRef.current.animateToMonth('right')
+    } else if (view === 'week' && weekRef.current) {
+      weekRef.current.animateToWeek('right')
     } else {
       handlePrev()
     }
@@ -45,6 +50,8 @@ function CalendarPage() {
   const onNext = useCallback(() => {
     if (view === 'month' && monthRef.current) {
       monthRef.current.animateToMonth('left')
+    } else if (view === 'week' && weekRef.current) {
+      weekRef.current.animateToWeek('left')
     } else {
       handleNext()
     }
@@ -74,6 +81,17 @@ function CalendarPage() {
     [displayDate, handleNavigate]
   )
 
+  const onDateSelect = useCallback(
+    (date: Temporal.PlainDate) => {
+      if (view === 'week' && weekRef.current) {
+        weekRef.current.animateToDate(date)
+      } else {
+        handleNavigate(date)
+      }
+    },
+    [view, handleNavigate]
+  )
+
   return (
     <div className="flex flex-col h-full">
       <CalendarHeader
@@ -86,11 +104,12 @@ function CalendarPage() {
         onViewChange={(v) => setView(v)}
         onMonthSelect={onMonthSelect}
         onYearSelect={onYearSelect}
+        onDateSelect={onDateSelect}
       />
       {view === 'month' ? (
         <MonthView ref={monthRef} displayDate={displayDate} onSwipeLeft={handleNext} onSwipeRight={handlePrev} onNavigate={handleNavigate} />
       ) : (
-        <WeekView displayDate={displayDate} />
+        <WeekView ref={weekRef} displayDate={displayDate} onSwipeLeft={handleNext} onSwipeRight={handlePrev} onNavigate={handleNavigate} />
       )}
     </div>
   )
@@ -127,6 +146,8 @@ const routes = [
     errorElement: <ErrorPage />,
     children: [
       { index: true, element: <FirstVisitRedirect /> },
+      { path: 'month/:date', element: <CalendarPage /> },
+      { path: 'week/:date', element: <CalendarPage /> },
       { path: 'day/:date', element: <DayPage /> },
       { path: 'reminders', element: <Lazy><RemindersPage /></Lazy> },
       { path: 'todos', element: <Lazy><TodosPage /></Lazy> },

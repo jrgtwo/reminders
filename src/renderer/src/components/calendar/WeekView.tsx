@@ -1,4 +1,6 @@
+import { useRef, useLayoutEffect, useCallback, useImperativeHandle, forwardRef } from 'react'
 import { Temporal } from '@js-temporal/polyfill'
+import { flushSync } from 'react-dom'
 import { isSameDay } from '../../utils/dates'
 import ReminderForm from '../reminders/ReminderForm'
 import ReminderDetail from '../reminders/ReminderDetail'
@@ -6,6 +8,7 @@ import { useWeekView } from './hooks/useWeekView'
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const SETTLE_MS = 200
 
 function formatHour(h: number, format: '12h' | '24h'): string {
   if (format === '24h') return `${String(h).padStart(2, '0')}:00`
@@ -15,11 +18,19 @@ function formatHour(h: number, format: '12h' | '24h'): string {
   return `${h - 12} PM`
 }
 
-interface Props {
-  displayDate: Temporal.PlainDate
+export interface WeekViewHandle {
+  animateToWeek: (direction: 'left' | 'right') => void
+  animateToDate: (target: Temporal.PlainDate) => void
 }
 
-export default function WeekView({ displayDate }: Props) {
+interface Props {
+  displayDate: Temporal.PlainDate
+  onSwipeLeft?: () => void
+  onSwipeRight?: () => void
+  onNavigate?: (date: Temporal.PlainDate) => void
+}
+
+const WeekView = forwardRef<WeekViewHandle, Props>(function WeekView({ displayDate, onSwipeLeft, onSwipeRight, onNavigate }, ref) {
   const {
     scrollRef,
     newForm,
@@ -48,10 +59,187 @@ export default function WeekView({ displayDate }: Props) {
     SLOT_H,
   } = useWeekView({ displayDate })
 
+  /* ── Two-phase slide animation ── */
+  const contentRef = useRef<HTMLDivElement>(null)
+  const prevDateRef = useRef(displayDate.toString())
+  const directionRef = useRef<'left' | 'right' | null>(null)
+  const animatingRef = useRef(false)
+
+  const triggerSlideOut = useCallback(
+    (dir: 'left' | 'right', onDone: () => void) => {
+      if (animatingRef.current) return
+      const el = contentRef.current
+      if (!el) { onDone(); return }
+
+      animatingRef.current = true
+      directionRef.current = dir
+
+      const exitX = dir === 'left' ? '-100%' : '100%'
+      el.style.transition = `transform ${SETTLE_MS}ms ease-in, opacity ${SETTLE_MS}ms ease-in`
+      el.style.transform = `translateX(${exitX})`
+      el.style.opacity = '0'
+
+      setTimeout(() => flushSync(onDone), SETTLE_MS)
+    },
+    []
+  )
+
+  // Phase 2: after displayDate changes, slide new content IN
+  // animatingRef stays true until slide-in finishes, blocking new swipe gestures
+  useLayoutEffect(() => {
+    const cur = displayDate.toString()
+    if (prevDateRef.current !== cur && directionRef.current && contentRef.current) {
+      const dir = directionRef.current
+      const enterX = dir === 'left' ? '100%' : '-100%'
+      const el = contentRef.current
+      // Reset horizontal scroll so the new week starts at the first day
+      if (scrollRef.current) scrollRef.current.scrollLeft = 0
+      el.style.transition = 'none'
+      el.style.transform = `translateX(${enterX})`
+      el.style.opacity = '0'
+      void el.offsetHeight // force reflow
+      el.style.transition = `transform ${SETTLE_MS}ms ease-out, opacity ${SETTLE_MS}ms ease-out`
+      el.style.transform = 'translateX(0)'
+      el.style.opacity = '1'
+      directionRef.current = null
+      // Keep animatingRef true during slide-in + cooldown to prevent immediate re-swipe
+      setTimeout(() => {
+        if (contentRef.current) {
+          contentRef.current.style.transition = ''
+          contentRef.current.style.transform = ''
+          contentRef.current.style.opacity = ''
+        }
+        // Extra cooldown so layout settles and scrollWidth is accurate
+        setTimeout(() => { animatingRef.current = false }, 100)
+      }, SETTLE_MS)
+    }
+    prevDateRef.current = cur
+  }, [displayDate])
+
+  const animateToWeek = useCallback(
+    (direction: 'left' | 'right') => {
+      const nav = direction === 'left' ? onSwipeLeft : onSwipeRight
+      triggerSlideOut(direction, () => nav?.())
+    },
+    [onSwipeLeft, onSwipeRight, triggerSlideOut]
+  )
+
+  const animateToDate = useCallback(
+    (target: Temporal.PlainDate) => {
+      const cmp = Temporal.PlainDate.compare(displayDate, target)
+      if (cmp === 0) return
+      const direction = cmp > 0 ? 'right' : 'left'
+      triggerSlideOut(direction, () => onNavigate?.(target))
+    },
+    [displayDate, onNavigate, triggerSlideOut]
+  )
+
+  useImperativeHandle(ref, () => ({ animateToWeek, animateToDate }), [animateToWeek, animateToDate])
+
+  /* ── Touch swipe (only at horizontal scroll edges) ── */
+  const SWIPE_THRESHOLD = 50
+  const touchRef = useRef<{
+    startX: number
+    startY: number
+    dx: number
+    locked: boolean | null
+  } | null>(null)
+
+  const isAtEdge = useCallback((direction: 'left' | 'right'): boolean => {
+    const el = scrollRef.current
+    if (!el) return false
+    const maxScroll = el.scrollWidth - el.clientWidth
+    // No horizontal overflow — don't enable swipe nav, let normal touch behavior handle it
+    if (maxScroll <= 2) return false
+    if (direction === 'right') return el.scrollLeft <= 2
+    return el.scrollLeft >= maxScroll - 2
+  }, [])
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (animatingRef.current) return
+    const t = e.touches[0]
+    touchRef.current = {
+      startX: t.clientX,
+      startY: t.clientY,
+      dx: 0,
+      locked: null,
+    }
+  }, [])
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    const touch = touchRef.current
+    if (!touch || animatingRef.current) return
+    const t = e.touches[0]
+    const dx = t.clientX - touch.startX
+    const dy = t.clientY - touch.startY
+
+    // Once decided, don't re-evaluate
+    if (touch.locked === false) return
+
+    if (touch.locked === null) {
+      // Need enough movement to decide
+      if (Math.abs(dx) < 20 && Math.abs(dy) < 20) return
+
+      // Only consider horizontal gestures
+      if (Math.abs(dy) >= Math.abs(dx)) {
+        touch.locked = false
+        return
+      }
+
+      // Check if at the correct edge RIGHT NOW (after browser has had a chance to scroll)
+      const swipeDir: 'left' | 'right' = dx > 0 ? 'right' : 'left'
+      if (!isAtEdge(swipeDir)) {
+        touch.locked = false
+        return
+      }
+
+      touch.locked = true
+    }
+
+    e.preventDefault()
+    touch.dx = dx
+    const el = contentRef.current
+    if (el) {
+      el.style.transition = 'none'
+      el.style.transform = `translateX(${dx * 0.4}px)`
+      el.style.opacity = String(Math.max(0, 1 - Math.abs(dx) / 400))
+    }
+  }, [isAtEdge])
+
+  const handleTouchEnd = useCallback(() => {
+    const touch = touchRef.current
+    if (!touch || animatingRef.current) {
+      touchRef.current = null
+      return
+    }
+    const dx = touch.dx
+    touchRef.current = null
+
+    if (!touch.locked || Math.abs(dx) <= SWIPE_THRESHOLD) {
+      const el = contentRef.current
+      if (el) {
+        el.style.transition = `transform ${SETTLE_MS}ms ease-out, opacity ${SETTLE_MS}ms ease-out`
+        el.style.transform = 'translateX(0)'
+        el.style.opacity = '1'
+      }
+      return
+    }
+
+    const dir: 'left' | 'right' = dx < 0 ? 'left' : 'right'
+    const nav = dx < 0 ? onSwipeLeft : onSwipeRight
+    triggerSlideOut(dir, () => nav?.())
+  }, [onSwipeLeft, onSwipeRight, triggerSlideOut])
+
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
-      <div ref={scrollRef} className="flex-1 overflow-auto bg-[var(--bg-app)]">
-      <div className="pr-4" style={{ minWidth: 'calc(3.5rem + 7 * 96px)' }}>
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-auto bg-[var(--bg-app)]"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+      <div ref={contentRef} className="pr-4" style={{ minWidth: 'calc(3.5rem + 7 * 96px)' }}>
 
         {/* Day header row */}
         <div
@@ -321,4 +509,6 @@ export default function WeekView({ displayDate }: Props) {
       )}
     </div>
   )
-}
+})
+
+export default WeekView
