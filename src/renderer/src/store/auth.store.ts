@@ -13,6 +13,8 @@ interface AuthState {
   plan: Plan
   init: () => Promise<void>
   sendMagicLink: (email: string, captchaToken?: string) => Promise<void>
+  checkIsReviewerAccount: (email: string) => Promise<boolean>
+  signInWithPassword: (email: string, password: string, captchaToken?: string) => Promise<void>
   signOut: () => Promise<void>
 }
 
@@ -123,6 +125,23 @@ export const useAuthStore = create<AuthState>((set) => ({
     })
     if (error) throw error
     capture('auth_magic_link_sent')
+  },
+
+  checkIsReviewerAccount: async (email) => {
+    const { data, error } = await supabase.rpc('is_reviewer_email', { p_email: email })
+    if (error) return false
+    return data === true
+  },
+
+  signInWithPassword: async (email, password, captchaToken) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+      options: { captchaToken },
+    })
+    console.log('signInWithPassword error:', error)
+    if (error) throw error
+    capture('auth_password_sign_in')
   },
 
   signOut: async () => {
