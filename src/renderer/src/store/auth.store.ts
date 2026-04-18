@@ -139,7 +139,6 @@ export const useAuthStore = create<AuthState>((set) => ({
       password,
       options: { captchaToken },
     })
-    console.log('signInWithPassword error:', error)
     if (error) throw error
     capture('auth_password_sign_in')
   },
