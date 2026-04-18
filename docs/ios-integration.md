@@ -1,50 +1,126 @@
-# iOS Integration Guide
+# iOS App: Xcode Setup → Build → TestFlight
 
-> **Prerequisite:** iOS development requires macOS with Xcode installed.
-> If developing on WSL2/Linux, these steps must be run on a Mac.
-
-The app uses [Capacitor 8](https://capacitorjs.com/) to wrap the React web build into a native iOS app.
-The platform abstraction layer (`src/renderer/src/platform/`) already detects `Capacitor.isNativePlatform()`
-and routes to `CapacitorAdapter` — but that adapter is currently a stub. The steps below complete the integration.
+A complete guide for getting the iOS app running from scratch and distributing a test build via TestFlight. Written for someone new to iOS development.
 
 ---
 
-## Step 1 — Install Capacitor iOS packages
+## Prerequisites (one-time setup)
 
-> **Status:** `@capacitor/core` and `@capacitor/cli` are already installed. Run the following to add the remaining packages:
+### 1. Apple Developer Account — $99/year
+
+- Enroll at https://developer.apple.com/programs/
+- Required for signing the app and publishing to TestFlight
+- Usually approved same day, up to 48 hours
+- Wait for the "Your membership is active" email before proceeding
+
+### 2. Install Xcode
+
+Search "Xcode" in the Mac App Store — it's free, ~15GB. Or:
 
 ```bash
-npm install @capacitor/ios @capacitor/app @capacitor/status-bar @capacitor/keyboard @capacitor/haptics @capacitor/local-notifications
-npm install @capacitor-community/sqlite
+open "macappstores://apps.apple.com/app/xcode/id497799835"
 ```
 
-## Step 2 — Add the iOS platform
+After install, open Xcode once (accepts license + installs components), then verify:
+
+```bash
+sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+xcodebuild -version   # should print "Xcode 16.x"
+```
+
+### 3. Xcode Tools
+
+No additional dependency managers (like CocoaPods) are required, as this project uses Swift Package Manager.
+
+Ensure your Xcode installation is ready by running:
+
+```bash
+sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+xcodebuild -version   # should print "Xcode 16.x"
+```
+
+---
+
+## Phase 1 — Add iOS to the Project
+
+### Step 1: Install `@capacitor/ios`
+
+```bash
+npm install @capacitor/ios
+```
+
+### Step 2: Scaffold the iOS native project
 
 ```bash
 npx cap add ios
 ```
 
-This generates the `ios/` Xcode project folder in the repo root.
+This creates the `ios/` directory with a full Xcode project inside.
 
-## Step 3 — Implement CapacitorAdapter
+### Step 3: Sync dependencies
 
-**File:** `src/renderer/src/platform/capacitor.ts`
+```bash
+npx cap sync ios
+```
 
-Replace the stub with a full implementation using `@capacitor-community/sqlite`.
-The pattern mirrors `WebAdapter` (`src/renderer/src/platform/web.ts`) but uses SQLite instead of IndexedDB.
-Schema and migrations mirror `src/main/storage/db.ts`.
+This wires the native Capacitor plugins into the Xcode project using Swift Package Manager.
 
-Key notes:
-- Add an `init()` method that opens the SQLite connection (same pattern as `WebAdapter.init()`)
-- Reproduce the same 8-table schema: `reminders`, `notes`, `note_folders`, `todo_lists`, `todo_list_items`, `todo_folders`, `sync_meta` — with soft deletes (`deleted_at`) and `last_synced_at`
-- Serialize `recurrence` and `completedDates` as JSON strings (same as the Electron adapter)
-- Call `await capacitorAdapter.init()` from `initStorage()` in `src/renderer/src/platform/index.ts`, right after constructing the adapter (same place `WebAdapter.init()` is called)
+---
 
-## Step 4 — Configure auth deep link
+## Phase 2 — Configure `capacitor.config.ts`
 
-Supabase magic link auth uses the `reminders://` custom URL scheme.
+Update `capacitor.config.ts` to add iOS-specific plugin settings:
 
-Add to `ios/App/App/Info.plist`:
+```ts
+import type { CapacitorConfig } from '@capacitor/cli'
+
+const config: CapacitorConfig = {
+  appId: 'com.remindertoday.app',
+  appName: 'Reminders',
+  webDir: 'dist/renderer',
+  ios: {
+    contentInset: 'automatic'
+  },
+  plugins: {
+    StatusBar: {
+      style: 'DEFAULT',
+      backgroundColor: '#ffffff'
+    },
+    Keyboard: {
+      resize: 'body',
+      style: 'DARK',
+      resizeOnFullScreen: true
+    },
+    LocalNotifications: {}
+  }
+}
+
+export default config
+```
+
+---
+
+## Phase 3 — App Icons
+
+Install the assets tool:
+
+```bash
+npm install -D @capacitor/assets
+```
+
+Generate all required iOS icon sizes from `resources/icon.png` (must be 1024×1024):
+
+```bash
+npx @capacitor/assets generate --ios
+```
+
+This writes all sizes into `ios/App/App/Assets.xcassets/AppIcon.appiconset/`.
+
+---
+
+## Phase 4 — iOS Permissions (`Info.plist`)
+
+Also add the Supabase auth deep link URL scheme (required for magic link login):
 
 ```xml
 <key>CFBundleURLTypes</key>
@@ -58,49 +134,103 @@ Add to `ios/App/App/Info.plist`:
 </array>
 ```
 
-Then create `src/renderer/src/lib/mobileAuth.ts` to wire up `@capacitor/app`'s `appUrlOpen` event
-and pass the callback URL to Supabase (mirrors the deep-link handler in `src/main/auth.ts`).
+---
 
-## Step 5 — Local notifications
+## Phase 5 — Add npm Scripts
 
-Create `src/renderer/src/lib/mobileNotifications.ts` using `@capacitor/local-notifications`
-to schedule reminder alerts when a reminder with a future `date` + `startTime` is saved.
-Mirrors the logic in `src/main/notifications.ts` (the Electron version).
+Add the following new platform-specific scripts to `package.json`:
 
-## Step 6 — Build and sync
-
-```bash
-npm run cap:sync   # builds dist/renderer, then copies assets into ios/
+```json
+"ios:sync": "npm run build:web && npx cap sync ios",
+"ios:open": "npx cap open ios",
+"ios:release": "node scripts/bump-ios-version.mjs && npm run build:web && npx cap sync ios"
 ```
 
-## Step 7 — Open Xcode and run
-
-```bash
-npx cap open ios
-```
-
-Select a simulator or physical device and hit **Run**. Watch the Xcode console for any JS bridge errors.
+Create `scripts/bump-ios-version.mjs` to increment the version in `ios/App/App.xcodeproj/project.pbxproj` (increments `CURRENT_PROJECT_VERSION` and `MARKETING_VERSION`) — mirrors `scripts/bump-android-version.mjs`.
 
 ---
 
-## Critical files
+## Phase 6 — First Build in Xcode
 
-| File | Purpose |
-|------|---------|
-| `src/renderer/src/platform/capacitor.ts` | Adapter stub to implement |
-| `src/renderer/src/platform/index.ts` | Platform detection — add `init()` call for Capacitor |
-| `src/renderer/src/platform/web.ts` | Reference implementation (IndexedDB) |
-| `src/main/storage/db.ts` | SQLite schema / migrations to mirror |
-| `capacitor.config.ts` | App ID (`com.reminders.app`) and web dir |
-| `ios/App/App/Info.plist` | URL scheme for auth deep links (created in Step 2) |
+Sync the web build and open Xcode:
+
+```bash
+npm run ios:sync
+npm run ios:open
+```
+
+Inside Xcode:
+
+1. Click the project name (top of left sidebar) → **Signing & Capabilities** tab
+2. Under **Team**, select your Apple Developer account
+3. Confirm **Bundle Identifier** reads `com.remindertoday.app`
+4. Top toolbar → pick any iPhone simulator (e.g. "iPhone 16")
+5. Press **▶ (Cmd+R)** — app should launch in the iOS Simulator
 
 ---
 
-## Verification checklist
+## Phase 7 — TestFlight Distribution
 
-- [ ] `npm run build:web` completes without errors
-- [ ] `npx cap sync` copies assets without errors
-- [ ] App launches in iOS Simulator without JS errors in Xcode console
-- [ ] Creating a reminder persists across app restarts
-- [ ] Supabase magic link auth completes and redirects back into the app
-- [ ] Reminder notification fires at the scheduled time
+TestFlight lets you share the app with testers before the App Store.
+
+### 7a. Create the App Record
+
+1. Go to https://appstoreconnect.apple.com
+2. **My Apps → "+" → New App**
+3. Platform = iOS, Name = "Reminder Today", Bundle ID = `com.remindertoday.app`, SKU = `reminders-001`
+
+### 7b. Archive the Build
+
+1. In Xcode, change the destination (top toolbar) to **"Any iOS Device (arm64)"** — not a simulator
+2. **Product → Archive**
+3. Wait ~2–5 min; the **Organizer** window opens automatically
+
+### 7c. Upload to App Store Connect
+
+1. In Organizer: select your archive → **Distribute App**
+2. Choose **"TestFlight & App Store"** → Next
+3. Choose **"Upload"** → Next through the defaults
+4. Xcode uploads the build (~5–10 min)
+
+### 7d. Add Testers
+
+1. App Store Connect → **TestFlight** tab → wait ~15 min for the build to process
+2. **Internal Testing** (up to 25 people with App Store Connect roles): add by Apple ID — available immediately
+3. **External Testing** (anyone, up to 10,000): create a group → add email addresses → submit for Beta App Review (1–2 days first time, usually faster after)
+4. Testers get an email invite → install the **TestFlight** app → tap the link
+
+---
+
+## Ongoing Workflow
+
+After the initial setup, releasing a new build is:
+
+```bash
+npm run ios:release   # bumps version, builds web, syncs to Xcode project
+# Then in Xcode: Product → Archive → Distribute App → Upload
+```
+
+---
+
+## Critical Files
+
+| File                                              | Purpose                                                 |
+| ------------------------------------------------- | ------------------------------------------------------- |
+| `capacitor.config.ts`                             | iOS plugin config (keyboard, status bar, notifications) |
+| `ios/App/App/Info.plist`                          | auth URL scheme                                         |
+| `package.json`                                    | `ios:sync`, `ios:open`, `ios:release` scripts           |
+| `scripts/bump-ios-version.mjs`                    | Version bump for `project.pbxproj`                      |
+| `ios/App/App/Assets.xcassets/AppIcon.appiconset/` | Generated app icons                                     |
+| `src/renderer/src/platform/capacitor.ts`          | Capacitor storage adapter (already implemented)         |
+| `src/renderer/src/lib/mobileNotifications.ts`     | Local notifications (already implemented)               |
+
+---
+
+## Verification Checklist
+
+- [ ] `npx cap open ios` opens Xcode without errors
+- [ ] App runs in iOS Simulator — auth, reminders, notes, todos all work
+- [ ] Notification permission prompt appears on first launch
+- [ ] Magic link email opens the app and completes sign-in
+- [ ] Archive + upload to App Store Connect succeeds
+- [ ] Testers receive TestFlight invite and can install the build
