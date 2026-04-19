@@ -8,7 +8,7 @@ import { useTodoListsStore } from '../../../store/todo_lists.store'
 import { useUIStore } from '../../../store/ui.store'
 import type { Reminder } from '../../../types/models'
 
-const SLOT_H = 64
+const SLOT_H = 80
 
 interface Params {
   displayDate: Temporal.PlainDate
@@ -22,9 +22,10 @@ export function useWeekView({ displayDate }: Params) {
   const setSelectedDate = useUIStore((s) => s.setSelectedDate)
   const timeFormat = useUIStore((s) => s.timeFormat)
   const saveReminder = useRemindersStore((s) => s.save)
+  const removeReminder = useRemindersStore((s) => s.remove)
 
   const scrollRef = useRef<HTMLDivElement>(null)
-  const [newForm, setNewForm] = useState<{ date: string; time: string } | null>(null)
+  const [newForm, setNewForm] = useState<Reminder | null>(null)
   const [detail, setDetail] = useState<{ reminder: Reminder; dateStr: string } | null>(null)
   const [allDayExpanded, setAllDayExpanded] = useState(false)
 
@@ -150,6 +151,8 @@ export function useWeekView({ displayDate }: Params) {
     getColSpan,
     handleDayClick,
     handleSaveNewReminder,
+    saveReminder,
+    removeReminder,
     SLOT_H,
   }
 }

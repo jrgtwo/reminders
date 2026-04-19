@@ -55,6 +55,7 @@ interface InnerProps {
 function InnerEditor({ initialContent, onChange, minHeight = '5.5lh', autoFocus }: InnerProps) {
   const onChangeRef = useRef(onChange)
   onChangeRef.current = onChange
+  const editorWrapRef = useRef<HTMLDivElement>(null)
 
   const { get } = useEditor((root) =>
     Editor.make()
@@ -96,7 +97,12 @@ function InnerEditor({ initialContent, onChange, minHeight = '5.5lh', autoFocus 
 
       {/* Editor content — resize-y on the wrapper, min-height on ProseMirror */}
       <div
-        className={`
+        ref={editorWrapRef}
+        onClick={() => {
+          const pm = editorWrapRef.current?.querySelector('.ProseMirror') as HTMLElement | null
+          pm?.focus()
+        }}
+        className={`cursor-text
           px-3 py-2 text-sm text-gray-900 dark:text-gray-100
           overflow-y-auto resize-y
           [&_.milkdown]:outline-none

@@ -2,8 +2,7 @@ import { useRef, useLayoutEffect, useCallback, useImperativeHandle, forwardRef }
 import { Temporal } from '@js-temporal/polyfill'
 import { flushSync } from 'react-dom'
 import { isSameDay } from '../../utils/dates'
-import ReminderForm from '../reminders/ReminderForm'
-import ReminderDetail from '../reminders/ReminderDetail'
+import ReminderCard from '../reminders/ReminderCard'
 import { useWeekView } from './hooks/useWeekView'
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
@@ -55,7 +54,8 @@ const WeekView = forwardRef<WeekViewHandle, Props>(function WeekView({ displayDa
     navigate,
     getColSpan,
     handleDayClick,
-    handleSaveNewReminder,
+    saveReminder,
+    removeReminder,
     SLOT_H,
   } = useWeekView({ displayDate })
 
@@ -435,13 +435,21 @@ const WeekView = forwardRef<WeekViewHandle, Props>(function WeekView({ displayDa
                   <div
                     key={`${dateStr}-${hour}`}
                     className={[
-                      'border-t border-l border-slate-300/70 dark:border-white/[0.10] min-w-0 cursor-pointer',
+                      'relative border-t border-l border-slate-300/70 dark:border-white/[0.10] min-w-0 cursor-pointer',
                       'opacity-80 hover:opacity-100 hover:brightness-105 transition-all duration-150',
                       isToday ? 'bg-[var(--accent-muted)]' : 'hover:bg-slate-50/80 dark:hover:bg-white/[0.02]',
                     ].filter(Boolean).join(' ')}
                     style={{ height: `${SLOT_H}px` }}
-                    onClick={() => setNewForm({ date: dateStr, time: `${String(hour).padStart(2, '0')}:00` })}
-                  />
+                    onClick={() => {
+                      const now = new Date().toISOString()
+                      setNewForm({ id: crypto.randomUUID(), title: '', date: dateStr, startTime: `${String(hour).padStart(2, '0')}:00`, completedDates: [], createdAt: now, updatedAt: now })
+                    }}
+                  >
+                    <div
+                      className="absolute top-1/2 left-0 right-0 h-px pointer-events-none text-slate-300 dark:text-white/[0.14]"
+                      style={{ backgroundImage: 'repeating-linear-gradient(90deg, currentColor 0, currentColor 5px, transparent 5px, transparent 12px)' }}
+                    />
+                  </div>
                 )
               })}
             </>
@@ -491,21 +499,41 @@ const WeekView = forwardRef<WeekViewHandle, Props>(function WeekView({ displayDa
       </div>
 
       {newForm && (
-        <ReminderForm
-          date={newForm.date}
-          reminder={null}
-          defaultTime={newForm.time}
-          onSave={handleSaveNewReminder}
-          onClose={() => setNewForm(null)}
-        />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/60" onClick={() => setNewForm(null)} />
+          <div className="relative w-full max-w-lg bg-[var(--bg-surface)] rounded-xl shadow-2xl max-h-[85vh] flex flex-col">
+            <ReminderCard
+              reminder={newForm}
+              dateStr={newForm.date}
+              isExpanded={true}
+              onToggleExpand={() => setNewForm(null)}
+              timeFormat={timeFormat}
+              inModal={true}
+              onSave={async (r) => { await saveReminder(r); setNewForm(null) }}
+              onCancel={() => setNewForm(null)}
+              onDelete={() => setNewForm(null)}
+            />
+          </div>
+        </div>
       )}
 
       {detail && (
-        <ReminderDetail
-          reminder={detail.reminder}
-          dateStr={detail.dateStr}
-          onClose={() => setDetail(null)}
-        />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/60" onClick={() => setDetail(null)} />
+          <div className="relative w-full max-w-lg bg-[var(--bg-surface)] rounded-xl shadow-2xl max-h-[85vh] flex flex-col">
+            <ReminderCard
+              reminder={detail.reminder}
+              dateStr={detail.dateStr}
+              isExpanded={true}
+              onToggleExpand={() => setDetail(null)}
+              timeFormat={timeFormat}
+              inModal={true}
+              onSave={async (r) => { await saveReminder(r); setDetail(null) }}
+              onCancel={() => setDetail(null)}
+              onDelete={(e) => { e.stopPropagation(); removeReminder(detail.reminder.id); setDetail(null) }}
+            />
+          </div>
+        </div>
       )}
     </div>
   )

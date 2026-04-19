@@ -278,7 +278,8 @@ export default function DayView() {
   const handleWheel = useCallback(
     (e: React.WheelEvent) => {
       if (animatingRef.current) return
-      const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) return
+      const delta = e.deltaX
       wheelAccum.current += delta
 
       const nudge = Math.sign(wheelAccum.current) * Math.min(Math.abs(wheelAccum.current) * 0.15, 60)
