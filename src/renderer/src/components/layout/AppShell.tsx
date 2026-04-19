@@ -37,9 +37,9 @@ export default function AppShell() {
   const location = useLocation()
 
   return (
-    <div className="flex flex-col h-screen text-slate-900 dark:text-slate-100 relative overflow-hidden bg-[var(--bg-app)]">
+    <div className="flex flex-col h-dvh text-slate-900 dark:text-slate-100 relative overflow-hidden bg-[var(--bg-app)]">
       {/* Top header */}
-      <header className="relative flex flex-col border-b border-black/30 dark:border-black/60 shrink-0 bg-[var(--bg-header)]">
+      <header className="relative flex flex-col border-b border-black/30 dark:border-black/60 shrink-0 bg-[var(--bg-header)] pt-safe">
         {/* Full-width (lg+): single row, 3-col grid so search is truly centered */}
         <div className="hidden lg:grid lg:grid-cols-3 lg:items-center px-4 h-16">
           {/* Left: brand + stats */}
@@ -206,6 +206,9 @@ export default function AppShell() {
       </div>
 
       <BottomNav />
+
+      {/* Fills the bottom safe area (home indicator) with the nav background color */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-[var(--bg-surface)]" style={{ height: 'env(safe-area-inset-bottom, 0px)' }} />
 
       {newReminderDate && (
         <ReminderForm

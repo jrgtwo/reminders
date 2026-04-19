@@ -5,12 +5,13 @@
    appName: 'Reminders',
    webDir: 'dist/renderer',
    ios: {
-     contentInset: 'automatic',
+     contentInset: 'never',
+     backgroundColor: '#0d1117',
    },
    plugins: {
      StatusBar: {
-       style: 'DEFAULT',
-       backgroundColor: '#ffffff',
+       style: 'DARK',
+       overlaysWebView: true,
      },
      Keyboard: {
        resize: 'body',

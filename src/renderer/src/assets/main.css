@@ -98,10 +98,39 @@
   filter: brightness(1);
 }
 
-html, body, #root {
+html {
+  font-family: 'Inter Variable', 'Inter', system-ui, sans-serif;
+  font-size: 18px;
+  overflow: hidden;
+  overscroll-behavior: none;
+  height: 100dvh;
+  width: 100%;
+  background-color: var(--bg-surface);
+}
+
+body {
+  font-family: 'Inter Variable', 'Inter', system-ui, sans-serif;
+  font-size: 18px;
+  overflow: hidden;
+  overscroll-behavior: none;
+  height: 100%;
+  width: 100%;
+  background-color: var(--bg-app);
+}
+
+/* Explicit safe-area padding classes (Tailwind arbitrary env() can be unreliable on iOS) */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+#root {
   font-family: 'Inter Variable', 'Inter', system-ui, sans-serif;
   font-size: 18px;
   background-color: var(--bg-app);
+  height: 100%;
 }
 
 button, a { cursor: pointer; touch-action: manipulation; }
