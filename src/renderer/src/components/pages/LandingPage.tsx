@@ -142,10 +142,10 @@ export default function LandingPage() {
   return (
     <main className="h-dvh text-slate-100 overflow-y-auto bg-[#0d1117]">
       {/* Hero */}
-      <section className="relative flex flex-col items-center justify-center px-6 pt-20 pb-16 md:pt-28 md:pb-24">
+      <section className="relative flex flex-col items-center justify-center px-6 pt-[clamp(5rem,10vw,7rem)] pb-[clamp(4rem,8vw,6rem)]">
         <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
           <h1 className="flex flex-col items-center mb-6">
-            <img src={logo} alt="Reminder Today Logo" className="w-100 mb-1" />
+            <img src={logo} alt="Reminder Today Logo" className="w-full max-w-[25rem] mb-1" />
           </h1>
           <p className="text-lg md:text-xl text-white/50 max-w-lg mb-8 leading-relaxed">
             Calendar. Reminders. Notes. Todos. One app, on your device, under your control — no

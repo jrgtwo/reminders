@@ -437,7 +437,11 @@ const WeekView = forwardRef<WeekViewHandle, Props>(function WeekView({ displayDa
                     className={[
                       'relative border-t border-l border-slate-300/70 dark:border-white/[0.10] min-w-0 cursor-pointer',
                       'opacity-80 hover:opacity-100 hover:brightness-105 transition-all duration-150',
-                      isToday ? 'bg-[var(--accent-muted)]' : 'hover:bg-slate-50/80 dark:hover:bg-white/[0.02]',
+                      isToday
+                        ? 'bg-[var(--accent-muted)]'
+                        : hour % 2 === 0
+                          ? 'bg-black/[0.025] dark:bg-white/[0.018] hover:bg-black/[0.04] dark:hover:bg-white/[0.035]'
+                          : 'hover:bg-slate-50/80 dark:hover:bg-white/[0.02]',
                     ].filter(Boolean).join(' ')}
                     style={{ height: `${SLOT_H}px` }}
                     onClick={() => {

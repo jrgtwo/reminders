@@ -120,7 +120,7 @@ export default function AppShell() {
         {/* Narrow (below lg): two rows */}
         <div className="lg:hidden flex flex-col">
           {/* Row 1: brand + sync + settings */}
-          <div className="flex items-center justify-between px-4 h-14 border-b border-white/[0.06]">
+          <div className="flex items-center justify-between px-4 h-16 border-b border-white/[0.06]">
             <button
               onClick={() => navigate('/')}
               className="flex flex-col leading-none hover:opacity-80 transition-opacity"
