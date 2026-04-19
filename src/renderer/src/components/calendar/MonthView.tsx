@@ -48,7 +48,7 @@ function AdjacentMonthGrid({ date, reminders, noteCountByDate, listCountByDate }
   }, [reminders, days])
 
   return (
-    <div className="grid grid-cols-7 auto-rows-[80px] md:auto-rows-[110px] lg:auto-rows-[160px] gap-0 md:gap-1 bg-[var(--bg-app)] p-0 md:p-1.5 shrink-0 w-[calc(100%/3)]">
+    <div className="grid grid-cols-7 auto-rows-[minmax(70px,1fr)] h-full gap-0 bg-[var(--bg-app)] p-0 shrink-0 w-[calc(100%/3)]">
       {days.map((day) => {
         const key = day.toString()
         return (
@@ -192,8 +192,10 @@ const MonthView = forwardRef<MonthViewHandle, Props>(function MonthView(
     (e: React.WheelEvent) => {
       if (animatingRef.current) return
 
-      // Use deltaX for horizontal scroll (trackpad), deltaY for vertical scroll wheel
-      const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY
+      // Only use horizontal scroll for month navigation; let vertical scroll through
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) return
+
+      const delta = e.deltaX
       wheelAccum.current += delta
 
       // Preview: nudge the strip a small amount in the scroll direction
@@ -248,13 +250,13 @@ const MonthView = forwardRef<MonthViewHandle, Props>(function MonthView(
 
   return (
     <div
-      className="flex flex-col flex-1 overflow-hidden"
+      className="flex flex-col flex-1 overflow-x-hidden overflow-y-auto"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       onWheel={handleWheel}
     >
-      <div className="grid grid-cols-7 border-b border-slate-200/60 dark:border-white/[0.06] bg-[var(--bg-app)]">
+      <div className="sticky top-0 z-10 grid grid-cols-7 border-b border-slate-200/60 dark:border-white/[0.06] bg-[var(--bg-app)]">
         {DAY_NAMES.map((name) => (
           <div
             key={name}
@@ -264,12 +266,13 @@ const MonthView = forwardRef<MonthViewHandle, Props>(function MonthView(
           </div>
         ))}
       </div>
-      <div className="relative flex-1 overflow-hidden">
+      <div className="relative flex-1 overflow-x-hidden">
         <div
           ref={stripRef}
           style={{
             display: 'flex',
             width: '300%',
+            height: '100%',
             transform: 'translateX(-33.333%)',
             willChange: 'transform',
           }}
@@ -292,7 +295,7 @@ const MonthView = forwardRef<MonthViewHandle, Props>(function MonthView(
                 ? `radial-gradient(circle at ${glow.x}px ${glow.y}px, rgba(255,255,255,0.008) 0%, transparent 100px)`
                 : 'none',
             }}
-            className="grid grid-cols-7 auto-rows-[80px] md:auto-rows-[110px] lg:auto-rows-[160px] gap-0 md:gap-1 bg-[var(--bg-app)] p-0 md:p-1.5 shrink-0 w-[calc(100%/3)]"
+            className="grid grid-cols-7 auto-rows-[minmax(70px,1fr)] h-full gap-0 bg-[var(--bg-app)] p-0 shrink-0 w-[calc(100%/3)]"
           >
             {days.map((day) => (
               <CalendarDay

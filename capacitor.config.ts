@@ -4,6 +4,9 @@
    appId: 'com.remindertoday.app',
    appName: 'Reminders',
    webDir: 'dist/renderer',
+   server: {
+     hostname: 'app.remindertoday.com',
+   },
    ios: {
      contentInset: 'never',
      backgroundColor: '#0d1117',

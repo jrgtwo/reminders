@@ -68,13 +68,11 @@ export function subWeeks(date: Temporal.PlainDate, n: number): Temporal.PlainDat
 // Days to back up to Sunday: dayOfWeek % 7 (7%7=0 for Sun, 1%7=1 for Mon, ..., 6%7=6 for Sat)
 export function getMonthGrid(date: Temporal.PlainDate): Temporal.PlainDate[] {
   const firstOfMonth = date.with({ day: 1 })
-  const lastOfMonth = date.with({ day: date.daysInMonth })
   const gridStart = firstOfMonth.subtract({ days: firstOfMonth.dayOfWeek % 7 })
-  const daysToSat = (6 - lastOfMonth.dayOfWeek + 7) % 7
-  const gridEnd = lastOfMonth.add({ days: daysToSat })
   const days: Temporal.PlainDate[] = []
   let cur = gridStart
-  while (Temporal.PlainDate.compare(cur, gridEnd) <= 0) {
+  // Always 6 rows (42 days) so the grid is consistent regardless of month length
+  while (days.length < 42) {
     days.push(cur)
     cur = cur.add({ days: 1 })
   }

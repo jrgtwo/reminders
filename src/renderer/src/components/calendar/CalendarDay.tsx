@@ -32,42 +32,22 @@ function CalendarDay({
   onTodoClick,
   tall
 }: Props) {
-  const { todayDate, inMonth, cmp, colors, listBadgeCls, bg, tileRef } = useCalendarDay({ date, displayMonth, isSelected })
+  const { todayDate, inMonth, colors, listBadgeCls, bg, tileRef } = useCalendarDay({ date, displayMonth, isSelected })
 
   return (
     <button
       ref={tileRef}
       onClick={onClick}
       className={[
-        'relative flex flex-col items-start w-full text-left cursor-pointer rounded-[2px] md:rounded-lg overflow-hidden',
-        'transition-[opacity,box-shadow,filter,border,translate] duration-200',
-        // Border: flat on mobile, 2px lip at md, full 3px lip at lg
-        'border-[0.5px] border-white/30 dark:border-white/[0.06] md:border md:border-white/50 md:dark:border-white/[0.10]',
-        'border-b-[0.5px] border-b-slate-200/30 dark:border-b-white/[0.05]',
-        'md:border-b-[2px] md:border-b-slate-300/40 md:dark:border-b-white/[0.12]',
-        'lg:border-b-[3px] lg:border-b-slate-300/60 lg:dark:border-b-white/[0.18]',
-        // Hover lift: none on mobile, reduced at md, full at lg
-        'md:hover:-translate-y-[2px] md:active:translate-y-[1px]',
-        'lg:hover:-translate-y-[3px] lg:active:translate-y-[1px]',
+        'relative flex flex-col items-start w-full text-left cursor-pointer rounded-[2px] overflow-hidden',
+        'transition-[opacity,filter,border] duration-200',
+        'border-[0.5px] border-slate-300/60 dark:border-white/[0.12]',
+        'border-b-[0.5px] border-b-slate-300/60 dark:border-b-white/[0.12]',
         isSelected
-          ? 'z-[10] opacity-100 brightness-110'
+          ? 'z-[10] opacity-100 brightness-110 outline outline-1 outline-slate-300/60 dark:outline-white/[0.1]'
           : 'z-[2] opacity-80 hover:z-[10] hover:opacity-100 hover:brightness-110',
         tall ? 'p-3.5 gap-2' : 'p-1.5 gap-1 md:p-2 md:gap-1.5 lg:p-2.5 lg:gap-2',
         bg,
-        isSelected
-          ? [
-              'shadow-sm outline outline-1 outline-slate-300/60 dark:outline-white/[0.1]',
-              'md:shadow-[0_2px_0_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)] md:dark:shadow-[0_2px_0_rgba(0,0,0,0.35),0_1px_2px_rgba(0,0,0,0.15)] md:active:shadow-[0_1px_0_rgba(0,0,0,0.06)]',
-              'lg:shadow-[0_4px_0_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.06)] lg:dark:shadow-[0_4px_0_rgba(0,0,0,0.5),0_2px_4px_rgba(0,0,0,0.2)] lg:active:shadow-[0_1px_0_rgba(0,0,0,0.08)] lg:dark:active:shadow-[0_1px_0_rgba(0,0,0,0.3)]',
-            ].join(' ')
-          : [
-              'shadow-none',
-              'md:shadow-[0_2px_0_rgba(0,0,0,0.06),0_1px_1px_rgba(0,0,0,0.03)] md:dark:shadow-[0_2px_0_rgba(0,0,0,0.25),0_1px_1px_rgba(0,0,0,0.1)]',
-              'md:hover:shadow-[0_3px_0_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)] md:active:shadow-[0_1px_0_rgba(0,0,0,0.06)]',
-              'lg:shadow-[0_3px_0_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)] lg:dark:shadow-[0_3px_0_rgba(0,0,0,0.35),0_1px_2px_rgba(0,0,0,0.15)]',
-              'lg:hover:shadow-[0_4px_0_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.06)] lg:dark:hover:shadow-none lg:dark:hover:brightness-125 lg:dark:hover:border-white/25',
-              'lg:active:shadow-[0_1px_0_rgba(0,0,0,0.08)] lg:dark:active:shadow-none lg:dark:active:brightness-100',
-            ].join(' ')
       ]
         .filter(Boolean)
         .join(' ')}
@@ -97,85 +77,55 @@ function CalendarDay({
 
       {/* Events + Note */}
       {(reminders.length > 0 || listCount > 0 || noteCount > 0) && (
-        <div className={`flex flex-col w-full ${tall ? 'gap-1' : 'gap-0'}`}>
-          <div className="flex flex-col md:flex-row md:flex-wrap lg:flex-col w-full gap-0 md:gap-1 lg:gap-[3px]">
-            {/* Reminders: single badge with count if >1, full badge if exactly 1 */}
-            {reminders.length > 1 ? (
+        <div className="cal-badges-row flex flex-row flex-wrap md:flex-col gap-[3px] w-full">
+          {/* Reminders */}
+          {reminders.length > 1 ? (
+            <span
+              className={`flex items-center gap-1 px-1.5 py-[3px] rounded text-[10px] font-medium cursor-pointer md:w-full ${colors.chip}`}
+              onClick={(e) => { e.stopPropagation(); onReminderClick?.() }}
+            >
+              <Bell size={12} className="shrink-0" />
+              <span className="hidden md:inline">{reminders.length} reminders</span>
+              <span className="md:hidden">{reminders.length}</span>
+            </span>
+          ) : reminders.length === 1 ? (() => {
+            const r = reminders[0]
+            const icon12 = r.startTime ? <Clock size={12} /> : r.recurrence ? <Repeat size={12} /> : <Bell size={12} />
+            return (
               <span
-                className="min-w-0 lg:w-full"
+                key={r.id}
+                className={`flex items-center gap-1 px-1.5 py-[3px] rounded text-[10px] font-medium cursor-pointer md:w-full ${colors.chip}`}
                 onClick={(e) => { e.stopPropagation(); onReminderClick?.() }}
               >
-                <span className={`hidden lg:flex items-center gap-1 w-full px-1.5 py-[3px] rounded-md text-[10px] font-medium overflow-hidden transition-all duration-150 hover:brightness-125 hover:shadow-md hover:scale-[1.03] cursor-pointer ${colors.chip}`}>
-                  <Bell size={20} className="shrink-0" />
-                  <span>{reminders.length} reminders</span>
-                </span>
-                <span className={`hidden md:flex lg:hidden items-center justify-center gap-[3px] px-1 h-[22px] rounded cursor-pointer text-[10px] font-medium ${colors.chip}`}>
-                  <Bell size={20} /><span>{reminders.length}</span>
-                </span>
-                <span className={`flex md:hidden items-center gap-[2px] text-[10px] font-medium cursor-pointer ${colors.text}`}>
-                  <Bell size={12} /><span>{reminders.length}</span>
-                </span>
+                <span className="shrink-0">{icon12}</span>
+                <span className="hidden md:inline truncate">{r.title}</span>
               </span>
-            ) : reminders.length === 1 ? (() => {
-              const r = reminders[0]
-              const icon = r.startTime ? <Clock size={20} /> : r.recurrence ? <Repeat size={20} /> : <Bell size={20} />
-              const iconSm = r.startTime ? <Clock size={12} /> : r.recurrence ? <Repeat size={12} /> : <Bell size={12} />
-              return (
-                <span
-                  key={r.id}
-                  className="min-w-0 lg:w-full"
-                  onClick={(e) => { e.stopPropagation(); onReminderClick?.() }}
-                >
-                  <span className={`hidden lg:flex items-center gap-1 w-full px-1.5 py-[3px] rounded-md text-[10px] font-medium overflow-hidden transition-all duration-150 hover:brightness-125 hover:shadow-md hover:scale-[1.03] ${colors.chip}`}>
-                    <span className="shrink-0">{icon}</span>
-                    <span className="truncate">{r.title}</span>
-                  </span>
-                  <span className={`hidden md:flex lg:hidden items-center justify-center w-[22px] h-[22px] rounded ${colors.chip}`}>
-                    {icon}
-                  </span>
-                  <span className={`flex md:hidden ${colors.text}`}>{iconSm}</span>
-                </span>
-              )
-            })() : null}
+            )
+          })() : null}
 
-            {/* List count badge */}
-            {listCount > 0 && (
-              <span
-                className="min-w-0 lg:w-full"
-                onClick={(e) => { e.stopPropagation(); onTodoClick?.() }}
-              >
-                <span className={`hidden lg:flex items-center gap-1 w-full px-1.5 py-[3px] rounded-md text-[10px] font-medium overflow-hidden transition-all duration-150 hover:brightness-125 hover:shadow-md hover:scale-[1.03] cursor-pointer ${listBadgeCls}`}>
-                  <CheckSquare size={20} className="shrink-0" />
-                  <span>{listCount} {listCount === 1 ? 'list' : 'lists'}</span>
-                </span>
-                <span className={`hidden md:flex lg:hidden items-center justify-center gap-[3px] px-1 h-[22px] rounded cursor-pointer text-[10px] font-medium ${listBadgeCls}`}>
-                  <CheckSquare size={20} />{listCount > 1 && <span>{listCount}</span>}
-                </span>
-                <span className={`flex md:hidden items-center gap-[2px] text-[10px] font-medium cursor-pointer ${cmp < 0 ? 'text-[#e8a045]/70' : 'text-emerald-500/70'}`}>
-                  <CheckSquare size={12} />{listCount > 1 && <span>{listCount}</span>}
-                </span>
-              </span>
-            )}
+          {/* Lists */}
+          {listCount > 0 && (
+            <span
+              className={`flex items-center gap-1 px-1.5 py-[3px] rounded text-[10px] font-medium cursor-pointer md:w-full ${listBadgeCls}`}
+              onClick={(e) => { e.stopPropagation(); onTodoClick?.() }}
+            >
+              <CheckSquare size={12} className="shrink-0" />
+              <span className="hidden md:inline">{listCount} {listCount === 1 ? 'list' : 'lists'}</span>
+              {listCount > 1 && <span className="md:hidden">{listCount}</span>}
+            </span>
+          )}
 
-            {/* Notes badge */}
-            {noteCount > 0 && (
-              <span
-                className="min-w-0 lg:w-full"
-                onClick={(e) => { e.stopPropagation(); onNoteClick?.() }}
-              >
-                <span className="hidden lg:flex items-center gap-1 w-full px-1.5 py-[3px] rounded-md text-[10px] font-medium transition-all duration-150 hover:brightness-125 hover:shadow-md hover:scale-[1.03] bg-slate-100 text-slate-500 dark:bg-white/[0.07] dark:text-white/55">
-                  <FileText size={20} className="shrink-0" />
-                  {noteCount > 1 && <span>{noteCount} notes</span>}
-                </span>
-                <span className="hidden md:flex lg:hidden items-center justify-center gap-[3px] px-1 h-[22px] rounded bg-slate-100 text-slate-500 dark:bg-white/[0.07] dark:text-white/55 text-[10px] font-medium">
-                  <FileText size={20} />{noteCount > 1 && <span>{noteCount}</span>}
-                </span>
-                <span className="flex md:hidden items-center gap-[2px] text-[10px] font-medium text-slate-300 dark:text-white/50">
-                  <FileText size={12} />{noteCount > 1 && <span>{noteCount}</span>}
-                </span>
-              </span>
-            )}
-          </div>
+          {/* Notes */}
+          {noteCount > 0 && (
+            <span
+              className="flex items-center gap-1 px-1.5 py-[3px] rounded text-[10px] font-medium bg-slate-100 text-slate-500 dark:bg-white/[0.07] dark:text-white/55 cursor-pointer md:w-full"
+              onClick={(e) => { e.stopPropagation(); onNoteClick?.() }}
+            >
+              <FileText size={12} className="shrink-0" />
+              <span className="hidden md:inline">{noteCount > 1 ? `${noteCount} notes` : 'note'}</span>
+              {noteCount > 1 && <span className="md:hidden">{noteCount}</span>}
+            </span>
+          )}
         </div>
       )}
     </button>

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react'
 import { Temporal } from '@js-temporal/polyfill'
 import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react'
+import CalendarPageHeader from './CalendarPageHeader'
 import ConfirmDeleteDialog from '../ui/ConfirmDeleteDialog'
 import { useDayView } from '../hooks/useDayView'
 import DayViewNotesTab from './DayViewNotesTab'
@@ -157,8 +158,6 @@ export default function DayView() {
     navigate('/')
   }
 
-  const isToday = dateStr === Temporal.Now.plainDateISO().toString()
-
   /* ── 3-panel strip animation (same pattern as MonthView) ── */
   const stripRef = useRef<HTMLDivElement>(null)
   const animatingRef = useRef(false)
@@ -308,37 +307,28 @@ export default function DayView() {
   return (
     <div className="flex flex-col h-full">
       {/* Header — stays fixed, does not slide */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-6 py-4 border-b border-slate-200 dark:border-white/[0.07] shrink-0 bg-[var(--bg-surface)] gap-2">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-0.5">
-            <button
-              onClick={handlePrevDay}
-              aria-label="Previous day"
-              className="w-7 h-7 flex items-center justify-center rounded-md text-slate-300 dark:text-white/50 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-all"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <button
-              onClick={handleNextDay}
-              aria-label="Next day"
-              className="w-7 h-7 flex items-center justify-center rounded-md text-slate-300 dark:text-white/50 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-all"
-            >
-              <ChevronRight size={20} />
-            </button>
-          </div>
+      <CalendarPageHeader
+        view="day"
+        onPrev={handlePrevDay}
+        onNext={handleNextDay}
+        onToday={handleToday}
+        onViewChange={handleViewSwitch}
+        prevLabel="Previous day"
+        nextLabel="Next day"
+      >
           <div className="relative" ref={pickerRef}>
             <button
               onClick={() => setPickerOpen((o) => !o)}
               className="flex items-baseline gap-2.5 leading-none cursor-pointer hover:opacity-80 transition-opacity"
             >
               <h2
-                className="text-3xl tracking-tight text-slate-900 dark:text-white/80"
+                className="text-xl sm:text-2xl lg:text-4xl tracking-tight text-slate-900 dark:text-white/80"
                 style={{ fontFamily: "'Bree Serif', serif" }}
               >
                 {weekday}
               </h2>
               <span
-                className="text-xl font-normal text-slate-300 dark:text-white/50 tracking-tight"
+                className="text-sm sm:text-base lg:text-xl font-normal text-slate-300 dark:text-white/50 tracking-tight"
                 style={{ fontFamily: "'Archivo Variable', 'Archivo', sans-serif", fontWeight: 400 }}
               >
                 {rest}
@@ -443,33 +433,7 @@ export default function DayView() {
               {status.label}
             </span>
           )}
-        </div>
-
-        <div className="flex items-center gap-2 pt-1 sm:pt-0">
-          <button
-            onClick={handleToday}
-            className={[
-              'px-3 py-1.5 text-xs font-semibold rounded-lg border btn-3d capitalize hover:-translate-y-[3px] dark:hover:brightness-125 dark:hover:border-white/25',
-              isToday
-                ? 'bg-white dark:bg-white/[0.12] text-slate-900 dark:text-white border-slate-200 dark:border-white/[0.12] border-b-[2.5px] border-b-slate-300 dark:border-b-white/[0.2] shadow-sm'
-                : 'bg-slate-50 dark:bg-white/[0.04] text-slate-400 dark:text-white/55 border-slate-200 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-250 dark:border-b-white/[0.12] hover:text-slate-600 dark:hover:text-white/60',
-            ].join(' ')}
-          >
-            Today
-          </button>
-          <div className="flex gap-1">
-            {(['month', 'week'] as const).map((v) => (
-              <button
-                key={v}
-                onClick={() => handleViewSwitch(v)}
-                className="px-3 py-1.5 text-xs font-semibold rounded-lg border btn-3d capitalize hover:-translate-y-[3px] dark:hover:brightness-125 dark:hover:border-white/25 bg-slate-50 dark:bg-white/[0.04] text-slate-400 dark:text-white/55 border-slate-200 dark:border-white/[0.08] border-b-[2.5px] border-b-slate-250 dark:border-b-white/[0.12] hover:text-slate-600 dark:hover:text-white/60"
-              >
-                {v}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+      </CalendarPageHeader>
 
       {/* Content area — 3-panel sliding strip */}
       <div
