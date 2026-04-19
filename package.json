@@ -25,6 +25,9 @@
     "cap:android": "npm run build:web && npm run cap:sync && npx cap open android",
     "android:bump-version": "node scripts/bump-android-version.mjs",
     "android:release": "node scripts/bump-android-version.mjs && npm run build:web && npx cap sync android && cd android && ./gradlew bundleRelease",
+    "ios:sync": "npm run build:web && npx cap sync ios",
+    "ios:open": "npx cap open ios",
+    "ios:release": "node scripts/bump-ios-version.mjs && npm run build:web && npx cap sync ios",
     "test": "vitest run",
     "test:e2e": "cypress open",
     "db:schema": "yes | npx supabase gen types typescript --project-id jzkjssgtcuvlartxvspp --schema public > supabase/schema.types.ts && echo 'Schema written to supabase/schema.types.ts'"
