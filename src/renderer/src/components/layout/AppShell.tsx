@@ -200,7 +200,7 @@ export default function AppShell() {
 
       <div className="flex flex-1 overflow-hidden">
         <SideNav />
-        <main key={location.pathname.replace(/^\/(day|week|month)\/.*/, '/$1')} className="page-fade-in flex-1 h-full overflow-auto bg-[var(--bg-app)]">
+        <main key={location.pathname.replace(/^\/(day|week|month)\/.*/, '/$1')} className="flex-1 h-full overflow-auto bg-[var(--bg-app)]">
           <Outlet />
         </main>
       </div>
