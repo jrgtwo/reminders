@@ -12,3 +12,10 @@ out
 *.jks
 *.keystore
 android/keystore.properties
+
+# iOS signing — never commit provisioning profiles or exported archives
+*.p12
+*.cer
+*.mobileprovision
+*.ipa
+ios/App/ExportOptions.plist
