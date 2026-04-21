@@ -3,7 +3,7 @@ import { Turnstile } from '@marsidev/react-turnstile'
 
 export default function CaptchaPage() {
   const [email, setEmail] = useState('')
-  const [done, setDone] = useState(false)
+  const [done, setDone] = useState<string | null>(null)
   const [error, setError] = useState(false)
 
   useEffect(() => {
@@ -12,15 +12,19 @@ export default function CaptchaPage() {
   }, [])
 
   function handleSuccess(token: string) {
-    const redirect = `reminders://captcha?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`
-    window.location.href = redirect
-    setDone(true)
+    const url = `reminders://captcha?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`
+    setDone(url)
   }
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0d1117] flex flex-col items-center justify-center gap-4 p-6">
       {done ? (
-        <p className="text-sm text-gray-500 dark:text-gray-400">Returning to app…</p>
+        <a
+          href={done}
+          className="px-5 py-3 rounded-xl bg-blue-600 text-white text-sm font-medium"
+        >
+          Return to app
+        </a>
       ) : error ? (
         <p className="text-sm text-red-500">Verification failed. Please close and try again.</p>
       ) : (
