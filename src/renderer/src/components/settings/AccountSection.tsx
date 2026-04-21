@@ -47,6 +47,7 @@ export default function AccountSection({
         const token = url.searchParams.get('token')
         const emailFromUrl = url.searchParams.get('email')
         if (!token || !emailFromUrl) return
+        await Browser.close()
         setEmail(emailFromUrl)
         setMagicLinkStatus('sending')
         const isReviewer = await checkIsReviewerAccount(emailFromUrl)
