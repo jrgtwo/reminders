@@ -15,6 +15,7 @@ interface Props {
   onCancel: () => void
   onDelete: (e: React.MouseEvent) => void
   inModal?: boolean
+  isNew?: boolean
 }
 
 export default function ReminderCard({
@@ -28,6 +29,7 @@ export default function ReminderCard({
   onCancel,
   onDelete,
   inModal,
+  isNew,
 }: Props) {
   const isCompleted = reminder.completedDates.includes(dateStr)
 
@@ -104,6 +106,7 @@ export default function ReminderCard({
               onSave={onSave}
               onCancel={onCancel}
               onDelete={onDelete}
+              isNew={isNew}
             />
           </div>
         ) : (
@@ -112,6 +115,7 @@ export default function ReminderCard({
             onSave={onSave}
             onCancel={onCancel}
             onDelete={onDelete}
+            isNew={isNew}
           />
         )
       )}

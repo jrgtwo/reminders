@@ -1,4 +1,5 @@
-import { Bell, RefreshCw, Trash2 } from 'lucide-react'
+import { useState } from 'react'
+import { Bell, Pencil, RefreshCw, Trash2 } from 'lucide-react'
 import type { Reminder } from '../../types/models'
 import Button from '../ui/Button'
 import RichTextDescription from '../ui/RichTextDescription'
@@ -11,6 +12,7 @@ interface Props {
   onSave: (r: Reminder) => Promise<void>
   onCancel: () => void
   onDelete: (e: React.MouseEvent) => void
+  isNew?: boolean
 }
 
 const fieldClass =
@@ -19,7 +21,7 @@ const fieldClass =
 const labelClass =
   'text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-white/55'
 
-export default function ReminderInlineEditor({ reminder, onSave, onCancel, onDelete }: Props) {
+export default function ReminderInlineEditor({ reminder, onSave, onCancel, onDelete, isNew }: Props) {
   const {
     title,
     setTitle,
@@ -46,124 +48,137 @@ export default function ReminderInlineEditor({ reminder, onSave, onCancel, onDel
     handleSave,
   } = useReminderInlineEditor({ reminder, onSave })
 
+  const [isEditing, setIsEditing] = useState(!!isNew)
+
   return (
     <div className="px-4 py-4 rounded-b-xl bg-white dark:bg-white/[0.06] border border-t-0 border-slate-200/60 dark:border-white/[0.08] flex flex-col gap-3">
-      {/* Title */}
-      <div>
-        <input
-          autoFocus
-          type="text"
-          value={title}
-          onChange={(e) => { setTitle(e.target.value); setError('') }}
-          placeholder="Title"
-          className="w-full text-[14px] font-medium text-slate-800 dark:text-white/80 placeholder:text-slate-300 dark:placeholder:text-white/50 bg-transparent border-b border-slate-200 dark:border-white/[0.08] pb-1.5 focus:outline-none focus:border-white/25 transition-colors"
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') handleSave()
-            if (e.key === 'Escape') onCancel()
-          }}
+      {!isEditing && (
+        <div className="flex justify-end -mt-1 -mb-1">
+          <Button type="button" variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
+            <Pencil size={14} />
+            Edit
+          </Button>
+        </div>
+      )}
+      <fieldset disabled={!isEditing} className="flex flex-col gap-3 border-0 p-0 m-0 min-w-0 disabled:opacity-90">
+        {/* Title */}
+        <div>
+          <input
+            autoFocus={isNew}
+            type="text"
+            value={title}
+            onChange={(e) => { setTitle(e.target.value); setError('') }}
+            placeholder="Title"
+            className="w-full text-[14px] font-medium text-slate-800 dark:text-white/80 placeholder:text-slate-300 dark:placeholder:text-white/50 bg-transparent border-b border-slate-200 dark:border-white/[0.08] pb-1.5 focus:outline-none focus:border-white/25 transition-colors"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSave()
+              if (e.key === 'Escape') onCancel()
+            }}
+          />
+          {error && <p className="text-[11px] text-red-500 mt-1">{error}</p>}
+        </div>
+
+        {/* Description */}
+        <RichTextDescription
+          value={description}
+          onChange={setDescription}
+          readOnly={!isEditing}
         />
-        {error && <p className="text-[11px] text-red-500 mt-1">{error}</p>}
-      </div>
 
-      {/* Description */}
-      <RichTextDescription
-        value={description}
-        onChange={setDescription}
-      />
-
-      {/* Date row */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="flex flex-col gap-1">
-          <label className={labelClass}>Date</label>
-          <input
-            type="date"
-            value={reminderDate}
-            onChange={(e) => handleDateChange(e.target.value)}
-            className={fieldClass}
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className={labelClass}>
-            End Date <span className="normal-case font-normal">(optional)</span>
-          </label>
-          <input
-            type="date"
-            value={endDate}
-            min={reminderDate}
-            onChange={(e) => handleEndDateChange(e.target.value)}
-            className={fieldClass}
-          />
-        </div>
-      </div>
-
-      {/* Time row */}
-      {!isMultiDay && (
+        {/* Date row */}
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1">
-            <label className={labelClass}>
-              Start Time <span className="normal-case font-normal">(optional)</span>
-            </label>
+            <label className={labelClass}>Date</label>
             <input
-              type="time"
-              value={startTime}
-              onChange={(e) => handleStartTimeChange(e.target.value)}
+              type="date"
+              value={reminderDate}
+              onChange={(e) => handleDateChange(e.target.value)}
               className={fieldClass}
             />
           </div>
           <div className="flex flex-col gap-1">
             <label className={labelClass}>
-              End Time <span className="normal-case font-normal">(optional)</span>
+              End Date <span className="normal-case font-normal">(optional)</span>
             </label>
             <input
-              type="time"
-              value={endTime}
-              min={startTime || undefined}
-              onChange={(e) => setEndTime(e.target.value)}
+              type="date"
+              value={endDate}
+              min={reminderDate}
+              onChange={(e) => handleEndDateChange(e.target.value)}
               className={fieldClass}
             />
           </div>
         </div>
-      )}
 
-      {/* Notify before — only shown when a start time is set */}
-      {startTime && !isMultiDay && (
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center gap-2">
-            <Bell size={20} className="text-slate-400 dark:text-white/55" />
-            <span className="text-[13px] text-slate-600 dark:text-white/60">Remind me</span>
+        {/* Time row */}
+        {!isMultiDay && (
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className={labelClass}>
+                Start Time <span className="normal-case font-normal">(optional)</span>
+              </label>
+              <input
+                type="time"
+                value={startTime}
+                onChange={(e) => handleStartTimeChange(e.target.value)}
+                className={fieldClass}
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className={labelClass}>
+                End Time <span className="normal-case font-normal">(optional)</span>
+              </label>
+              <input
+                type="time"
+                value={endTime}
+                min={startTime || undefined}
+                onChange={(e) => setEndTime(e.target.value)}
+                className={fieldClass}
+              />
+            </div>
           </div>
-          <select
-            value={notifyBefore ?? ''}
-            onChange={(e) => setNotifyBefore(e.target.value === '' ? undefined : Number(e.target.value))}
-            className={fieldClass}
-          >
-            <option value="">At time of event</option>
-            <option value="5">5 minutes before</option>
-            <option value="10">10 minutes before</option>
-            <option value="15">15 minutes before</option>
-            <option value="30">30 minutes before</option>
-            <option value="60">1 hour before</option>
-            <option value="120">2 hours before</option>
-            <option value="1440">1 day before</option>
-            <option value="2880">2 days before</option>
-          </select>
-        </div>
-      )}
+        )}
 
-      {/* Repeat toggle */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <RefreshCw size={20} className="text-slate-400 dark:text-white/55" />
-          <span className="text-[13px] text-slate-600 dark:text-white/60">Repeat</span>
-        </div>
-        <Toggle checked={recurring} onChange={setRecurring} />
-      </div>
+        {/* Notify before — only shown when a start time is set */}
+        {startTime && !isMultiDay && (
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-2">
+              <Bell size={20} className="text-slate-400 dark:text-white/55" />
+              <span className="text-[13px] text-slate-600 dark:text-white/60">Remind me</span>
+            </div>
+            <select
+              value={notifyBefore ?? ''}
+              onChange={(e) => setNotifyBefore(e.target.value === '' ? undefined : Number(e.target.value))}
+              className={fieldClass}
+            >
+              <option value="">At time of event</option>
+              <option value="5">5 minutes before</option>
+              <option value="10">10 minutes before</option>
+              <option value="15">15 minutes before</option>
+              <option value="30">30 minutes before</option>
+              <option value="60">1 hour before</option>
+              <option value="120">2 hours before</option>
+              <option value="1440">1 day before</option>
+              <option value="2880">2 days before</option>
+            </select>
+          </div>
+        )}
 
-      {recurring && (
-        <div className="pl-3 border-l-2 border-slate-200 dark:border-white/[0.08]">
-          <RecurrenceEditor value={recurrence} onChange={setRecurrence} />
+        {/* Repeat toggle */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <RefreshCw size={20} className="text-slate-400 dark:text-white/55" />
+            <span className="text-[13px] text-slate-600 dark:text-white/60">Repeat</span>
+          </div>
+          <Toggle checked={recurring} onChange={setRecurring} />
         </div>
-      )}
+
+        {recurring && (
+          <div className="pl-3 border-l-2 border-slate-200 dark:border-white/[0.08]">
+            <RecurrenceEditor value={recurrence} onChange={setRecurrence} />
+          </div>
+        )}
+      </fieldset>
 
       {/* Footer actions */}
       <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-white/[0.05]">
@@ -171,14 +186,16 @@ export default function ReminderInlineEditor({ reminder, onSave, onCancel, onDel
           <Trash2 size={14} />
           Delete
         </Button>
-        <div className="flex items-center gap-2">
-          <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button type="button" variant="accent" size="sm" onClick={handleSave} disabled={saving}>
-            {saving ? 'Saving…' : 'Save'}
-          </Button>
-        </div>
+        {isEditing && (
+          <div className="flex items-center gap-2">
+            <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
+              Cancel
+            </Button>
+            <Button type="button" variant="accent" size="sm" onClick={handleSave} disabled={saving}>
+              {saving ? 'Saving…' : 'Save'}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   )

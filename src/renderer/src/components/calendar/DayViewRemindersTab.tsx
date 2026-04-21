@@ -69,6 +69,7 @@ export default function DayViewRemindersTab({
         onToggleExpand={() => setExpandedReminderId(isExpanded ? null : reminder.id)}
         timeFormat={timeFormat}
         toggleComplete={toggleComplete}
+        isNew={!reminder.title.trim()}
         onSave={async (r) => { await save(r); setExpandedReminderId(null) }}
         onCancel={() => handleCancelReminder(reminder)}
         onDelete={(e) => handleDeleteReminder(reminder.id, e)}

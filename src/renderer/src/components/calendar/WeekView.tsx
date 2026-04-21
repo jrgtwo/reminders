@@ -513,6 +513,7 @@ const WeekView = forwardRef<WeekViewHandle, Props>(function WeekView({ displayDa
               onToggleExpand={() => setNewForm(null)}
               timeFormat={timeFormat}
               inModal={true}
+              isNew={true}
               onSave={async (r) => { await saveReminder(r); setNewForm(null) }}
               onCancel={() => setNewForm(null)}
               onDelete={() => setNewForm(null)}

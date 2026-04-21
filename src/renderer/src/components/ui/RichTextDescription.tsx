@@ -50,9 +50,10 @@ interface InnerProps {
   onChange: (md: string) => void
   minHeight?: string
   autoFocus?: boolean
+  readOnly?: boolean
 }
 
-function InnerEditor({ initialContent, onChange, minHeight = '5.5lh', autoFocus }: InnerProps) {
+function InnerEditor({ initialContent, onChange, minHeight = '5.5lh', autoFocus, readOnly }: InnerProps) {
   const onChangeRef = useRef(onChange)
   onChangeRef.current = onChange
   const editorWrapRef = useRef<HTMLDivElement>(null)
@@ -84,21 +85,24 @@ function InnerEditor({ initialContent, onChange, minHeight = '5.5lh', autoFocus 
   return (
     <>
       {/* Compact toolbar */}
-      <div className="flex items-center gap-0.5 px-1.5 py-1 border-b border-gray-200 dark:border-white/[0.06]">
-        <TBtn icon={<Bold size={15} />} label="Bold" onClick={() => runCommand(toggleStrongCommand)} />
-        <TBtn icon={<Italic size={15} />} label="Italic" onClick={() => runCommand(toggleEmphasisCommand)} />
-        <TBtn icon={<Strikethrough size={15} />} label="Strikethrough" onClick={() => runCommand(toggleStrikethroughCommand)} />
-        <div className="w-px h-4 bg-gray-200 dark:bg-white/[0.08] mx-0.5" />
-        <TBtn icon={<List size={15} />} label="Bullet list" onClick={() => runCommand(wrapInBulletListCommand)} />
-        <TBtn icon={<ListOrdered size={15} />} label="Ordered list" onClick={() => runCommand(wrapInOrderedListCommand)} />
-        <div className="w-px h-4 bg-gray-200 dark:bg-white/[0.08] mx-0.5" />
-        <TBtn icon={<Code size={15} />} label="Inline code" onClick={() => runCommand(toggleInlineCodeCommand)} />
-      </div>
+      {!readOnly && (
+        <div className="flex items-center gap-0.5 px-1.5 py-1 border-b border-gray-200 dark:border-white/[0.06]">
+          <TBtn icon={<Bold size={15} />} label="Bold" onClick={() => runCommand(toggleStrongCommand)} />
+          <TBtn icon={<Italic size={15} />} label="Italic" onClick={() => runCommand(toggleEmphasisCommand)} />
+          <TBtn icon={<Strikethrough size={15} />} label="Strikethrough" onClick={() => runCommand(toggleStrikethroughCommand)} />
+          <div className="w-px h-4 bg-gray-200 dark:bg-white/[0.08] mx-0.5" />
+          <TBtn icon={<List size={15} />} label="Bullet list" onClick={() => runCommand(wrapInBulletListCommand)} />
+          <TBtn icon={<ListOrdered size={15} />} label="Ordered list" onClick={() => runCommand(wrapInOrderedListCommand)} />
+          <div className="w-px h-4 bg-gray-200 dark:bg-white/[0.08] mx-0.5" />
+          <TBtn icon={<Code size={15} />} label="Inline code" onClick={() => runCommand(toggleInlineCodeCommand)} />
+        </div>
+      )}
 
       {/* Editor content — resize-y on the wrapper, min-height on ProseMirror */}
       <div
         ref={editorWrapRef}
         onClick={() => {
+          if (readOnly) return
           const pm = editorWrapRef.current?.querySelector('.ProseMirror') as HTMLElement | null
           pm?.focus()
         }}
@@ -139,6 +143,7 @@ interface Props {
   onChange: (md: string) => void
   minHeight?: string
   autoFocus?: boolean
+  readOnly?: boolean
   className?: string
 }
 
@@ -147,10 +152,12 @@ export default function RichTextDescription({
   onChange,
   minHeight,
   autoFocus,
+  readOnly,
   className = '',
 }: Props) {
   return (
     <div
+      inert={readOnly || undefined}
       className={`rounded-lg border border-gray-300 dark:border-[var(--border)] bg-white dark:bg-[var(--bg-elevated)] overflow-hidden focus-within:border-[var(--accent-ring)] focus-within:ring-1 focus-within:ring-[var(--accent-ring)] ${className}`}
     >
       <MilkdownProvider>
@@ -159,6 +166,7 @@ export default function RichTextDescription({
           onChange={onChange}
           minHeight={minHeight}
           autoFocus={autoFocus}
+          readOnly={readOnly}
         />
       </MilkdownProvider>
     </div>
