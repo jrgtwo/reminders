@@ -1,10 +1,15 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import type { TurnstileInstance } from '@marsidev/react-turnstile'
 import { Turnstile } from '@marsidev/react-turnstile'
 import { Check, AlertCircle, LogOut, Mail } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
+import { Capacitor } from '@capacitor/core'
+import { App as CapApp } from '@capacitor/app'
+import { Browser } from '@capacitor/browser'
 import Button from '../ui/Button'
 import { useAuthStore } from '../../store/auth.store'
+
+const isCapacitor = Capacitor.isNativePlatform()
 
 export default function AccountSection({
   user,
@@ -27,10 +32,39 @@ export default function AccountSection({
   const turnstileRef = useRef<TurnstileInstance>(null)
   const passwordTurnstileRef = useRef<TurnstileInstance>(null)
 
+  const [browserOpening, setBrowserOpening] = useState(false)
   const [passwordMode, setPasswordMode] = useState(false)
   const [password, setPassword] = useState('')
   const [passwordError, setPasswordError] = useState(false)
   const [passwordSending, setPasswordSending] = useState(false)
+
+  useEffect(() => {
+    if (!isCapacitor) return
+    const listenerPromise = CapApp.addListener('appUrlOpen', async (data) => {
+      try {
+        const url = new URL(data.url)
+        if (url.protocol !== 'reminders:' || url.hostname !== 'captcha') return
+        const token = url.searchParams.get('token')
+        const emailFromUrl = url.searchParams.get('email')
+        if (!token || !emailFromUrl) return
+        setEmail(emailFromUrl)
+        setMagicLinkStatus('sending')
+        const isReviewer = await checkIsReviewerAccount(emailFromUrl)
+        if (isReviewer) {
+          setMagicLinkStatus('idle')
+          setPasswordMode(true)
+          return
+        }
+        await sendMagicLink(emailFromUrl, token)
+        setMagicLinkStatus('sent')
+      } catch {
+        setMagicLinkStatus('error')
+      }
+    })
+    return () => {
+      listenerPromise.then((l) => l.remove())
+    }
+  }, [])
 
   function resetToInitial() {
     setPasswordMode(false)
@@ -48,6 +82,21 @@ export default function AccountSection({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!email.trim()) return
+
+    if (isCapacitor) {
+      setBrowserOpening(true)
+      try {
+        const webAppUrl = import.meta.env.VITE_WEB_APP_URL ?? 'https://remindertoday.com'
+        await Browser.open({
+          url: `${webAppUrl}/captcha?email=${encodeURIComponent(email.trim())}`,
+        })
+      } catch (err) {
+        console.error('Browser.open failed:', err)
+      } finally {
+        setBrowserOpening(false)
+      }
+      return
+    }
 
     if (passwordMode) {
       if (!password) return
@@ -140,10 +189,10 @@ export default function AccountSection({
               <Button
                 type="submit"
                 size="sm"
-                disabled={magicLinkStatus === 'sending' || !captchaToken}
+                disabled={browserOpening || magicLinkStatus === 'sending' || (!isCapacitor && !captchaToken)}
               >
                 <Mail size={20} />
-                {magicLinkStatus === 'sending' ? 'Sending…' : 'Send link'}
+                {browserOpening ? 'Opening…' : magicLinkStatus === 'sending' ? 'Sending…' : 'Send link'}
               </Button>
             )}
           </div>
@@ -176,7 +225,7 @@ export default function AccountSection({
               Incorrect password.
             </p>
           )}
-          {passwordMode ? (
+          {!isCapacitor && (passwordMode ? (
             <Turnstile
               ref={passwordTurnstileRef}
               siteKey={import.meta.env.VITE_CAPTCHA_SITE_KEY}
@@ -192,7 +241,7 @@ export default function AccountSection({
               onExpire={() => setCaptchaToken(null)}
               onError={() => setCaptchaToken(null)}
             />
-          )}
+          ))}
           {magicLinkStatus === 'error' && (
             <p className="flex items-center gap-1.5 text-xs text-red-600 dark:text-[#e8a045]">
               <AlertCircle size={20} />

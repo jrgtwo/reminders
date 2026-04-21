@@ -26,6 +26,7 @@ const NotesPage = lazy(() => import('./components/pages/NotesPage'))
 const BrowsePage = lazy(() => import('./components/pages/BrowsePage'))
 const LandingPage = lazy(() => import('./components/pages/LandingPage'))
 const PrivacyPolicyPage = lazy(() => import('./components/pages/PrivacyPolicyPage'))
+const CaptchaPage = lazy(() => import('./components/pages/CaptchaPage'))
 import { getConsent } from './lib/consent'
 import { useCalendarPage } from './components/hooks/useCalendarPage'
 import { useApp } from './components/hooks/useApp'
@@ -130,6 +131,11 @@ function Lazy({ children }: { children: React.ReactNode }) {
 }
 
 const routes = [
+  {
+    path: '/captcha',
+    element: <Lazy><CaptchaPage /></Lazy>,
+    errorElement: <ErrorPage />
+  },
   {
     path: '/welcome',
     element: <Lazy><LandingPage /></Lazy>,

@@ -5,7 +5,8 @@
    appName: 'Reminders',
    webDir: 'dist/renderer',
    server: {
-     hostname: 'app.remindertoday.com',
+     hostname: 'remindertoday.com',
+     iosScheme: 'https',
    },
    ios: {
      contentInset: 'never',
