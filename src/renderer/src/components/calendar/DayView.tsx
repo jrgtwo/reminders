@@ -320,16 +320,25 @@ export default function DayView() {
           <div className="relative" ref={pickerRef}>
             <button
               onClick={() => setPickerOpen((o) => !o)}
-              className="flex items-baseline gap-2.5 leading-none cursor-pointer hover:opacity-80 transition-opacity"
+              className="flex flex-col sm:flex-row sm:items-baseline items-start gap-0.5 sm:gap-2.5 leading-none cursor-pointer hover:opacity-80 transition-opacity text-left"
             >
-              <h2
-                className="text-xl sm:text-2xl lg:text-4xl tracking-tight text-slate-900 dark:text-white/80"
-                style={{ fontFamily: "'Bree Serif', serif" }}
-              >
-                {weekday}
-              </h2>
+              <span className="flex items-baseline gap-2">
+                <h2
+                  className="text-xl sm:text-2xl lg:text-4xl tracking-tight text-slate-900 dark:text-white/80"
+                  style={{ fontFamily: "'Bree Serif', serif" }}
+                >
+                  {weekday}
+                </h2>
+                <ChevronDown
+                  size={18}
+                  className={[
+                    'text-slate-300 dark:text-white/40 transition-transform sm:hidden',
+                    pickerOpen ? 'rotate-180' : '',
+                  ].join(' ')}
+                />
+              </span>
               <span
-                className="text-sm sm:text-base lg:text-xl font-normal text-slate-300 dark:text-white/50 tracking-tight"
+                className="text-sm sm:text-base lg:text-xl font-normal text-slate-300 dark:text-white/50 tracking-tight whitespace-nowrap"
                 style={{ fontFamily: "'Archivo Variable', 'Archivo', sans-serif", fontWeight: 400 }}
               >
                 {rest}
@@ -337,7 +346,7 @@ export default function DayView() {
               <ChevronDown
                 size={18}
                 className={[
-                  'text-slate-300 dark:text-white/40 transition-transform self-center',
+                  'text-slate-300 dark:text-white/40 transition-transform self-center hidden sm:block',
                   pickerOpen ? 'rotate-180' : '',
                 ].join(' ')}
               />
