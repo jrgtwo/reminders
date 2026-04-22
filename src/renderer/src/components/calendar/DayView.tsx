@@ -473,7 +473,7 @@ export default function DayView() {
                       overdue: overdueReminders.length,
                       upcoming: upcomingReminders.length,
                     },
-                    { id: 'todos', label: 'Todos', count: dayLists.length },
+                    { id: 'todos', label: 'Lists', count: dayLists.length },
                   ] as const
                 ).map(({ id, label, count, ...tabRest }) => (
                   <button

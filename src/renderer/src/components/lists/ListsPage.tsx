@@ -1,4 +1,4 @@
-import { List, Pencil } from 'lucide-react'
+import { List, Pencil, CalendarDays } from 'lucide-react'
 import SortableTodoList from '../todos/TodoList'
 import ListForm from './ListForm'
 import { useListsPage } from './hooks/useListsPage'
@@ -144,6 +144,15 @@ export default function ListsPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                {selectedList.dueDate && (
+                  <button
+                    onClick={() => navigate(`/day/${selectedList.dueDate}`, { state: { tab: 'todos' } })}
+                    className="p-1.5 rounded-lg text-slate-400 dark:text-white/55 hover:text-[var(--accent)] hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
+                    title={`Go to ${selectedList.dueDate}`}
+                  >
+                    <CalendarDays size={20} />
+                  </button>
+                )}
                 <button
                   onClick={() => setRenameOpen(true)}
                   className="p-1.5 rounded-lg text-slate-400 dark:text-white/55 hover:text-slate-700 dark:hover:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"

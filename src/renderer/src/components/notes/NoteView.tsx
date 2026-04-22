@@ -36,6 +36,7 @@ import {
   ArrowLeft,
   Trash2,
   FolderOpen,
+  CalendarDays,
 } from 'lucide-react'
 import type { NoteFolder } from '../../types/models'
 import { buildFolderTree } from '../../lib/folderTree'
@@ -319,11 +320,13 @@ function EditorWithToolbar({ initialContent, onChange }: InnerProps) {
 interface TitleBarProps {
   title: string | undefined
   folderId: string | undefined
+  date: string | undefined
   folders: NoteFolder[]
   onSaveTitle: (title: string) => void
   onFolderChange: (folderId: string | undefined) => void
   onDelete: (e: React.MouseEvent) => void
   onBack: () => void
+  onGoToDay: () => void
 }
 
 function buildFolderOptions(
@@ -346,7 +349,7 @@ function buildFolderOptions(
   return result
 }
 
-function TitleBar({ title, folderId, folders, onSaveTitle, onFolderChange, onDelete, onBack }: TitleBarProps) {
+function TitleBar({ title, folderId, date, folders, onSaveTitle, onFolderChange, onDelete, onBack, onGoToDay }: TitleBarProps) {
   const { isEditing, setIsEditing, titleValue, setTitleValue, handleSubmit, handleKeyDown, handleBlur } =
     useTitleBar({ title, onSaveTitle })
 
@@ -379,6 +382,15 @@ function TitleBar({ title, folderId, folders, onSaveTitle, onFolderChange, onDel
             <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
               {title || 'Untitled'}
             </h1>
+          </button>
+        )}
+        {date && (
+          <button
+            onClick={onGoToDay}
+            className="w-8 h-8 flex items-center justify-center rounded text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[var(--bg-elevated)] hover:text-[var(--accent)] transition-colors"
+            title={`Go to ${date}`}
+          >
+            <CalendarDays size={20} />
           </button>
         )}
         <button
@@ -447,6 +459,7 @@ export default function NoteView() {
       <TitleBar
         title={note.title}
         folderId={note.folderId}
+        date={note.date}
         folders={folders}
         onSaveTitle={handleTitleChange}
         onFolderChange={handleFolderChange}
@@ -455,6 +468,7 @@ export default function NoteView() {
           setDeleteDialogOpen(true)
         }}
         onBack={() => navigate('/notes')}
+        onGoToDay={() => note.date && navigate(`/day/${note.date}`, { state: { tab: 'notes' } })}
       />
       <div className="flex-1 overflow-y-auto">
         <MilkdownProvider key={id}>

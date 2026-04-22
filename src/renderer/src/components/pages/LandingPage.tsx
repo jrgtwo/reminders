@@ -30,8 +30,8 @@ const FEATURES = [
   },
   {
     icon: ListTodo,
-    title: 'Todos',
-    desc: 'Lists with due dates, priorities, and completion tracking',
+    title: 'Lists',
+    desc: 'Due dates, priorities, and completion tracking',
   },
 ]
 
@@ -43,7 +43,7 @@ const FEATURE_DETAILS = [
       'Switch between month and week views instantly',
       'Drag and drop to reschedule reminders across days',
       'Color-coded entries so you can scan your week at a glance',
-      'Click any day to see everything due — reminders, notes, and todos together',
+      'Click any day to see everything due — reminders, notes, and lists together',
     ],
   },
   {
@@ -68,7 +68,7 @@ const FEATURE_DETAILS = [
   },
   {
     icon: ListTodo,
-    title: 'Todos that keep you moving',
+    title: 'Lists that keep you moving',
     points: [
       'Create multiple lists for different projects or areas of your life',
       'Drag and drop to prioritize within and across lists',
@@ -84,7 +84,7 @@ const TIERS = [
     price: 'Free',
     highlight: false,
     features: [
-      'Unlimited reminders, notes & todos',
+      'Unlimited reminders, notes & lists',
       'Works entirely offline',
       'Data stays on your device',
       'All themes included'
@@ -148,7 +148,7 @@ export default function LandingPage() {
             <img src={logo} alt="Reminder Today Logo" className="w-full max-w-[25rem] mb-1" />
           </h1>
           <p className="text-lg md:text-xl text-white/50 max-w-lg mb-8 leading-relaxed">
-            Calendar. Reminders. Notes. Todos. One app, on your device, under your control — no
+            Calendar. Reminders. Notes. Lists. One app, on your device, under your control — no
             account required.
           </p>
           <div className="max-w-lg mb-10 px-4 py-3 rounded-lg bg-[#e8a045]/[0.08] border border-[#e8a045]/20 border-b-[3px] border-b-[#e8a045]/30 text-[#e8a045]/80 text-sm leading-relaxed text-left btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-[#e8a045]/35">

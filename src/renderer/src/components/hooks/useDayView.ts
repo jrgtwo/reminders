@@ -43,12 +43,12 @@ export function useDayView() {
 
   const initialTab = (location.state as { tab?: string } | null)?.tab
   const [tab, setTab] = useState<'notes' | 'reminders' | 'todos'>(
-    initialTab === 'reminders' || initialTab === 'todos' ? initialTab : 'notes'
+    initialTab === 'reminders' || initialTab === 'todos' || initialTab === 'notes' ? initialTab : 'notes'
   )
 
   useEffect(() => {
     const stateTab = (location.state as { tab?: string } | null)?.tab
-    if (stateTab === 'reminders' || stateTab === 'todos') {
+    if (stateTab === 'reminders' || stateTab === 'todos' || stateTab === 'notes') {
       setTab(stateTab)
     }
   }, [location.state])
@@ -58,24 +58,40 @@ export function useDayView() {
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [editingListTitleId, setEditingListTitleId] = useState<string | null>(null)
   const [expandedListIds, setExpandedListIds] = useState<Set<string>>(new Set())
+  const [draftReminder, setDraftReminder] = useState<Reminder | null>(null)
+  const [draftList, setDraftList] = useState<TodoList | null>(null)
+  const [draftItemsByList, setDraftItemsByList] = useState<Map<string, TodoListItem>>(new Map())
+  const [draftNote, setDraftNote] = useState<Note | null>(null)
 
   const reminderDelete = useConfirmDelete(useCallback((id: string) => {
-    remove(id)
+    if (draftReminder && draftReminder.id === id) setDraftReminder(null)
+    else remove(id)
     if (expandedReminderId === id) setExpandedReminderId(null)
-  }, [remove, expandedReminderId]))
+  }, [remove, expandedReminderId, draftReminder]))
 
   const noteDelete = useConfirmDelete(useCallback((id: string) => {
-    deleteNote(id)
+    if (draftNote && draftNote.id === id) setDraftNote(null)
+    else deleteNote(id)
     if (editingNoteId === id) setEditingNoteId(null)
-  }, [deleteNote, editingNoteId]))
+  }, [deleteNote, editingNoteId, draftNote]))
 
   const listDelete = useConfirmDelete(useCallback((id: string) => {
-    removeList(id)
-  }, [removeList]))
+    if (draftList && draftList.id === id) setDraftList(null)
+    else removeList(id)
+  }, [removeList, draftList]))
 
   const itemDelete = useConfirmDelete(useCallback((id: string) => {
-    deleteItem(id)
-  }, [deleteItem]))
+    const draftListId = Array.from(draftItemsByList.entries()).find(([, i]) => i.id === id)?.[0]
+    if (draftListId) {
+      setDraftItemsByList((prev) => {
+        const next = new Map(prev)
+        next.delete(draftListId)
+        return next
+      })
+    } else {
+      deleteItem(id)
+    }
+  }, [deleteItem, draftItemsByList]))
 
   useEffect(() => {
     loadLists()
@@ -93,16 +109,15 @@ export function useDayView() {
       createdAt: now,
       updatedAt: now,
     }
-    save(newReminder).then(() => {
-      setTab('reminders')
-      setExpandedReminderId(newReminder.id)
-    })
-  }, [triggerNewReminder, setTriggerNewReminder, dateStr, save])
+    setDraftReminder(newReminder)
+    setTab('reminders')
+    setExpandedReminderId(newReminder.id)
+  }, [triggerNewReminder, setTriggerNewReminder, dateStr])
 
-  const dayReminders = useMemo(
-    () => reminders.filter((r) => getOccurrencesInRange(r, plainDate, plainDate).length > 0),
-    [reminders, plainDate]
-  )
+  const dayReminders = useMemo(() => {
+    const base = reminders.filter((r) => getOccurrencesInRange(r, plainDate, plainDate).length > 0)
+    return draftReminder && draftReminder.date === dateStr ? [...base, draftReminder] : base
+  }, [reminders, plainDate, draftReminder, dateStr])
 
   const { overdueReminders, upcomingReminders } = useMemo(() => {
     const cmp = Temporal.PlainDate.compare(plainDate, Temporal.Now.plainDateISO())
@@ -118,10 +133,27 @@ export function useDayView() {
     return { overdueReminders: overdue, upcomingReminders: upcoming }
   }, [dayReminders, plainDate])
 
-  const dayLists = useMemo(
-    () => lists.filter((l) => l.dueDate === dateStr).sort((a, b) => a.order - b.order),
-    [lists, dateStr]
-  )
+  const dayLists = useMemo(() => {
+    const base = lists.filter((l) => l.dueDate === dateStr).sort((a, b) => a.order - b.order)
+    return draftList && draftList.dueDate === dateStr ? [...base, draftList] : base
+  }, [lists, dateStr, draftList])
+
+  const itemsWithDrafts = useMemo(() => {
+    if (draftItemsByList.size === 0) return items
+    const merged = new Map(items)
+    draftItemsByList.forEach((draft, listId) => {
+      const existing = merged.get(listId) ?? []
+      merged.set(listId, [...existing, draft])
+    })
+    return merged
+  }, [items, draftItemsByList])
+
+  const notesWithDrafts = useMemo(() => {
+    if (!draftNote) return notes
+    const merged = new Map(notes)
+    merged.set(draftNote.id, draftNote)
+    return merged
+  }, [notes, draftNote])
 
   useEffect(() => {
     dayLists.forEach((l) => loadItems(l.id))
@@ -132,7 +164,7 @@ export function useDayView() {
     saveItem({ ...item, completed: !item.completed, completedAt: !item.completed ? now : undefined, updatedAt: now })
   }
 
-  async function handleAddItem(listId: string) {
+  function handleAddItem(listId: string) {
     const now = new Date().toISOString()
     const newItem: TodoListItem = {
       id: crypto.randomUUID(),
@@ -143,16 +175,33 @@ export function useDayView() {
       createdAt: now,
       updatedAt: now,
     }
-    await saveItem(newItem)
+    setDraftItemsByList((prev) => {
+      const next = new Map(prev)
+      next.set(listId, newItem)
+      return next
+    })
     setEditingItemId(newItem.id)
+  }
+
+  function clearDraftItem(listId: string) {
+    setDraftItemsByList((prev) => {
+      if (!prev.has(listId)) return prev
+      const next = new Map(prev)
+      next.delete(listId)
+      return next
+    })
   }
 
   async function handleSaveEdit(item: TodoListItem, title: string) {
     const trimmed = title.trim()
+    const draft = draftItemsByList.get(item.listId)
+    const isDraft = draft?.id === item.id
     if (!trimmed) {
-      await deleteItem(item.id)
+      if (isDraft) clearDraftItem(item.listId)
+      else await deleteItem(item.id)
     } else {
       await saveItem({ ...item, title: trimmed, updatedAt: new Date().toISOString() })
+      if (isDraft) clearDraftItem(item.listId)
     }
     setEditingItemId(null)
   }
@@ -162,7 +211,11 @@ export function useDayView() {
   }
 
   async function handleCancelEdit(item: TodoListItem) {
-    if (!item.title.trim()) {
+    const draft = draftItemsByList.get(item.listId)
+    const isDraft = draft?.id === item.id
+    if (isDraft) {
+      clearDraftItem(item.listId)
+    } else if (!item.title.trim()) {
       await deleteItem(item.id)
     }
     setEditingItemId(null)
@@ -177,7 +230,7 @@ export function useDayView() {
     })
   }
 
-  async function handleCreateInlineList() {
+  function handleCreateInlineList() {
     const now = new Date().toISOString()
     const newList: TodoList = {
       id: crypto.randomUUID(),
@@ -187,15 +240,20 @@ export function useDayView() {
       createdAt: now,
       updatedAt: now,
     }
-    await saveList(newList)
+    setDraftList(newList)
     setExpandedListIds((prev) => new Set([...prev, newList.id]))
     setEditingListTitleId(newList.id)
   }
 
   async function handleSaveListTitle(listId: string, name: string) {
     const trimmed = name.trim()
+    const isDraft = draftList?.id === listId
     if (!trimmed) {
-      await removeList(listId)
+      if (isDraft) setDraftList(null)
+      else await removeList(listId)
+    } else if (isDraft) {
+      await saveList({ ...draftList!, name: trimmed, updatedAt: new Date().toISOString() })
+      setDraftList(null)
     } else {
       const list = dayLists.find((l) => l.id === listId)
       if (list) await saveList({ ...list, name: trimmed, updatedAt: new Date().toISOString() })
@@ -203,7 +261,7 @@ export function useDayView() {
     setEditingListTitleId(null)
   }
 
-  async function handleAddReminder() {
+  function handleAddReminder() {
     const now = new Date().toISOString()
     const newReminder: Reminder = {
       id: crypto.randomUUID(),
@@ -213,12 +271,22 @@ export function useDayView() {
       createdAt: now,
       updatedAt: now,
     }
-    await save(newReminder)
+    setDraftReminder(newReminder)
     setExpandedReminderId(newReminder.id)
   }
 
+  async function handleSaveReminder(r: Reminder) {
+    await save(r)
+    if (draftReminder && draftReminder.id === r.id) setDraftReminder(null)
+    setExpandedReminderId(null)
+  }
+
   function handleCancelReminder(reminder: Reminder) {
-    if (!reminder.title.trim()) remove(reminder.id)
+    if (draftReminder && draftReminder.id === reminder.id) {
+      setDraftReminder(null)
+    } else if (!reminder.title.trim()) {
+      remove(reminder.id)
+    }
     setExpandedReminderId(null)
   }
 
@@ -233,8 +301,13 @@ export function useDayView() {
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
     }
-    saveNote(newNote)
+    setDraftNote(newNote)
     setEditingNoteId(newNote.id)
+  }
+
+  async function handleSaveDraftNote(note: Note) {
+    await saveNote(note)
+    if (draftNote && draftNote.id === note.id) setDraftNote(null)
   }
 
   function handleDeleteNote(noteId: string, e: React.MouseEvent) {
@@ -271,9 +344,9 @@ export function useDayView() {
     editingListTitleId,
     setEditingListTitleId,
     expandedListIds,
-    notes,
-    saveNote,
-    items,
+    notes: notesWithDrafts,
+    saveNote: handleSaveDraftNote,
+    items: itemsWithDrafts,
     reorderItems,
     dayReminders,
     overdueReminders,
@@ -281,7 +354,7 @@ export function useDayView() {
     dayLists,
     timeFormat,
     toggleComplete,
-    save,
+    save: handleSaveReminder,
     handleToggleItem,
     handleAddItem,
     handleSaveEdit,

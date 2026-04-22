@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useNotesStore } from '../../../store/notes.store'
 import { useNoteFoldersStore } from '../../../store/note_folders.store'
+import type { Note } from '../../../types/models'
 
 const DEBOUNCE_MS = 800
 
 export function useNoteView() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
   const notes = useNotesStore((s) => s.notes)
   const loadNotes = useNotesStore((s) => s.loadNotes)
   const saveNote = useNotesStore((s) => s.saveNote)
@@ -17,40 +19,43 @@ export function useNoteView() {
   const [saving, setSaving] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
-  const note = id ? notes.get(id) : undefined
+  const stored = id ? notes.get(id) : undefined
+  const [draft, setDraft] = useState<Note | null>(() => {
+    const s = (location.state as { draftNote?: Note } | null)?.draftNote
+    return s && s.id === id ? s : null
+  })
 
-  const noteRef = useRef(note)
-  noteRef.current = note
+  useEffect(() => {
+    const s = (location.state as { draftNote?: Note } | null)?.draftNote
+    setDraft(s && s.id === id ? s : null)
+  }, [id, location.state])
+
+  const note = stored ?? draft ?? undefined
 
   useEffect(() => {
     loadNotes()
     loadFolders()
   }, [loadNotes, loadFolders])
 
-  // Clean up empty notes when navigating away without entering content
-  useEffect(() => {
-    return () => {
-      const current = noteRef.current
-      if (current && !current.title && !current.content.trim()) {
-        deleteNote(current.id)
-      }
-    }
-  }, [id, deleteNote])
-
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  async function persist(updated: Note) {
+    await saveNote(updated)
+    if (draft && draft.id === updated.id) setDraft(null)
+  }
 
   function handleContentChange(markdown: string) {
     if (saveTimer.current) clearTimeout(saveTimer.current)
     saveTimer.current = setTimeout(() => {
       if (!note) return
-      saveNote({ ...note, content: markdown, updatedAt: new Date().toISOString() })
+      persist({ ...note, content: markdown, updatedAt: new Date().toISOString() })
     }, DEBOUNCE_MS)
   }
 
   function handleTitleChange(newTitle: string) {
     if (!note) return
     setSaving(true)
-    saveNote({
+    persist({
       ...note,
       title: newTitle || undefined,
       updatedAt: new Date().toISOString(),
@@ -59,7 +64,7 @@ export function useNoteView() {
 
   function handleFolderChange(folderId: string | undefined) {
     if (!note) return
-    saveNote({
+    persist({
       ...note,
       folderId,
       updatedAt: new Date().toISOString(),
@@ -68,7 +73,11 @@ export function useNoteView() {
 
   function handleDelete() {
     if (!note || !id) return
-    deleteNote(id)
+    if (draft && draft.id === id) {
+      setDraft(null)
+    } else {
+      deleteNote(id)
+    }
     navigate('/notes')
   }
 

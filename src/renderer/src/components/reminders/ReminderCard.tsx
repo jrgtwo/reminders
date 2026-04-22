@@ -2,7 +2,7 @@ import { ArrowRight, Trash2, Check, Clock, RefreshCw } from 'lucide-react'
 import { formatTime } from '../../utils/dates'
 import type { Reminder } from '../../types/models'
 import type { TimeFormat } from '../../store/ui.store'
-import ReminderInlineEditor from './ReminderInlineEditor'
+import ReminderForm from './ReminderForm'
 
 interface Props {
   reminder: Reminder
@@ -99,25 +99,18 @@ export default function ReminderCard({
         </button>
       </button>
       {isExpanded && (
-        inModal ? (
-          <div className="overflow-y-auto flex-1 min-h-0">
-            <ReminderInlineEditor
-              reminder={reminder}
-              onSave={onSave}
-              onCancel={onCancel}
-              onDelete={onDelete}
-              isNew={isNew}
-            />
-          </div>
-        ) : (
-          <ReminderInlineEditor
+        <div
+          className={`px-4 py-4 rounded-b-xl border-t border-slate-200/60 dark:border-white/[0.08] ${inModal ? 'overflow-y-auto flex-1 min-h-0' : ''}`}
+        >
+          <ReminderForm
+            date={reminder.date}
             reminder={reminder}
             onSave={onSave}
-            onCancel={onCancel}
-            onDelete={onDelete}
-            isNew={isNew}
+            onClose={onCancel}
+            asDialog={false}
+            startEditing={isNew}
           />
-        )
+        </div>
       )}
     </div>
   )

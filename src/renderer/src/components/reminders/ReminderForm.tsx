@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Bell, Pencil, RefreshCw, X } from 'lucide-react'
+import { Bell, Pencil, RefreshCw } from 'lucide-react'
 import type { Reminder } from '../../types/models'
 import Button from '../ui/Button'
 import Dialog from '../ui/Dialog'
@@ -15,10 +15,19 @@ interface Props {
   defaultTime?: string
   onSave: (r: Reminder) => Promise<void>
   onClose: () => void
-  noDialog?: boolean
+  asDialog?: boolean
+  startEditing?: boolean
 }
 
-export default function ReminderForm({ date, reminder, defaultTime, onSave, onClose, noDialog }: Props) {
+export default function ReminderForm({
+  date,
+  reminder,
+  defaultTime,
+  onSave,
+  onClose,
+  asDialog = true,
+  startEditing,
+}: Props) {
   const {
     isNew,
     title,
@@ -46,7 +55,7 @@ export default function ReminderForm({ date, reminder, defaultTime, onSave, onCl
     handleSubmit,
   } = useReminderForm({ date, reminder, defaultTime, onSave })
 
-  const [isEditing, setIsEditing] = useState(isNew)
+  const [isEditing, setIsEditing] = useState(startEditing ?? isNew)
 
   const formContent = (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -165,27 +174,9 @@ export default function ReminderForm({ date, reminder, defaultTime, onSave, onCl
     </form>
   )
 
+  if (!asDialog) return formContent
+
   const dialogTitle = isNew ? 'New Reminder' : isEditing ? 'Edit Reminder' : 'Reminder'
-
-  if (noDialog) {
-    return (
-      <div className="p-5 flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-[15px] font-semibold text-slate-800 dark:text-white/80">
-            {dialogTitle}
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 dark:text-white/50 hover:text-slate-600 dark:hover:text-white/80 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
-          >
-            <X size={18} />
-          </button>
-        </div>
-        {formContent}
-      </div>
-    )
-  }
-
   return (
     <Dialog title={dialogTitle} onClose={onClose}>
       {formContent}

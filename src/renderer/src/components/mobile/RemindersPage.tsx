@@ -287,7 +287,7 @@ export default function RemindersPage() {
     <div className="flex flex-col h-full">
       {/* Header */}
       <MobilePageHeader
-        title="Schedule"
+        title="Reminders"
         actions={
           <div className="flex items-center gap-1">
             {overdue.length > 0 && (

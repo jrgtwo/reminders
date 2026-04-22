@@ -85,8 +85,7 @@ export function useNotesNav() {
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
     }
-    saveNote(note)
-    navigate(`/notes/${note.id}`)
+    navigate(`/notes/${note.id}`, { state: { draftNote: note } })
   }
 
   function handleNewNoteForDate(date: string) {
@@ -99,8 +98,7 @@ export function useNotesNav() {
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
     }
-    saveNote(note)
-    navigate(`/notes/${note.id}`)
+    navigate(`/notes/${note.id}`, { state: { draftNote: note } })
   }
 
   function handleDeleteNote(id: string, rect: DOMRect) {

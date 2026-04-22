@@ -22,6 +22,7 @@ export function useListsPage() {
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [renameOpen, setRenameOpen] = useState(false)
   const [editingDate, setEditingDate] = useState(false)
+  const [draftItem, setDraftItem] = useState<TodoListItem | null>(null)
 
   const isNew = listId === 'new'
   const [newName, setNewName] = useState('')
@@ -56,13 +57,11 @@ export function useListsPage() {
     [lists, listId]
   )
 
-  const listItems = useMemo(
-    () =>
-      listId
-        ? (items.get(listId) ?? []).filter((i) => !i.completed).sort((a, b) => a.order - b.order)
-        : [],
-    [items, listId]
-  )
+  const listItems = useMemo(() => {
+    if (!listId) return []
+    const base = (items.get(listId) ?? []).filter((i) => !i.completed).sort((a, b) => a.order - b.order)
+    return draftItem && draftItem.listId === listId ? [...base, draftItem] : base
+  }, [items, listId, draftItem])
   const completedItems = useMemo(
     () =>
       listId
@@ -81,7 +80,7 @@ export function useListsPage() {
     })
   }
 
-  async function handleAddItem() {
+  function handleAddItem() {
     if (!listId) return
     const now = new Date().toISOString()
     const newItem: TodoListItem = {
@@ -93,16 +92,19 @@ export function useListsPage() {
       createdAt: now,
       updatedAt: now,
     }
-    await saveItem(newItem)
+    setDraftItem(newItem)
     setEditingItemId(newItem.id)
   }
 
   async function handleSaveEdit(item: TodoListItem, title: string) {
     const trimmed = title.trim()
+    const isDraft = draftItem?.id === item.id
     if (!trimmed) {
-      await deleteItem(item.id)
+      if (isDraft) setDraftItem(null)
+      else await deleteItem(item.id)
     } else {
       await saveItem({ ...item, title: trimmed, updatedAt: new Date().toISOString() })
+      if (isDraft) setDraftItem(null)
     }
     setEditingItemId(null)
   }
@@ -112,7 +114,10 @@ export function useListsPage() {
   }
 
   async function handleCancelEdit(item: TodoListItem) {
-    if (!item.title.trim()) {
+    const isDraft = draftItem?.id === item.id
+    if (isDraft) {
+      setDraftItem(null)
+    } else if (!item.title.trim()) {
       await deleteItem(item.id)
     }
     setEditingItemId(null)
