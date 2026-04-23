@@ -26,7 +26,9 @@ export function useAppShell() {
     const start = end.subtract({ days: 365 })
     let count = 0
     for (const r of reminders) {
-      count += getOccurrencesInRange(r, start, end).length
+      for (const dateStr of getOccurrencesInRange(r, start, end)) {
+        if (!r.completedDates.includes(dateStr)) count++
+      }
     }
     return count
   }, [reminders])
