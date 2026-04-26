@@ -48,27 +48,6 @@ export async function clearCredentials(): Promise<void> {
   await dispatch('clearCredentials', {})
 }
 
-export interface RunnerDebugInfo {
-  last_run_at: string
-  last_run_error: string
-  last_synced_count: string
-  has_credentials: boolean
-}
-
-export async function getDebugInfo(): Promise<RunnerDebugInfo | null> {
-  try {
-    const { BackgroundRunner } = await import('@capacitor/background-runner')
-    return (await BackgroundRunner.dispatchEvent({
-      label: RUNNER_LABEL,
-      event: 'getDebugInfo',
-      details: {},
-    })) as RunnerDebugInfo
-  } catch (err) {
-    console.warn('[runnerBridge] getDebugInfo failed:', err)
-    return null
-  }
-}
-
 /**
  * Attach an app-foreground listener that re-fires the cached credentials.
  * Idempotent — safe to call from multiple init paths.

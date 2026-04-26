@@ -807,7 +807,6 @@ sync(session, config):
 57. `runnerBridge.ts` — `setCredentials()` via `dispatchEvent` (re-dispatched on every app foreground); `cleanupTombstones()` via `getPending` → filter year ≥ 2099 → `cancel`
 58. Implement `src/runner/runner.js` — raw Supabase REST + token refresh + decrypt + `CapacitorNotifications.schedule`; soft-deletes shelved with `scheduleAt: 2099-01-01`
 59. Native config: `capacitor.config.ts` `BackgroundRunner` block, iOS `Info.plist` (`UIBackgroundModes`, `BGTaskSchedulerPermittedIdentifiers`), `AppDelegate.swift` registration, `android/app/build.gradle` libs dir
-60. Telemetry: `last_run_at` / `last_run_error` / `last_synced_count` in `CapacitorKV`, surfaced in Settings debug view
 
 **Future release (post-Phase 15):** iOS BGAppRefresh is opportunistic — Apple may not fire it for days on devices that don't open the app often. If tight cross-device parity becomes a real complaint, follow up with **APNs silent push** as a "sync now" wake-up signal (encryption preserved — push carries no content). See follow-up section in `docs/mobile-background-sync.md`.
 

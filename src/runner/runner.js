@@ -166,10 +166,8 @@ addEventListener('setCredentials', (resolve, reject, args) => {
     if (args.expires_at !== undefined) kvSet('expires_at', String(args.expires_at))
     if (args.supabase_url) kvSet('supabase_url', args.supabase_url)
     if (args.supabase_anon_key) kvSet('supabase_anon_key', args.supabase_anon_key)
-    console.log('[runner] credentials stored')
     resolve()
   } catch (err) {
-    console.error('[runner] setCredentials failed:', err)
     reject(err)
   }
 })
@@ -183,25 +181,11 @@ addEventListener('clearCredentials', (resolve) => {
     'expires_at',
     'supabase_url',
     'supabase_anon_key',
-    'last_pull_at',
   ].forEach(kvRemove)
-  console.log('[runner] credentials cleared')
   resolve()
 })
 
-addEventListener('getDebugInfo', (resolve) => {
-  resolve({
-    last_run_at: kvGet('last_run_at') || '',
-    last_run_error: kvGet('last_run_error') || '',
-    last_synced_count: kvGet('last_synced_count') || '',
-    has_credentials: !!(kvGet('user_id') && kvGet('enc_key') && kvGet('refresh_token')),
-  })
-})
-
 addEventListener('sync', async (resolve, reject) => {
-  const startedAt = new Date().toISOString()
-  kvSet('last_run_at', startedAt)
-
   try {
     const userId = kvGet('user_id')
     const encKeyB64 = kvGet('enc_key')
@@ -209,9 +193,6 @@ addEventListener('sync', async (resolve, reject) => {
     const anonKey = kvGet('supabase_anon_key')
 
     if (!userId || !encKeyB64 || !supabaseUrl || !anonKey) {
-      kvSet('last_run_error', 'not authenticated')
-      kvSet('last_synced_count', '0')
-      console.log('[runner] sync skipped: not authenticated')
       resolve()
       return
     }
@@ -225,7 +206,6 @@ addEventListener('sync', async (resolve, reject) => {
 
     const now = new Date()
 
-    // Tombstones for soft-deleted rows
     const tombstones = reminders
       .filter((r) => r.deletedAt)
       .map((r) => ({
@@ -235,7 +215,6 @@ addEventListener('sync', async (resolve, reject) => {
         scheduleAt: tombstoneDate(),
       }))
 
-    // Reconcile active reminders against the horizon
     const active = reminders.filter((r) => !r.deletedAt)
     const { toSchedule } = reconcileSchedule(active, [], now)
 
@@ -254,16 +233,8 @@ addEventListener('sync', async (resolve, reject) => {
       CapacitorNotifications.schedule(notifications)
     }
 
-    kvSet('last_run_error', '')
-    kvSet('last_synced_count', String(reminders.length))
-    console.log(
-      `[runner] sync ok — ${active.length} active, ${tombstones.length} tombstones, ${toSchedule.length} scheduled`,
-    )
     resolve()
   } catch (err) {
-    const msg = err && err.message ? err.message : String(err)
-    kvSet('last_run_error', msg)
-    console.error('[runner] sync failed:', msg)
     reject(err)
   }
 })

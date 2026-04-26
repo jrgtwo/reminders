@@ -241,4 +241,3 @@ Threshold tied to the count cap (50). Reminder still saves; warning is informati
 5. Delete the reminder from web. Trigger another sync. Confirm Phone B cancels the local notification (no fire).
 6. Test recurring: create a daily reminder. Confirm day-2 occurrence fires (this validates the recurrence fix).
 
-**Telemetry to add:** runner writes `last_run_at`, `last_run_error`, `last_synced_count` to `CapacitorKV`; surface in Settings → debug.
