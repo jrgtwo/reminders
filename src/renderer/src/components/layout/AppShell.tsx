@@ -1,5 +1,6 @@
+import type { ReactElement } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
-import { Settings, Cloud, CloudOff, Loader2, X, ShieldAlert } from 'lucide-react'
+import { Settings, Cloud, CloudOff, Loader2, X, ShieldAlert, UserCircle, Crown } from 'lucide-react'
 import BottomNav, { SideNav } from './BottomNav'
 import SearchBar from './SearchBar'
 import ReminderForm from '../reminders/ReminderForm'
@@ -16,6 +17,35 @@ function formatLastSynced(isoStr: string): string {
   return `${hours}h ago`
 }
 
+function ProfileNavButton({
+  isLoggedIn,
+  plan,
+  onClick,
+}: {
+  isLoggedIn: boolean
+  plan: 'free' | 'pro' | 'comp'
+  onClick: () => void
+}): ReactElement {
+  const isPro = plan === 'pro' || plan === 'comp'
+  const title = !isLoggedIn ? 'Account' : isPro ? 'Account (Pro)' : 'Account'
+  return (
+    <button
+      onClick={onClick}
+      className="relative w-7 h-7 flex items-center justify-center rounded text-white/55 hover:text-white/80 hover:bg-white/[0.08] transition-all"
+      title={title}
+    >
+      <UserCircle size={20} fill={isLoggedIn ? 'currentColor' : 'none'} />
+      {isPro && (
+        <Crown
+          size={10}
+          className="absolute -top-0.5 -right-0.5 text-amber-500"
+          fill="currentColor"
+        />
+      )}
+    </button>
+  )
+}
+
 export default function AppShell() {
   const {
     searchRef,
@@ -25,6 +55,7 @@ export default function AppShell() {
     setNewReminderDate,
     saveReminder,
     isLoggedIn,
+    plan,
     overdueCount,
     upcomingCount,
     syncStatus,
@@ -107,6 +138,11 @@ export default function AppShell() {
                 ) : null}
               </div>
             )}
+            <ProfileNavButton
+              isLoggedIn={isLoggedIn}
+              plan={plan}
+              onClick={() => navigate('/account')}
+            />
             <button
               onClick={() => navigate('/settings')}
               className="w-7 h-7 flex items-center justify-center rounded text-white/55 hover:text-white/80 hover:bg-white/[0.08] transition-all"
@@ -146,6 +182,11 @@ export default function AppShell() {
                   ) : null}
                 </div>
               )}
+              <ProfileNavButton
+                isLoggedIn={isLoggedIn}
+                plan={plan}
+                onClick={() => navigate('/account')}
+              />
               <button
                 onClick={() => navigate('/settings')}
                 className="w-7 h-7 flex items-center justify-center rounded text-white/55 hover:text-white/80 hover:bg-white/[0.08] transition-all"

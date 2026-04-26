@@ -17,6 +17,7 @@ import CookieBanner from './components/CookieBanner'
 const LANDING_SEEN_KEY = 'reminder_landing_seen'
 
 const SettingsPage = lazy(() => import('./components/settings/SettingsPage'))
+const AccountPage = lazy(() => import('./components/account/AccountPage'))
 const RemindersPage = lazy(() => import('./components/mobile/RemindersPage'))
 const TodosPage = lazy(() => import('./components/mobile/TodosPage'))
 const ListsView = lazy(() => import('./components/lists/ListsPage'))
@@ -164,6 +165,7 @@ const routes = [
       },
       { path: 'browse', element: <Lazy><BrowsePage /></Lazy> },
       { path: 'settings', element: <Lazy><SettingsPage /></Lazy> },
+      { path: 'account', element: <Lazy><AccountPage /></Lazy> },
       {
         path: 'notes',
         element: <Lazy><NotesPage /></Lazy>,

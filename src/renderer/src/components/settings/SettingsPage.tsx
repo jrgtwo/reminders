@@ -1,8 +1,6 @@
 import { ArrowLeft } from 'lucide-react'
 import Button from '../ui/Button'
 import { useSettingsPage } from './hooks/useSettingsPage'
-import AccountSection from './AccountSection'
-import SubscriptionSection from './SubscriptionSection'
 import SyncSection from './SyncSection'
 import SecuritySection from './SecuritySection'
 import AppearanceSection from './AppearanceSection'
@@ -22,16 +20,7 @@ export default function SettingsPage() {
     setTheme,
     timeFormat,
     setTimeFormat,
-    user,
     isLoggedIn,
-    plan,
-    signOut,
-    upgradeStatus,
-    billingInterval,
-    setBillingInterval,
-    portalStatus,
-    handleUpgrade,
-    handleManageSubscription,
     syncStatus,
     lastSyncedAt,
     triggerSync,
@@ -69,20 +58,6 @@ export default function SettingsPage() {
         </Button>
       </div>
       <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Settings</h1>
-
-      <AccountSection user={user} isLoggedIn={isLoggedIn} signOut={signOut} />
-
-      {isLoggedIn && (
-        <SubscriptionSection
-          plan={plan}
-          upgradeStatus={upgradeStatus}
-          billingInterval={billingInterval}
-          setBillingInterval={setBillingInterval}
-          portalStatus={portalStatus}
-          handleUpgrade={handleUpgrade}
-          handleManageSubscription={handleManageSubscription}
-        />
-      )}
 
       {isLoggedIn && (
         <SyncSection

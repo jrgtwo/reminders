@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import type { TurnstileInstance } from '@marsidev/react-turnstile'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { rotateEncryptionKey } from '../../../lib/keyRotation'
@@ -7,6 +7,7 @@ import { useUIStore, type Theme, type TimeFormat } from '../../../store/ui.store
 import { useAuthStore } from '../../../store/auth.store'
 import { useSyncStore } from '../../../store/sync.store'
 import { exportToFile, importFromFile, exportToIcalFile, importFromIcalFile } from '../../../utils/exportImport'
+import { useSubscriptionPrices, isWebPlatform } from '../../account/lib/prices'
 
 export function useSettingsPage() {
   const navigate = useNavigate()
@@ -45,6 +46,7 @@ export function useSettingsPage() {
   const [upgradeStatus, setUpgradeStatus] = useState<'idle' | 'loading' | 'error'>('idle')
   const [billingInterval, setBillingInterval] = useState<'monthly' | 'yearly'>('yearly')
   const [portalStatus, setPortalStatus] = useState<'idle' | 'loading' | 'error'>('idle')
+  const prices = useSubscriptionPrices()
   const [deleteAccountStatus, setDeleteAccountStatus] = useState<
     'idle' | 'confirm' | 'sending' | 'sent' | 'error'
   >('idle')
@@ -222,6 +224,8 @@ export function useSettingsPage() {
     billingInterval,
     setBillingInterval,
     portalStatus,
+    prices,
+    isWebPlatform,
     handleUpgrade,
     handleManageSubscription,
     syncStatus,

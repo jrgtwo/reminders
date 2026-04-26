@@ -11,6 +11,7 @@ const allowedRedirectOrigins = [
   'https://remindertoday.com',
   'https://www.remindertoday.com',
   'http://localhost:5173',
+  'https://local.remindertoday.com:5173',
 ]
 
 Deno.serve(async (req) => {
@@ -100,8 +101,8 @@ Deno.serve(async (req) => {
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
-      success_url: `${redirectOrigin}/settings?upgraded=true`,
-      cancel_url: `${redirectOrigin}/settings`,
+      success_url: `${redirectOrigin}/account?upgraded=true`,
+      cancel_url: `${redirectOrigin}/account`,
       client_reference_id: user.id,
     })
 

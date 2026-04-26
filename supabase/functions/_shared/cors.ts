@@ -2,6 +2,7 @@ const allowedOrigins = [
   'https://remindertoday.com',
   'https://www.remindertoday.com',
   'http://localhost:5173',
+  'https://local.remindertoday.com:5173',
 ]
 
 export function getCorsHeaders(origin: string | null): Record<string, string> {

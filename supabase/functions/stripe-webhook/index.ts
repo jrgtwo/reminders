@@ -3,7 +3,7 @@ import Stripe from 'https://esm.sh/stripe@17?target=deno'
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
   apiVersion: '2025-04-30.basil',
-  httpClient: Stripe.createFetchHttpClient(),
+  httpClient: Stripe.createFetchHttpClient()
 })
 
 const supabase = createClient(
@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
   } catch (err) {
     console.error('Webhook signature verification failed:', (err as Error).message)
     return new Response('Webhook signature verification failed', {
-      status: 400,
+      status: 400
     })
   }
 
@@ -104,6 +104,6 @@ Deno.serve(async (req) => {
 
   return new Response(JSON.stringify({ received: true }), {
     status: 200,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json' }
   })
 })

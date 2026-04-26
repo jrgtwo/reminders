@@ -11,6 +11,7 @@ const allowedRedirectOrigins = [
   'https://remindertoday.com',
   'https://www.remindertoday.com',
   'http://localhost:5173',
+  'https://local.remindertoday.com:5173',
 ]
 
 Deno.serve(async (req) => {

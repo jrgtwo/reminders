@@ -20,6 +20,7 @@ export function useAppShell() {
   const reminders = useRemindersStore((s) => s.reminders)
   const lists = useTodoListsStore((s) => s.lists)
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn)
+  const plan = useAuthStore((s) => s.plan)
 
   const overdueCount = useMemo(() => {
     const end = today().subtract({ days: 1 })
@@ -68,6 +69,7 @@ export function useAppShell() {
     saveReminder,
     lists,
     isLoggedIn,
+    plan,
     overdueCount,
     upcomingCount,
     syncStatus,
