@@ -65,5 +65,9 @@
 	<array>
 		<string>com.remindertoday.app.sync</string>
 	</array>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app does not use your location.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app does not use your location.</string>
 </dict>
 </plist>
