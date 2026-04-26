@@ -1,6 +1,13 @@
 import { LocalNotifications } from '@capacitor/local-notifications'
 import type { Reminder } from '../types/models'
 import { getSnoozeDuration } from '../components/settings/NotificationsSection'
+import {
+  reconcileSchedule,
+  uuidToInt,
+  isTombstone,
+  type SchedulableReminder,
+  type PendingNotification,
+} from '../../../shared/reminderSchedule'
 
 /**
  * Request notification permission on Android 13+ / iOS.
@@ -31,11 +38,6 @@ export async function registerNotificationActions(): Promise<void> {
   })
 }
 
-/**
- * Listen for notification action button taps.
- * `onSnooze` is called with the reminder ID and date when the user taps Snooze.
- * `onComplete` is called with the reminder ID and date when the user taps Complete.
- */
 export async function listenForNotificationActions(
   onSnooze: (reminderId: string, date: string) => void,
   onComplete: (reminderId: string, date: string) => void,
@@ -52,14 +54,11 @@ export async function listenForNotificationActions(
   })
 }
 
-/**
- * Schedule a snoozed notification that fires after the configured snooze duration.
- */
 export async function snoozeNotification(r: Reminder): Promise<void> {
   const snoozeDuration = getSnoozeDuration()
   const fireAt = new Date(Date.now() + snoozeDuration * 60_000)
 
-  // Use a different ID space for snooze notifications to avoid cancelling the original
+  // Snoozes use a separate id space so they don't collide with the original
   const notifId = uuidToInt(r.id) ^ 0x7fff
 
   await LocalNotifications.cancel({ notifications: [{ id: notifId }] })
@@ -78,56 +77,71 @@ export async function snoozeNotification(r: Reminder): Promise<void> {
 }
 
 /**
- * Schedule a local notification for a reminder that has a future date + startTime.
- * Safe to call on every save — cancels any existing notification for this reminder
- * before re-scheduling, so updates are handled correctly.
+ * Reconcile the OS notification queue against the current set of reminders.
+ *
+ * - Drains "tombstone" notifications the background runner left behind (year 2099 sentinels)
+ *   to mark soft-deleted reminders we couldn't cancel directly from the runner context.
+ * - Schedules the soonest 50 reminders within the next 30 days (hybrid horizon — respects
+ *   the iOS 64-pending cap, leaves headroom for runner-set tombstones).
+ * - Cancels anything currently pending that's outside the horizon.
+ *
+ * Safe to call after every reminder create/update/delete and on app startup.
  */
-export async function scheduleReminderNotification(r: Reminder): Promise<void> {
-  if (!r.startTime) return
+export async function reconcileNotifications(allReminders: Reminder[]): Promise<void> {
+  const { notifications } = await LocalNotifications.getPending()
 
-  const [year, month, day] = r.date.split('-').map(Number)
-  const [hour, minute] = r.startTime.split(':').map(Number)
-  const notifyMinutes = r.notifyBefore ?? 0
-  const fireAt = new Date(year, month - 1, day, hour, minute, 0)
-  fireAt.setMinutes(fireAt.getMinutes() - notifyMinutes)
+  // Drain tombstones first
+  const tombstoneIds = notifications
+    .filter((n) => {
+      const at = n.schedule?.at ? new Date(n.schedule.at) : null
+      return at ? isTombstone(at) : false
+    })
+    .map((n) => ({ id: n.id }))
+  if (tombstoneIds.length > 0) {
+    await LocalNotifications.cancel({ notifications: tombstoneIds })
+  }
 
-  if (fireAt <= new Date()) return
+  const pending: PendingNotification[] = notifications
+    .filter((n) => {
+      const at = n.schedule?.at ? new Date(n.schedule.at) : null
+      return at ? !isTombstone(at) : false
+    })
+    .map((n) => ({ id: n.id, scheduleAt: new Date(n.schedule!.at!) }))
 
-  // Use a stable numeric id derived from the reminder's UUID
-  const notifId = uuidToInt(r.id)
+  const { toSchedule, toCancel } = reconcileSchedule(
+    allReminders as SchedulableReminder[],
+    pending,
+    new Date(),
+  )
 
-  await LocalNotifications.cancel({ notifications: [{ id: notifId }] })
-  await LocalNotifications.schedule({
-    notifications: [
-      {
-        id: notifId,
-        title: r.title,
-        body: r.description ?? (notifyMinutes > 0 ? `Reminder in ${formatMinutes(notifyMinutes)}` : `Reminder at ${r.startTime}`),
-        schedule: { at: fireAt, allowWhileIdle: true },
-        actionTypeId: 'REMINDER_ACTIONS',
-        extra: { reminderId: r.id, date: r.date },
-      },
-    ],
-  })
+  if (toCancel.length > 0) {
+    await LocalNotifications.cancel({ notifications: toCancel.map((id) => ({ id })) })
+  }
+
+  if (toSchedule.length > 0) {
+    await LocalNotifications.schedule({
+      notifications: toSchedule.map((s) => {
+        const reminder = allReminders.find((r) => r.id === s.reminderId)!
+        return {
+          id: s.id,
+          title: s.title,
+          body: s.body,
+          schedule: { at: s.fireAt, allowWhileIdle: true },
+          actionTypeId: 'REMINDER_ACTIONS',
+          extra: { reminderId: reminder.id, date: reminder.date },
+        }
+      }),
+    })
+  }
 }
 
 /**
  * Cancel any scheduled notification for a reminder (call on delete).
+ *
+ * Note: prefer calling `reconcileNotifications(allReminders)` after a delete instead — it
+ * handles tombstone cleanup and re-bucketing in one pass. This direct cancel is kept for
+ * call sites that don't have the full reminder list handy.
  */
 export async function cancelReminderNotification(reminderId: string): Promise<void> {
   await LocalNotifications.cancel({ notifications: [{ id: uuidToInt(reminderId) }] })
-}
-
-/** Fold a UUID string into a positive 32-bit int for use as a notification id. */
-function uuidToInt(uuid: string): number {
-  const hex = uuid.replace(/-/g, '').slice(0, 8)
-  return Math.abs(parseInt(hex, 16)) || 1
-}
-
-function formatMinutes(minutes: number): string {
-  if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''}`
-  const h = Math.floor(minutes / 60)
-  const m = minutes % 60
-  if (m === 0) return `${h} hour${h !== 1 ? 's' : ''}`
-  return `${h}h ${m}m`
 }

@@ -23,6 +23,14 @@
        resizeOnFullScreen: true,
      },
      LocalNotifications: {},
+     BackgroundRunner: {
+       label: 'com.remindertoday.app.sync',
+       src: 'runner.js',
+       event: 'sync',
+       repeat: true,
+       interval: 15, // minutes — Android floor; iOS treats as a hint
+       autoStart: true,
+     },
    },
  }
 

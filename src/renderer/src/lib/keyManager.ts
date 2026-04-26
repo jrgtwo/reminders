@@ -74,6 +74,17 @@ async function loadCachedKey(userId: string): Promise<CryptoKey | null> {
   return null
 }
 
+/** Read the cached base64 key for a user. Used when handing credentials to the background runner. */
+export async function getCachedKeyBase64(userId: string): Promise<string | null> {
+  try {
+    const api = (window as any).electronAPI
+    if (api?.safeStorage) return (await api.safeStorage.loadKey(userId)) ?? null
+    return localStorage.getItem(`enc_key_${userId}`)
+  } catch {
+    return null
+  }
+}
+
 async function cacheKeyLocally(userId: string, b64: string): Promise<void> {
   try {
     const api = (window as any).electronAPI

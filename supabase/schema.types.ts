@@ -94,18 +94,21 @@ export type Database = {
       }
       profiles: {
         Row: {
+          is_reviewer_account: boolean
           plan: string
           stripe_customer_id: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          is_reviewer_account?: boolean
           plan?: string
           stripe_customer_id?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          is_reviewer_account?: boolean
           plan?: string
           stripe_customer_id?: string | null
           updated_at?: string
@@ -123,6 +126,7 @@ export type Database = {
           end_date: string | null
           end_time: string | null
           id: string
+          notify_before: number | null
           recurrence: string | null
           start_time: string | null
           title: string
@@ -138,6 +142,7 @@ export type Database = {
           end_date?: string | null
           end_time?: string | null
           id: string
+          notify_before?: number | null
           recurrence?: string | null
           start_time?: string | null
           title: string
@@ -153,6 +158,7 @@ export type Database = {
           end_date?: string | null
           end_time?: string | null
           id?: string
+          notify_before?: number | null
           recurrence?: string | null
           start_time?: string | null
           title?: string
@@ -340,7 +346,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_reviewer_email: { Args: { p_email: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

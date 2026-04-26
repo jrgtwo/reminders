@@ -2,7 +2,33 @@ import { create } from 'zustand'
 import type { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import { capture } from '../lib/analytics'
-import { initEncryptionKey, clearEncryptionKey } from '../lib/keyManager'
+import { initEncryptionKey, clearEncryptionKey, getCachedKeyBase64 } from '../lib/keyManager'
+import {
+  setCredentials as setRunnerCredentials,
+  clearCredentials as clearRunnerCredentials,
+  setupForegroundResync,
+} from '../lib/runnerBridge'
+
+async function pushCredentialsToRunner(session: Session): Promise<void> {
+  try {
+    const { Capacitor } = await import('@capacitor/core')
+    if (!Capacitor.isNativePlatform()) return
+    if (!session.access_token || !session.refresh_token) return
+    const encKey = await getCachedKeyBase64(session.user.id)
+    if (!encKey) return
+    await setRunnerCredentials({
+      user_id: session.user.id,
+      enc_key: encKey,
+      access_token: session.access_token,
+      refresh_token: session.refresh_token,
+      expires_at: session.expires_at ?? 0,
+      supabase_url: import.meta.env.VITE_SUPABASE_URL as string,
+      supabase_anon_key: import.meta.env.VITE_SUPABASE_ANON_KEY as string,
+    })
+  } catch (err) {
+    console.warn('[auth] failed to push credentials to runner:', err)
+  }
+}
 
 type Plan = 'free' | 'pro' | 'comp'
 
@@ -40,10 +66,15 @@ export const useAuthStore = create<AuthState>((set) => ({
           isLoggedIn: true,
           plan: (profile?.plan as Plan) ?? 'free',
         })
+        pushCredentialsToRunner(session).catch(console.error)
       } else {
         set({ session, user: null, isLoggedIn: false, plan: 'free' })
       }
     })
+
+    // Re-fire credentials to the runner on every app foreground (Capacitor only).
+    // Self-heals the first-launch race where the runner may not yet be registered with the OS.
+    setupForegroundResync().catch(() => {})
 
     // Keep store in sync with future auth state changes (sign-in, sign-out, token refresh).
     //
@@ -75,6 +106,7 @@ export const useAuthStore = create<AuthState>((set) => ({
             isLoggedIn: true,
             plan: (profile?.plan as Plan) ?? 'free',
           })
+          pushCredentialsToRunner(session).catch(console.error)
         } else {
           set({ session, user: null, isLoggedIn: false, plan: 'free' })
         }
@@ -149,5 +181,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     await supabase.auth.signOut()
     set({ user: null, session: null, isLoggedIn: false, plan: 'free' })
     if (userId) await clearEncryptionKey(userId)
+    clearRunnerCredentials().catch(console.error)
   },
 }))

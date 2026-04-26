@@ -41,8 +41,38 @@ import { create } from 'zustand'
        try {
          const { Capacitor } = await import('@capacitor/core')
          if (Capacitor.isNativePlatform()) {
-           const { scheduleReminderNotification } = await import('../lib/mobileNotifications')
-           scheduleReminderNotification(saved).catch(console.error)
+           const { reconcileNotifications } = await import('../lib/mobileNotifications')
+           reconcileNotifications(useRemindersStore.getState().reminders).catch(console.error)
+
+           // Cluster warning: when adding a new reminder fills the OS notification slots
+           // for a 1-hour window, warn the user that this one may not actually alert.
+           if (isNew && saved.startTime) {
+             const { nextOccurrenceAt, SCHEDULE_HORIZON } = await import(
+               '../../../shared/reminderSchedule'
+             )
+             const allReminders = useRemindersStore.getState().reminders
+             const newFire = nextOccurrenceAt(saved, new Date())
+             if (newFire) {
+               const halfHourMs = 30 * 60 * 1000
+               const start = newFire.getTime() - halfHourMs
+               const end = newFire.getTime() + halfHourMs
+               let count = 0
+               for (const x of allReminders) {
+                 if (x.id === saved.id) continue
+                 const t = nextOccurrenceAt(x, new Date(start - 1))
+                 if (t && t.getTime() >= start && t.getTime() <= end) count++
+               }
+               if (count >= SCHEDULE_HORIZON) {
+                 const { useToastStore } = await import('./toast.store')
+                 useToastStore
+                   .getState()
+                   .show(
+                     "You've reached the maximum reminders for this 1-hour window — this one may not alert as a notification.",
+                     'warning',
+                   )
+               }
+             }
+           }
          }
        } catch {
          // not a Capacitor build
@@ -57,8 +87,8 @@ import { create } from 'zustand'
        try {
          const { Capacitor } = await import('@capacitor/core')
          if (Capacitor.isNativePlatform()) {
-           const { cancelReminderNotification } = await import('../lib/mobileNotifications')
-           cancelReminderNotification(id).catch(console.error)
+           const { reconcileNotifications } = await import('../lib/mobileNotifications')
+           reconcileNotifications(useRemindersStore.getState().reminders).catch(console.error)
          }
        } catch {
          // not a Capacitor build

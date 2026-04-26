@@ -13,6 +13,7 @@ import type { WeekViewHandle } from './components/calendar/WeekView'
 import DayView from './components/calendar/DayView'
 import ErrorPage from './components/pages/ErrorPage'
 import CookieBanner from './components/CookieBanner'
+import ToastContainer from './components/ui/Toast'
 
 const LANDING_SEEN_KEY = 'reminder_landing_seen'
 
@@ -197,6 +198,7 @@ export default function App() {
     <>
       <RouterProvider router={router} />
       {isLoggedIn && <FirstLoginDialog />}
+      <ToastContainer />
       {!isElectronOrCapacitor && analyticsAllowed && <Analytics />}
       {!isElectronOrCapacitor && analyticsAllowed && <SpeedInsights />}
       {showBanner && (

@@ -8,10 +8,16 @@ import DataSection from './DataSection'
 import DangerZoneSection from './DangerZoneSection'
 import NotificationsSection from './NotificationsSection'
 import PrivacySection from './PrivacySection'
+import BackgroundSyncSection from './BackgroundSyncSection'
 
 const isNativePlatform =
   typeof window !== 'undefined' &&
   (!!(window as any).electronAPI || !!(window as any).Capacitor?.isNativePlatform?.())
+
+const isCapacitorNative =
+  typeof window !== 'undefined' &&
+  !!(window as any).Capacitor?.isNativePlatform?.() &&
+  !(window as any).electronAPI
 
 export default function SettingsPage() {
   const {
@@ -85,6 +91,8 @@ export default function SettingsPage() {
       />
 
       <NotificationsSection />
+
+      {isCapacitorNative && isLoggedIn && <BackgroundSyncSection />}
 
       {!isNativePlatform && <PrivacySection />}
 

@@ -67,10 +67,6 @@ export const useSyncStore = create<SyncState>((set, get) => ({
       set({ status: 'idle', lastSyncedAt: result.lastSyncedAt })
       capture('sync_completed', { last_synced_at: result.lastSyncedAt })
 
-      // Snapshot reminders before reload so we can detect changes
-      const prevReminders = useRemindersStore.getState().reminders
-      const prevMap = new Map(prevReminders.map((r) => [r.id, r.updatedAt]))
-
       await Promise.all([
         useRemindersStore.getState().load(),
         useNotesStore.getState().loadNotes(),
@@ -78,18 +74,12 @@ export const useSyncStore = create<SyncState>((set, get) => ({
         useTodoListsStore.getState().load()
       ])
 
-      // Schedule local notifications for new/changed reminders on Capacitor
+      // Reconcile the OS notification queue against the freshly synced reminders
       try {
         const { Capacitor } = await import('@capacitor/core')
         if (Capacitor.isNativePlatform()) {
-          const { scheduleReminderNotification } = await import('../lib/mobileNotifications')
-          const current = useRemindersStore.getState().reminders
-          for (const r of current) {
-            if (!r.startTime) continue
-            const prevUpdated = prevMap.get(r.id)
-            if (prevUpdated === r.updatedAt) continue // unchanged — skip
-            scheduleReminderNotification(r).catch(console.error)
-          }
+          const { reconcileNotifications } = await import('../lib/mobileNotifications')
+          reconcileNotifications(useRemindersStore.getState().reminders).catch(console.error)
         }
       } catch {
         // not a Capacitor build
@@ -175,16 +165,12 @@ export const useSyncStore = create<SyncState>((set, get) => ({
         useTodoListsStore.getState().load()
       ])
 
-      // Schedule local notifications for all pulled reminders on Capacitor
+      // Reconcile the OS notification queue against the freshly pulled reminders
       try {
         const { Capacitor } = await import('@capacitor/core')
         if (Capacitor.isNativePlatform()) {
-          const { scheduleReminderNotification } = await import('../lib/mobileNotifications')
-          const reminders = useRemindersStore.getState().reminders
-          for (const r of reminders) {
-            if (!r.startTime) continue
-            scheduleReminderNotification(r).catch(console.error)
-          }
+          const { reconcileNotifications } = await import('../lib/mobileNotifications')
+          reconcileNotifications(useRemindersStore.getState().reminders).catch(console.error)
         }
       } catch {
         // not a Capacitor build

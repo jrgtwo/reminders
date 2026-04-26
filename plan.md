@@ -757,8 +757,8 @@ sync(session, config):
 
 **Nice to have:**
 41. ✅ Supabase auth email templates — replaced default Supabase branding with custom Reminders template
-42. Favicon — add `<link rel="icon">` to `index.html`
-43. HTML meta tags — add `<meta name="description">` and viewport meta tag to `index.html`
+42. ✅ Favicon — add `<link rel="icon">` to `index.html`
+43. ✅ HTML meta tags — add `<meta name="description">` and viewport meta tag to `index.html`
 
 ---
 
@@ -774,7 +774,7 @@ sync(session, config):
 47. ✅ Viewport meta tag — added to `index.html`
 48. ✅ Make dialogs full-screen on mobile — `Dialog.tsx` updated to full-screen below `sm` breakpoint
 49. ✅ Fix `DayView` padding — changed to `px-4 sm:px-8`
-50. Audit calendar on small screens — `MonthView` and `WeekView` event dots/cells may be too small to tap
+50. ✅ Audit calendar on small screens — `MonthView` and `WeekView` event dots/cells may be too small to tap
 
 ---
 
@@ -794,6 +794,22 @@ sync(session, config):
 41. `@capacitor/status-bar`, `@capacitor/splash-screen` for native polish
 42. Test on iOS Simulator (Xcode required, macOS only) and Android Emulator
 43. App Store / Google Play build signing config in `capacitor.config.ts`
+
+---
+
+### Phase 15 — Mobile Background Sync (Cross-Device Notifications)
+> Full design: [`docs/mobile-background-sync.md`](./docs/mobile-background-sync.md)
+>
+> Adds periodic background sync on iOS + Android via `@capacitor/background-runner`. Closes the cross-device gap so reminders created on one device fire on others even when the receiving app is closed. Bundles fixes for two latent bugs: recurring reminders only firing on day 1, and silent drops past the iOS 64-pending-notification cap.
+54. Supabase migration: add `notify_before` column to `reminders`; update `webSync.ts` mappers
+55. Extract `nextOccurrenceAt()` + `reconcileSchedule()` into `src/shared/reminderSchedule.ts`; refactor `mobileNotifications.ts` to a `reconcileNotifications(allReminders)` API with hybrid horizon (`min(soonest 50, within 30 days)`)
+56. Cluster warning toast at reminder creation when adding to a 1-hour window already at 50 reminders
+57. `runnerBridge.ts` — `setCredentials()` via `dispatchEvent` (re-dispatched on every app foreground); `cleanupTombstones()` via `getPending` → filter year ≥ 2099 → `cancel`
+58. Implement `src/runner/runner.js` — raw Supabase REST + token refresh + decrypt + `CapacitorNotifications.schedule`; soft-deletes shelved with `scheduleAt: 2099-01-01`
+59. Native config: `capacitor.config.ts` `BackgroundRunner` block, iOS `Info.plist` (`UIBackgroundModes`, `BGTaskSchedulerPermittedIdentifiers`), `AppDelegate.swift` registration, `android/app/build.gradle` libs dir
+60. Telemetry: `last_run_at` / `last_run_error` / `last_synced_count` in `CapacitorKV`, surfaced in Settings debug view
+
+**Future release (post-Phase 15):** iOS BGAppRefresh is opportunistic — Apple may not fire it for days on devices that don't open the app often. If tight cross-device parity becomes a real complaint, follow up with **APNs silent push** as a "sync now" wake-up signal (encryption preserved — push carries no content). See follow-up section in `docs/mobile-background-sync.md`.
 
 ---
 
