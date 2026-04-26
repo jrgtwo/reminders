@@ -166,8 +166,10 @@ addEventListener('setCredentials', (resolve, reject, args) => {
     if (args.expires_at !== undefined) kvSet('expires_at', String(args.expires_at))
     if (args.supabase_url) kvSet('supabase_url', args.supabase_url)
     if (args.supabase_anon_key) kvSet('supabase_anon_key', args.supabase_anon_key)
+    console.log('[runner] credentials stored')
     resolve()
   } catch (err) {
+    console.error('[runner] setCredentials failed:', err && err.message ? err.message : err)
     reject(err)
   }
 })
@@ -186,6 +188,7 @@ addEventListener('clearCredentials', (resolve) => {
 })
 
 addEventListener('sync', async (resolve, reject) => {
+  console.log('[runner] sync starting')
   try {
     const userId = kvGet('user_id')
     const encKeyB64 = kvGet('enc_key')
@@ -193,6 +196,7 @@ addEventListener('sync', async (resolve, reject) => {
     const anonKey = kvGet('supabase_anon_key')
 
     if (!userId || !encKeyB64 || !supabaseUrl || !anonKey) {
+      console.log('[runner] sync skipped: not authenticated')
       resolve()
       return
     }
@@ -233,8 +237,12 @@ addEventListener('sync', async (resolve, reject) => {
       CapacitorNotifications.schedule(notifications)
     }
 
+    console.log(
+      `[runner] sync ok — ${active.length} active, ${tombstones.length} tombstones, ${toSchedule.length} scheduled`,
+    )
     resolve()
   } catch (err) {
+    console.error('[runner] sync failed:', err && err.message ? err.message : err)
     reject(err)
   }
 })
