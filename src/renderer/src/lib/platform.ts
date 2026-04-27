@@ -15,3 +15,13 @@ export function isWebPlatform(): boolean {
   if (typeof window === 'undefined') return false
   return !isNativePlatform()
 }
+
+export function isCapacitorPlatform(): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return !!(window as any).Capacitor?.isNativePlatform?.()
+  } catch {
+    return false
+  }
+}

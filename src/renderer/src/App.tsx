@@ -30,6 +30,7 @@ const LandingPage = lazy(() => import('./components/pages/LandingPage'))
 const PrivacyPolicyPage = lazy(() => import('./components/pages/PrivacyPolicyPage'))
 const CaptchaPage = lazy(() => import('./components/pages/CaptchaPage'))
 import { getConsent } from './lib/consent'
+import { isCapacitorPlatform } from './lib/platform'
 import { useCalendarPage } from './components/hooks/useCalendarPage'
 import { useApp } from './components/hooks/useApp'
 import PageLoader from './components/ui/PageLoader'
@@ -122,6 +123,12 @@ function DayPage() {
 }
 
 function FirstVisitRedirect() {
+  if (isCapacitorPlatform()) {
+    if (!localStorage.getItem(LANDING_SEEN_KEY)) {
+      localStorage.setItem(LANDING_SEEN_KEY, '1')
+    }
+    return <CalendarPage />
+  }
   if (!localStorage.getItem(LANDING_SEEN_KEY)) {
     return <Navigate to="/welcome" replace />
   }
