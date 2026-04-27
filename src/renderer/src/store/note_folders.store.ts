@@ -20,6 +20,8 @@ export const useNoteFoldersStore = create<NoteFoldersState>()(
     },
 
     save: async (f) => {
+      const { useAuthStore } = await import('./auth.store')
+      if (!useAuthStore.getState().requireAuthOrPromptSignIn()) return
       const { getStorage } = await import('../platform')
       const saved = await getStorage().saveNoteFolder(f)
       set((s) => {

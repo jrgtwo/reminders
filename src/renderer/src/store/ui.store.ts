@@ -17,6 +17,7 @@ interface UIState {
   triggerNewReminder: boolean
   newReminderDate: string | null
   reminderSections: { overdue: boolean; upcoming: boolean }
+  signInWallOpen: boolean
   setLeftOpen: (v: boolean) => void
   setRightOpen: (v: boolean) => void
   setView: (v: View) => void
@@ -27,6 +28,7 @@ interface UIState {
   setTriggerNewReminder: (v: boolean) => void
   setNewReminderDate: (date: string | null) => void
   setReminderSection: (section: 'overdue' | 'upcoming', open: boolean) => void
+  setSignInWallOpen: (open: boolean) => void
 }
 
 const THEME_CLASSES = ['theme-warm', 'theme-midnight', 'theme-dim', 'theme-nord', 'theme-forest', 'theme-dusk', 'theme-grey']
@@ -53,6 +55,7 @@ export const useUIStore = create<UIState>()(
       triggerNewReminder: false,
       newReminderDate: null,
       reminderSections: { overdue: false, upcoming: false },
+      signInWallOpen: false,
       setLeftOpen: (v) => set({ leftOpen: v }),
       setRightOpen: (v) => set({ rightOpen: v }),
       setView: (v) => { set({ currentView: v }); capture('ui_view_changed', { view: v }) },
@@ -62,6 +65,7 @@ export const useUIStore = create<UIState>()(
       setNewReminderDate: (date) => set({ newReminderDate: date }),
       setReminderSection: (section, open) =>
         set((s) => ({ reminderSections: { ...s.reminderSections, [section]: open } })),
+      setSignInWallOpen: (open) => set({ signInWallOpen: open }),
       setTheme: (theme) => {
         applyTheme(theme)
         capture('ui_theme_changed', { theme })

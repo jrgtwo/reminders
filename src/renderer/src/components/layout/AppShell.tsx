@@ -5,6 +5,7 @@ import BottomNav, { SideNav } from './BottomNav'
 import SearchBar from './SearchBar'
 import ReminderForm from '../reminders/ReminderForm'
 import NotificationBanner from '../NotificationBanner'
+import SignInWall from '../SignInWall'
 import { useAppShell } from './hooks/useAppShell'
 import { useEncryptionErrorStore } from '../../store/encryption-error.store'
 import logo from '../../assets/logo.svg'
@@ -262,6 +263,8 @@ export default function AppShell() {
           onClose={() => setNewReminderDate(null)}
         />
       )}
+
+      <SignInWall />
     </div>
   )
 }

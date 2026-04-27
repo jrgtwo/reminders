@@ -38,6 +38,8 @@ export const useTodoListsStore = create<TodoListsState>()(
     },
 
     save: async (l) => {
+      const { useAuthStore } = await import('./auth.store')
+      if (!useAuthStore.getState().requireAuthOrPromptSignIn()) return
       const { getStorage } = await import('../platform')
       const saved = await getStorage().saveTodoList(l)
       set((s) => {
@@ -87,6 +89,8 @@ export const useTodoListsStore = create<TodoListsState>()(
     },
 
     saveItem: async (item) => {
+      const { useAuthStore } = await import('./auth.store')
+      if (!useAuthStore.getState().requireAuthOrPromptSignIn()) return
       const { getStorage } = await import('../platform')
       try {
         const saved = await getStorage().saveTodoListItem(item)

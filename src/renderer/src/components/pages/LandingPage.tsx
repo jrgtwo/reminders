@@ -120,6 +120,7 @@ const TIERS = [
 
 import { useNavigate } from 'react-router-dom'
 import { isAllowed } from '../../lib/consent'
+import { isWebPlatform } from '../../lib/platform'
 
 const LANDING_SEEN_KEY = 'reminder_landing_seen'
 
@@ -134,11 +135,13 @@ export { LANDING_SEEN_KEY }
 
 export default function LandingPage() {
   const navigate = useNavigate()
+  const isWeb = isWebPlatform()
 
   const onEnter = () => {
     markLandingSeen()
     navigate('/')
   }
+  const tiers = isWeb ? TIERS.filter((t) => t.name !== 'No Account') : TIERS
   return (
     <main className="h-dvh text-slate-100 overflow-y-auto bg-[#0d1117]">
       {/* Hero */}
@@ -148,8 +151,9 @@ export default function LandingPage() {
             <img src={logo} alt="Reminder Today Logo" className="w-full max-w-[25rem] mb-1" />
           </h1>
           <p className="text-lg md:text-xl text-white/50 max-w-lg mb-8 leading-relaxed">
-            Calendar. Reminders. Notes. Lists. One app, on your device, under your control — no
-            account required.
+            {isWeb
+              ? 'Calendar. Reminders. Notes. Lists. One app — end-to-end encrypted and synced across your devices.'
+              : 'Calendar. Reminders. Notes. Lists. One app, on your device, under your control — no account required.'}
           </p>
           <div className="max-w-lg mb-10 px-4 py-3 rounded-lg bg-[#e8a045]/[0.08] border border-[#e8a045]/20 border-b-[3px] border-b-[#e8a045]/30 text-[#e8a045]/80 text-sm leading-relaxed text-left btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-[#e8a045]/35">
             <p className="font-medium text-[#e8a045] mb-1">Beta</p>
@@ -169,7 +173,11 @@ export default function LandingPage() {
               className="opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all"
             />
           </button>
-          <p className="text-xs text-white/50 mt-3">No account required. Works in your browser.</p>
+          <p className="text-xs text-white/50 mt-3">
+            {isWeb
+              ? 'Free account. Your data is encrypted in your browser before it ever leaves.'
+              : 'No account required. Works offline on your device.'}
+          </p>
         </div>
       </section>
 
@@ -274,11 +282,12 @@ export default function LandingPage() {
             Choose your path
           </h2>
           <p className="text-sm text-white/60 text-center mb-10 max-w-lg mx-auto">
-            Use everything for free on a single device. Sign up to encrypt your data. Go Pro to sync
-            across all devices.
+            {isWeb
+              ? 'Free account encrypts your data end-to-end. Go Pro to sync across all devices.'
+              : 'Use everything for free on a single device. Sign up to encrypt your data. Go Pro to sync across all devices.'}
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {TIERS.map((tier) => (
+          <div className={`grid grid-cols-1 ${tiers.length === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-4`}>
+            {tiers.map((tier) => (
               <div
                 key={tier.name}
                 className={`relative flex flex-col p-6 rounded-xl border border-b-[3px] btn-3d hover:-translate-y-[3px] hover:brightness-125 hover:border-white/20 ${
@@ -345,9 +354,9 @@ export default function LandingPage() {
             <h3 className="text-base font-semibold text-white/70">Privacy first</h3>
           </div>
           <p className="text-xs text-white/55 leading-relaxed max-w-md mx-auto">
-            Your data lives on your device. If you create an account, everything is encrypted with
-            AES-256-GCM before it ever leaves your browser. We can&apos;t read your data — only you
-            can.
+            {isWeb
+              ? 'Everything is encrypted with AES-256-GCM in your browser before it ever leaves. We can’t read your data — only you can.'
+              : 'Your data lives on your device. If you create an account, everything is encrypted with AES-256-GCM before it ever leaves your browser. We can’t read your data — only you can.'}
           </p>
         </div>
       </section>

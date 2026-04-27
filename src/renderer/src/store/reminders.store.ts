@@ -25,6 +25,8 @@ import { create } from 'zustand'
      },
 
      save: async (r) => {
+       const { useAuthStore } = await import('./auth.store')
+       if (!useAuthStore.getState().requireAuthOrPromptSignIn()) return
        const { getStorage } = await import('../platform')
        const isNew = !useRemindersStore.getState().reminders.find((x) => x.id === r.id)
        const saved = await getStorage().saveReminder(r)

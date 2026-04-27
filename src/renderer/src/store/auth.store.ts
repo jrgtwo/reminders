@@ -3,6 +3,7 @@ import type { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import { capture } from '../lib/analytics'
 import { initEncryptionKey, clearEncryptionKey, getCachedKeyBase64 } from '../lib/keyManager'
+import { isWebPlatform } from '../lib/platform'
 import {
   setCredentials as setRunnerCredentials,
   clearCredentials as clearRunnerCredentials,
@@ -42,6 +43,7 @@ interface AuthState {
   checkIsReviewerAccount: (email: string) => Promise<boolean>
   signInWithPassword: (email: string, password: string, captchaToken?: string) => Promise<void>
   signOut: () => Promise<void>
+  requireAuthOrPromptSignIn: () => boolean
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -182,5 +184,22 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ user: null, session: null, isLoggedIn: false, plan: 'free' })
     if (userId) await clearEncryptionKey(userId)
     clearRunnerCredentials().catch(console.error)
+    if (isWebPlatform()) {
+      try {
+        const { getStorage } = await import('../platform')
+        await getStorage().clearAll?.()
+      } catch (err) {
+        console.warn('[auth] failed to clear local storage on sign-out:', err)
+      }
+    }
+  },
+
+  requireAuthOrPromptSignIn: () => {
+    if (!isWebPlatform()) return true
+    if (useAuthStore.getState().isLoggedIn) return true
+    import('./ui.store').then(({ useUIStore }) => {
+      useUIStore.getState().setSignInWallOpen(true)
+    })
+    return false
   },
 }))
