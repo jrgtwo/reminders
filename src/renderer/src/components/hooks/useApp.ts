@@ -93,6 +93,32 @@ export function useApp(router: { navigate: (path: string) => void }) {
   }, [])
 
   useEffect(() => {
+    let cleanup: (() => void) | undefined
+    import('@capacitor/core').then(({ Capacitor }) => {
+      if (!Capacitor.isNativePlatform()) return
+      Promise.all([
+        import('@capacitor/app'),
+        import('../../lib/mobileNotifications'),
+      ]).then(([{ App }, { reconcileNotifications }]) => {
+        App.addListener('appStateChange', ({ isActive }) => {
+          if (!isActive) return
+          // Top up the AlarmManager queue every time the app foregrounds. Recurring reminders'
+          // next-next occurrences only get queued by reconcile, so without this, a daily
+          // reminder fires once and then nothing until the next sync or reminder edit.
+          useRemindersStore
+            .getState()
+            .load()
+            .then(() => reconcileNotifications(useRemindersStore.getState().reminders))
+            .catch(console.error)
+        }).then((handle) => {
+          cleanup = () => handle.remove()
+        })
+      })
+    }).catch(() => {})
+    return () => cleanup?.()
+  }, [])
+
+  useEffect(() => {
     return useAuthStore.subscribe((state, prev) => {
       if (!prev.isLoggedIn && state.isLoggedIn && state.user) {
         identifyUser(state.user.id)
