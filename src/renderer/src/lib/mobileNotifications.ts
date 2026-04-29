@@ -5,6 +5,7 @@ import {
   reconcileSchedule,
   uuidToInt,
   isTombstone,
+  nextOccurrenceAt,
   type SchedulableReminder,
   type PendingNotification,
 } from '../../../shared/reminderSchedule'
@@ -76,16 +77,57 @@ export async function snoozeNotification(r: Reminder): Promise<void> {
   })
 }
 
+function bodyFor(r: Reminder, notifyMinutes: number): string {
+  if (r.description) return r.description
+  if (notifyMinutes > 0) {
+    const h = Math.floor(notifyMinutes / 60)
+    const m = notifyMinutes % 60
+    const label =
+      notifyMinutes < 60
+        ? `${notifyMinutes} minute${notifyMinutes !== 1 ? 's' : ''}`
+        : m === 0
+          ? `${h} hour${h !== 1 ? 's' : ''}`
+          : `${h}h ${m}m`
+    return `Reminder in ${label}`
+  }
+  return r.startTime ? `Reminder at ${r.startTime}` : 'Reminder'
+}
+
 /**
- * Reconcile the OS notification queue against the current set of reminders.
+ * Schedule a single reminder's notification. Cancels any prior schedule for the same
+ * reminder id, then re-schedules using the next future occurrence. No-op if the reminder
+ * has no startTime or its next occurrence is in the past.
+ */
+export async function scheduleReminderNotification(r: Reminder): Promise<void> {
+  const fireAt = nextOccurrenceAt(r as SchedulableReminder, new Date())
+  if (!fireAt) return
+
+  const notifId = uuidToInt(r.id)
+  const notifyMinutes = r.notifyBefore ?? 0
+
+  await LocalNotifications.cancel({ notifications: [{ id: notifId }] })
+  await LocalNotifications.schedule({
+    notifications: [
+      {
+        id: notifId,
+        title: r.title,
+        body: bodyFor(r, notifyMinutes),
+        schedule: { at: fireAt, allowWhileIdle: true },
+        actionTypeId: 'REMINDER_ACTIONS',
+        extra: { reminderId: r.id, date: r.date },
+      },
+    ],
+  })
+}
+
+/**
+ * Reconcile the OS notification queue against the current set of reminders. Used at app
+ * startup and after sync to recover from cases where the OS dropped pending alarms
+ * (reboot, app update, force-stop) or where bulk changes need to be reflected.
  *
- * - Drains "tombstone" notifications the background runner left behind (year 2099 sentinels)
- *   to mark soft-deleted reminders we couldn't cancel directly from the runner context.
- * - Schedules the soonest 50 reminders within the next 30 days (hybrid horizon — respects
- *   the iOS 64-pending cap, leaves headroom for runner-set tombstones).
- * - Cancels anything currently pending that's outside the horizon.
- *
- * Safe to call after every reminder create/update/delete and on app startup.
+ * Schedules the soonest 50 reminders within the next 30 days; cancels anything pending
+ * that's outside the new winner set. Tombstone draining is retained for backward compat
+ * with any leftover sentinels from older builds.
  */
 export async function reconcileNotifications(allReminders: Reminder[]): Promise<void> {
   const { notifications } = await LocalNotifications.getPending()

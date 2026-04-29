@@ -43,8 +43,8 @@ import { create } from 'zustand'
        try {
          const { Capacitor } = await import('@capacitor/core')
          if (Capacitor.isNativePlatform()) {
-           const { reconcileNotifications } = await import('../lib/mobileNotifications')
-           reconcileNotifications(useRemindersStore.getState().reminders).catch(console.error)
+           const { scheduleReminderNotification } = await import('../lib/mobileNotifications')
+           scheduleReminderNotification(saved).catch(console.error)
 
            // Cluster warning: when adding a new reminder fills the OS notification slots
            // for a 1-hour window, warn the user that this one may not actually alert.
@@ -89,8 +89,8 @@ import { create } from 'zustand'
        try {
          const { Capacitor } = await import('@capacitor/core')
          if (Capacitor.isNativePlatform()) {
-           const { reconcileNotifications } = await import('../lib/mobileNotifications')
-           reconcileNotifications(useRemindersStore.getState().reminders).catch(console.error)
+           const { cancelReminderNotification } = await import('../lib/mobileNotifications')
+           cancelReminderNotification(id).catch(console.error)
          }
        } catch {
          // not a Capacitor build

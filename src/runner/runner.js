@@ -9,9 +9,12 @@
  *
  * Pattern: addEventListener('event', (resolve, reject, args) => { ... }). MUST
  * call resolve()/reject() or the OS kills the process.
+ *
+ * Notifications are owned exclusively by the renderer via @capacitor/local-notifications.
+ * The runner is pure-sync — it pulls reminders from Supabase to keep credentials warm and
+ * to verify connectivity, but does NOT schedule notifications (dual-plugin ownership over
+ * the same AlarmManager request codes caused silent delivery failures).
  */
-
-import { reconcileSchedule, uuidToInt, tombstoneDate } from '../shared/reminderSchedule'
 
 // ────────────────────────────────────────────────────────────────────────────
 // CapacitorKV helpers
@@ -207,39 +210,9 @@ addEventListener('sync', async (resolve, reject) => {
     const rows = await fetchReminders(accessToken, supabaseUrl, anonKey, userId)
     const key = await importKey(encKeyB64)
     const reminders = await Promise.all(rows.map((row) => rowToReminder(row, key)))
+    const active = reminders.filter((r) => !r.deletedAt).length
 
-    const now = new Date()
-
-    const tombstones = reminders
-      .filter((r) => r.deletedAt)
-      .map((r) => ({
-        id: uuidToInt(r.id),
-        title: '',
-        body: '',
-        scheduleAt: tombstoneDate(),
-      }))
-
-    const active = reminders.filter((r) => !r.deletedAt)
-    const { toSchedule } = reconcileSchedule(active, [], now)
-
-    const notifications = [
-      ...tombstones,
-      ...toSchedule.map((s) => ({
-        id: s.id,
-        title: s.title,
-        body: s.body,
-        scheduleAt: s.fireAt,
-        actionTypeId: 'REMINDER_ACTIONS',
-      })),
-    ]
-
-    if (notifications.length > 0) {
-      CapacitorNotifications.schedule(notifications)
-    }
-
-    console.log(
-      `[runner] sync ok — ${active.length} active, ${tombstones.length} tombstones, ${toSchedule.length} scheduled`,
-    )
+    console.log(`[runner] sync ok — ${active} active reminders fetched`)
     resolve()
   } catch (err) {
     console.error('[runner] sync failed:', err && err.message ? err.message : err)

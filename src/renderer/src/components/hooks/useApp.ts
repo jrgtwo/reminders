@@ -33,6 +33,7 @@ export function useApp(router: { navigate: (path: string) => void }) {
               registerNotificationActions,
               listenForNotificationActions,
               snoozeNotification,
+              reconcileNotifications,
             } = await import('../../lib/mobileNotifications')
             await requestNotificationPermission()
             await registerNotificationActions()
@@ -46,6 +47,14 @@ export function useApp(router: { navigate: (path: string) => void }) {
                 useRemindersStore.getState().toggleComplete(reminderId, date)
               },
             )
+            // Recover from cases where the OS dropped pending alarms (reboot, app update,
+            // force-stop, "Clear data"). Loads reminders from local storage first so the
+            // reconcile sees the full set even before sync runs.
+            useRemindersStore
+              .getState()
+              .load()
+              .then(() => reconcileNotifications(useRemindersStore.getState().reminders))
+              .catch(console.error)
           }
         } catch {
           // not a Capacitor build
