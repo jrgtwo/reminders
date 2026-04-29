@@ -7,7 +7,6 @@ import type { Reminder, Note, TodoFolder, TodoList, TodoListItem } from '../type
 // --- Progress tracking ---
 
 const PROGRESS_KEY = 'key_rotation_progress'
-const OLD_KEY_BACKUP = 'key_rotation_old_key'
 
 interface RotationProgress {
   newKeyData: string
@@ -29,7 +28,6 @@ function loadProgress(): RotationProgress | null {
 
 function clearProgress(): void {
   localStorage.removeItem(PROGRESS_KEY)
-  localStorage.removeItem(OLD_KEY_BACKUP)
 }
 
 // --- Supabase row formatters (mirrors webSync.ts) ---
@@ -126,11 +124,7 @@ export async function rotateEncryptionKey(userId: string): Promise<void> {
   const oldKey = getEncryptionKey()
   if (!oldKey) throw new Error('No active encryption key to rotate from')
 
-  // 1. Back up the old key locally before anything else
-  const oldKeyRaw = await exportKey(oldKey)
-  localStorage.setItem(OLD_KEY_BACKUP, oldKeyRaw)
-
-  // 2. Check for in-progress rotation (resume support)
+  // 1. Check for in-progress rotation (resume support)
   let progress = loadProgress()
   let newKey: CryptoKey
   let newKeyData: string
@@ -147,7 +141,7 @@ export async function rotateEncryptionKey(userId: string): Promise<void> {
     saveProgress(progress)
   }
 
-  // 3. Re-encrypt each table one record at a time, writing to local storage as we go.
+  // 2. Re-encrypt each table one record at a time, writing to local storage as we go.
   //    Collect re-encrypted records for Supabase push after all local writes succeed.
 
   const supabaseBatches: {
@@ -238,7 +232,7 @@ export async function rotateEncryptionKey(userId: string): Promise<void> {
     saveProgress(progress)
   }
 
-  // 4. All local re-encryption succeeded. Push to Supabase.
+  // 3. All local re-encryption succeeded. Push to Supabase.
   const pushes: PromiseLike<unknown>[] = []
   if (supabaseBatches.reminders.length)
     pushes.push(supabase.from('reminders').upsert(supabaseBatches.reminders).select())
@@ -254,14 +248,14 @@ export async function rotateEncryptionKey(userId: string): Promise<void> {
     )
   await Promise.all(pushes)
 
-  // 5. Update the key in Supabase
+  // 4. Update the key in Supabase
   const { error } = await supabase
     .from('user_keys')
     .update({ key_data: newKeyData })
     .eq('user_id', userId)
   if (error) throw new Error('Failed to update encryption key in Supabase')
 
-  // 6. Everything succeeded — swap in-memory key and clean up
+  // 5. Everything succeeded — swap in-memory key and clean up
   setEncryptionKey(newKey)
   await cacheKey(userId, newKeyData)
   clearProgress()

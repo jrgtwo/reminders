@@ -33,7 +33,19 @@ export function flushPendingCallback(win: BrowserWindow): void {
   }
 }
 
+function isValidCallbackUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url)
+    // Only accept the OAuth callback shape: reminders://auth/callback?...
+    return parsed.protocol === 'reminders:' && parsed.host === 'auth'
+  } catch {
+    return false
+  }
+}
+
 function handleCallbackUrl(url: string): void {
+  if (!isValidCallbackUrl(url)) return
+
   const wins = BrowserWindow.getAllWindows()
   if (wins.length > 0) {
     const win = wins[0]

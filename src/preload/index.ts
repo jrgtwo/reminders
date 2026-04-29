@@ -26,34 +26,15 @@ const api = {
     delete: (id: string) => ipcRenderer.invoke('todo_folders:delete', id)
   },
   todoLists: {
-    getAll: () => {
-      console.log('[preload] todoLists.getAll')
-      return ipcRenderer.invoke('todo_lists:getAll')
-    },
-    save: (l: unknown) => {
-      console.log('[preload] todoLists.save', l)
-      return ipcRenderer.invoke('todo_lists:save', l)
-    },
-    delete: (id: string) => {
-      console.log('[preload] todoLists.delete', id)
-      return ipcRenderer.invoke('todo_lists:delete', id)
-    },
-    getAllItemsForList: (listId: string) => {
-      console.log('[preload] todoLists.getAllItemsForList', listId)
-      return ipcRenderer.invoke('todo_lists:getAllItemsForList', listId)
-    },
-    saveItem: (item: unknown) => {
-      console.log('[preload] todoLists.saveItem', item)
-      return ipcRenderer.invoke('todo_lists:saveItem', item)
-    },
-    deleteItem: (id: string) => {
-      console.log('[preload] todoLists.deleteItem', id)
-      return ipcRenderer.invoke('todo_lists:deleteItem', id)
-    },
-    reorderItems: (listId: string, ids: string[]) => {
-      console.log('[preload] todoLists.reorderItems', listId, ids)
-      return ipcRenderer.invoke('todo_lists:reorderItems', listId, ids)
-    }
+    getAll: () => ipcRenderer.invoke('todo_lists:getAll'),
+    save: (l: unknown) => ipcRenderer.invoke('todo_lists:save', l),
+    delete: (id: string) => ipcRenderer.invoke('todo_lists:delete', id),
+    getAllItemsForList: (listId: string) =>
+      ipcRenderer.invoke('todo_lists:getAllItemsForList', listId),
+    saveItem: (item: unknown) => ipcRenderer.invoke('todo_lists:saveItem', item),
+    deleteItem: (id: string) => ipcRenderer.invoke('todo_lists:deleteItem', id),
+    reorderItems: (listId: string, ids: string[]) =>
+      ipcRenderer.invoke('todo_lists:reorderItems', listId, ids)
   },
   snooze: {
     set: (reminderId: string, date: string, minutes: number) =>
@@ -93,12 +74,7 @@ const api = {
   }
 }
 
-if (process.contextIsolated) {
-  try {
-    contextBridge.exposeInMainWorld('electronAPI', api)
-  } catch (error) {
-    console.error(error)
-  }
-} else {
-  ;(window as any).electronAPI = api
+if (!process.contextIsolated) {
+  throw new Error('contextIsolation must be enabled in webPreferences')
 }
+contextBridge.exposeInMainWorld('electronAPI', api)

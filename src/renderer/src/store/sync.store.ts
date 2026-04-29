@@ -94,8 +94,9 @@ export const useSyncStore = create<SyncState>((set, get) => ({
   },
 
   checkFirstLogin: async () => {
-    const { session, user } = useAuthStore.getState()
+    const { session, user, plan } = useAuthStore.getState()
     if (!session || !user) return
+    if (plan !== 'pro' && plan !== 'comp') return
 
     set({ checkingFirstLogin: true })
     try {
@@ -143,8 +144,9 @@ export const useSyncStore = create<SyncState>((set, get) => ({
   },
 
   resetFromCloud: async () => {
-    const { session, user } = useAuthStore.getState()
+    const { session, user, plan } = useAuthStore.getState()
     if (!session || !user) return
+    if (plan !== 'pro' && plan !== 'comp') return
     // Don't use get().status guard here — we manage status ourselves
     if (get().status === 'syncing') return
 

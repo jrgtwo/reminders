@@ -20,12 +20,11 @@ export const SyncConfigSchema = z.object({
   supabaseAnonKey: z.string().min(1),
 })
 
-export const SessionSchema = z
-  .object({
-    access_token: z.string().min(1),
-    refresh_token: z.string().min(1),
-  })
-  .passthrough()
+export const SessionSchema = z.object({
+  access_token: z.string().min(1),
+  refresh_token: z.string().min(1),
+  user: z.object({ id: z.string().uuid() }),
+})
 
 // --- Auth ---
 
