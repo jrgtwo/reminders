@@ -94,30 +94,19 @@ async function decrypt(key, text) {
 // Token refresh
 // ────────────────────────────────────────────────────────────────────────────
 
-async function getValidAccessToken() {
+// Return the cached access token if it's still valid, or null if it's missing/expired.
+// We deliberately do NOT refresh here: Supabase rotates refresh tokens on use, and the
+// renderer can't see a rotation that happens in this isolated runner context. A runner-side
+// refresh would silently invalidate the renderer's stored refresh token, so the next time
+// the user opens the app supabase-js's refresh attempt fails and signs them out. The
+// renderer handles refresh on foreground and pushes the new tokens back via
+// runnerBridge.setupForegroundResync — that keeps both contexts in sync.
+function getValidAccessToken() {
   const expiresAt = parseInt(kvGet('expires_at') || '0', 10)
   const accessToken = kvGet('access_token')
-  const refreshToken = kvGet('refresh_token')
-  const supabaseUrl = kvGet('supabase_url')
-  const anonKey = kvGet('supabase_anon_key')
-
-  if (!refreshToken || !supabaseUrl || !anonKey) return null
-
-  // Refresh if missing, expired, or expires in <60s
   const nowSec = Math.floor(Date.now() / 1000)
   if (accessToken && expiresAt > nowSec + 60) return accessToken
-
-  const res = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=refresh_token`, {
-    method: 'POST',
-    headers: { apikey: anonKey, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refresh_token: refreshToken }),
-  })
-  if (!res.ok) throw new Error(`Token refresh failed: ${res.status}`)
-  const data = await res.json()
-  kvSet('access_token', data.access_token)
-  kvSet('refresh_token', data.refresh_token)
-  kvSet('expires_at', String(data.expires_at))
-  return data.access_token
+  return null
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -204,8 +193,12 @@ addEventListener('sync', async (resolve, reject) => {
       return
     }
 
-    const accessToken = await getValidAccessToken()
-    if (!accessToken) throw new Error('No access token available')
+    const accessToken = getValidAccessToken()
+    if (!accessToken) {
+      console.log('[runner] sync skipped: access token missing or expired (renderer will refresh on next foreground)')
+      resolve()
+      return
+    }
 
     const rows = await fetchReminders(accessToken, supabaseUrl, anonKey, userId)
     const key = await importKey(encKeyB64)
