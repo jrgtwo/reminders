@@ -49,7 +49,7 @@ export default function DayViewRemindersTab({
                 onClick={handleAddReminder}
                 className="text-[12px] font-medium text-[var(--accent)] hover:opacity-80 transition-opacity"
               >
-                + Add your first reminder
+                + Create your first reminder
               </button>
             </div>
           </div>

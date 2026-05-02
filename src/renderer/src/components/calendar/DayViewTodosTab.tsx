@@ -54,7 +54,7 @@ export default function DayViewTodosTab({
                 onClick={handleCreateInlineList}
                 className="text-[12px] font-medium text-[var(--accent)] hover:opacity-80 transition-opacity"
               >
-                + New list
+                + Create your first list
               </button>
             </div>
           </div>
