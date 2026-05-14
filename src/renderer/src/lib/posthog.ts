@@ -21,6 +21,7 @@ function initPostHog(): void {
   posthog.init(key, {
     api_host: host,
     capture_pageview: false,
+    capture_pageleave: true,
     person_profiles: 'identified_only'
   })
   posthog.register({ platform })
